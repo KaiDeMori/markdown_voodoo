@@ -46,16 +46,21 @@ Search is tiered — find the conversation, narrow to the matches, then read one
 Beyond search:
 
 - `origin <filename> [--mode all|created|edited|read] [--tool Write,Edit]` — every event where a file was created, edited, or read.
-- `tree <session_id> [--format mermaid|dot|graph_json]` — render a conversation's fork family as a diagram.
+- `tree <session_id> [--dialect mermaid|dot]` — render a conversation's fork family as a diagram.
 - `family <session_id>` — the sessions in one conversation's fork family.
 - `families [--workspace W] [--project P]` — an overview of all fork families.
 - `list [--limit N]` — browse indexed conversations, newest first.
 
 Common filters on `search` and `in`: `--project`, `--workspace` (a folder and everything under it), `--date-from` / `--date-to`, `--role user|assistant|both`, `--thinking` (also search thinking blocks), `--mode substring|all_terms|wildcard|phrase`, and `--all` (every term in the same message).
 
-## Writing results to a file
+## Output: file and format
 
-Every command takes `--out FILE` (`-o`) to write its full result to a file and print a one-line receipt instead. Prefer it over shell redirection: it always writes UTF-8 with `\n` line endings, where a PowerShell `>` would write UTF-16 with a BOM and CRLF and corrupt diagram source or JSON. Diagnostics — the receipt and any notes — go to stderr, so the saved file (or a piped stdout) carries the payload only. This is what you want for large results: keep the bulk on disk instead of in the terminal.
+Every command takes two universal output options:
+
+- `--out FILE` (`-o`) — write the full result to a file and print a one-line receipt instead. Prefer it over shell redirection: it always writes UTF-8 with `\n` line endings, where a PowerShell `>` would write UTF-16 with a BOM and CRLF and corrupt JSON or diagram source. Use it for large results: keep the bulk on disk instead of in the terminal.
+- `--format text|json` — human-readable text (default) or the full structured result as JSON. The JSON is richer than the text (snippet offsets, roles, match counts); for `tree` it is the render-neutral graph. Combine with `--out` to save it.
+
+Diagnostics — the receipt and any notes — go to stderr, so the saved file (or a piped stdout) carries the payload only, valid JSON included.
 
 ## Full reference
 

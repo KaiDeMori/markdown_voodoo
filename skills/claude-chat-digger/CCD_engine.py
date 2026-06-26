@@ -968,26 +968,9 @@ def graph_to_dot(graph: Graph) -> str:
     return "\n".join(lines)
 
 
-def graph_to_json(graph: Graph) -> str:
-    return json.dumps(
-        {
-            "directed": graph.directed,
-            "nodes": [
-                {"id": n.id, "label": n.label, "kind": n.kind, "ref_uuid": n.ref_uuid, "collapsed_count": n.collapsed_count}
-                for n in graph.nodes
-            ],
-            "edges": [{"source": e.source_id, "target": e.target_id, "label": e.label} for e in graph.edges],
-            "notes": graph.notes,
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
-
-
 GRAPH_RENDERERS = {
     Diagram_format.mermaid: graph_to_mermaid,
     Diagram_format.dot: graph_to_dot,
-    Diagram_format.graph_json: graph_to_json,
 }
 
 
@@ -1668,6 +1651,21 @@ class Chat_digger:
         rows, titles = self._load_family_nodes(sessions)
         return build_family_tree(session_id, rows, titles)
 
+    def conversation_graph(
+        self,
+        session_id: str,
+        detail: Tree_detail = Tree_detail.forks_only,
+        max_nodes: int = 200,
+        single: bool = False,
+    ) -> Graph:
+        sessions = [session_id] if single else self.get_fork_family(session_id)
+        rows, titles = self._load_family_nodes(sessions)
+        meta, children, roots, branch_kind = family_structure(rows, titles)
+        graph = _reduce_to_graph(meta, children, roots, branch_kind, detail, max_nodes)
+        if len(sessions) > 1:
+            graph.notes.insert(0, "fork family of %d conversations" % len(sessions))
+        return graph
+
     def render_conversation_tree(
         self,
         session_id: str,
@@ -1676,12 +1674,7 @@ class Chat_digger:
         max_nodes: int = 200,
         single: bool = False,
     ) -> Diagram:
-        sessions = [session_id] if single else self.get_fork_family(session_id)
-        rows, titles = self._load_family_nodes(sessions)
-        meta, children, roots, branch_kind = family_structure(rows, titles)
-        graph = _reduce_to_graph(meta, children, roots, branch_kind, detail, max_nodes)
-        if len(sessions) > 1:
-            graph.notes.insert(0, "fork family of %d conversations" % len(sessions))
+        graph = self.conversation_graph(session_id, detail=detail, max_nodes=max_nodes, single=single)
         return self.render_graph(graph, diagram_format)
 
     def render_graph(self, graph: Graph, diagram_format: Diagram_format = Diagram_format.mermaid) -> Diagram:

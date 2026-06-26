@@ -64,7 +64,8 @@ python CCD.py origin app.css --tool Write,Edit
 ```
 python CCD.py tree <session_id>
 python CCD.py tree <session_id> --detail short
-python CCD.py tree <session_id> --format dot -o conversation.dot
+python CCD.py tree <session_id> --dialect dot -o conversation.dot
+python CCD.py tree <session_id> --format json -o tree.json     # the graph as JSON
 python CCD.py tree <session_id> --single --detail full
 ```
 
@@ -83,14 +84,16 @@ python CCD.py list
 python CCD.py list --limit 100
 ```
 
-## --out — save a result to a file
+## --out / --format — save and shape output
 
-Every command takes `--out`/`-o`. The file holds the result; a one-line receipt prints to the console.
+Every command takes `--out`/`-o` (write to a file, receipt to the console) and `--format text|json`.
 
 ```
 python CCD.py search "rate limiter" -o matches.txt
 python CCD.py show <session_id> <uuid> -o message.txt
-python CCD.py tree <session_id> --format graph_json -o tree.json
+python CCD.py search "rate limiter" --format json            # structured, to stdout
+python CCD.py search "rate limiter" --format json -o m.json  # structured, to a file
+python CCD.py in <session_id> "retry" --format json | jq '.chat_entries[].uuid'
 ```
 
-Use it for large results — keep the bulk on disk instead of in the terminal. Prefer it over `> file`, which on PowerShell writes UTF-16/BOM/CRLF and corrupts JSON or diagram source.
+`--out` is for large results — keep the bulk on disk instead of in the terminal. Prefer it over `> file`, which on PowerShell writes UTF-16/BOM/CRLF and corrupts JSON or diagram source. `--format json` is for piping into tools like `jq`; the payload stays pure (notes go to stderr).

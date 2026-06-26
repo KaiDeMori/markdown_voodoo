@@ -8,15 +8,18 @@ Usage:
     python CCD.py show <session_id> <uuid> [--block N] [--thinking]
     python CCD.py list [--limit N]
 
-Every command accepts --out/-o FILE to write its full result to a UTF-8 file and
-print a one-line receipt to the console instead of dumping the result to stdout.
+Two output axes apply to every command: --out/-o FILE writes the result to a UTF-8
+file and prints a one-line receipt; --format text|json chooses human-readable text
+(the default) or the full structured result as JSON.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, is_dataclass
+from enum import Enum
 
 from CCD_api import (
     Context_unit,
@@ -32,17 +35,18 @@ from CCD_engine import CCD_INDEX_VERSION, Chat_digger
 
 @dataclass
 class Command_output:
-    """A command's rendered result, decoupled from where it is sent.
+    """A command's rendered result, decoupled from where and how it is sent.
 
-    `body` is the full payload — the only thing ever written to an `--out` file.
-    `summary` is a one-line detail (counts) for the file-write receipt; `notes`
-    are deterministic reductions reported alongside the result, never folded into
-    the payload so a saved file stays clean.
+    `body` is the human-readable text and `data` the structured result; `--format`
+    picks which becomes the payload. `summary` is a one-line detail for the file
+    receipt, and `notes` are deterministic reductions reported alongside the result —
+    both diagnostics, never folded into the payload so a saved file stays clean.
     """
 
     body: str
     summary: str = ""
     notes: list[str] = field(default_factory=list)
+    data: object = None
 
 
 def force_utf8_output() -> None:
@@ -57,6 +61,20 @@ def format_when(timestamp: str) -> str:
     if not timestamp:
         return "?"
     return timestamp.replace("T", " ")[:16]
+
+
+def _json_default(value):
+    """Serialise the result dataclasses JSON cannot handle natively."""
+    if isinstance(value, Enum):
+        return value.value
+    if is_dataclass(value) and not isinstance(value, type):
+        return asdict(value)
+    raise TypeError("not JSON serialisable: %r" % type(value))
+
+
+def render_json(data) -> str:
+    """The single point structured results become JSON, dataclasses and enums included."""
+    return json.dumps(data, default=_json_default, ensure_ascii=False, indent=2)
 
 
 def build_search_options(arguments) -> Search_options:
@@ -91,12 +109,12 @@ def add_search_filters(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--limit", type=int, default=20)
 
 
-def add_output_option(parser: argparse.ArgumentParser) -> None:
-    """Give a subcommand the uniform `--out`/`-o` file destination.
+def add_output_options(parser: argparse.ArgumentParser) -> None:
+    """Give a subcommand the two universal output axes: destination and encoding.
 
-    Writing through this flag rather than shell redirection guarantees a UTF-8 file
-    with newline line endings regardless of the host shell, and keeps the receipt
-    out of the saved payload.
+    `--out` writes through Python rather than shell redirection, which guarantees a
+    UTF-8 file with newline line endings on any shell and keeps the receipt out of the
+    saved payload. `--format` selects text or the full structured result as JSON.
     """
     parser.add_argument(
         "--out",
@@ -104,23 +122,33 @@ def add_output_option(parser: argparse.ArgumentParser) -> None:
         default=None,
         help="write the full result to this file (UTF-8); print a one-line receipt instead",
     )
+    parser.add_argument(
+        "--format",
+        choices=["text", "json"],
+        default="text",
+        help="output as human-readable text (default) or the full structured result as JSON",
+    )
 
 
-def emit(output: Command_output, out_path) -> None:
-    """Send a command's result to its destination: a file plus a receipt, or stdout.
+def emit(output: Command_output, out_path, output_format: str) -> None:
+    """Send a command's result to its destination in the chosen encoding.
 
-    The payload (`body`) is the only thing on the chosen sink; the receipt and any
-    notes are diagnostics and go to stderr, so a piped or redirected payload stays
-    pure even for formats like JSON where a trailing note line would be invalid.
+    The payload (text or JSON) is the only thing on the chosen sink; the receipt and
+    any notes are diagnostics on stderr, so a piped or redirected payload stays pure
+    even as JSON, where a trailing note line would be invalid.
     """
+    if output_format == "json" and output.data is not None:
+        payload = render_json(output.data)
+    else:
+        payload = output.body
     if out_path:
-        text = output.body if output.body.endswith("\n") else output.body + "\n"
+        text = payload if payload.endswith("\n") else payload + "\n"
         with open(out_path, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(text)
         detail = " (%s)" % output.summary if output.summary else ""
         print("wrote output%s to %s" % (detail, out_path), file=sys.stderr)
     else:
-        print(output.body)
+        print(payload)
     for note in output.notes:
         print("note: %s" % note, file=sys.stderr)
 
@@ -130,7 +158,8 @@ def command_index(digger: Chat_digger, arguments) -> Command_output:
     stats = digger.build_index()
     summary = "%d conversations, %d blocks" % (stats.conversation_count, stats.chat_entry_count)
     body = "Indexed %d conversations, %d searchable blocks." % (stats.conversation_count, stats.chat_entry_count)
-    return Command_output(body=body, summary=summary)
+    data = {"conversations": stats.conversation_count, "blocks": stats.chat_entry_count}
+    return Command_output(body=body, summary=summary, data=data)
 
 
 def command_status(digger: Chat_digger, arguments) -> Command_output:
@@ -144,7 +173,15 @@ def command_status(digger: Chat_digger, arguments) -> Command_output:
         "Stale         : %s" % ("yes — rebuild due" if stats.is_stale else "no"),
         "CCD_version   : db=%s code=%d%s" % (version, CCD_INDEX_VERSION, version_note),
     ]
-    return Command_output(body="\n".join(lines))
+    data = {
+        "index_path": str(digger.index_path),
+        "conversations": stats.conversation_count,
+        "blocks": stats.chat_entry_count,
+        "stale": stats.is_stale,
+        "version_db": version,
+        "version_code": CCD_INDEX_VERSION,
+    }
+    return Command_output(body="\n".join(lines), data=data)
 
 
 def command_search(digger: Chat_digger, arguments) -> Command_output:
@@ -159,7 +196,7 @@ def command_search(digger: Chat_digger, arguments) -> Command_output:
         lines.append("      session : %s" % conversation.session_id)
         lines.append("      entries : %d matched" % len(conversation.matched_chat_entries))
         lines.append("")
-    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary)
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=result)
 
 
 def command_in(digger: Chat_digger, arguments) -> Command_output:
@@ -174,7 +211,7 @@ def command_in(digger: Chat_digger, arguments) -> Command_output:
             body = "%s>>>%s<<<%s" % (snippet.before, snippet.match, snippet.after)
             lines.append("    [block %d/%s] %s" % (snippet.block_index, snippet.block_type, body.replace("\n", "\n      ")))
         lines.append("")
-    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary)
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=result)
 
 
 def command_show(digger: Chat_digger, arguments) -> Command_output:
@@ -197,7 +234,7 @@ def command_show(digger: Chat_digger, arguments) -> Command_output:
             lines.append(header)
             lines.append(block.text or "")
         lines.append("")
-    return Command_output(body="\n".join(lines).rstrip("\n"), summary="%d blocks" % len(entry.blocks))
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary="%d blocks" % len(entry.blocks), data=entry)
 
 
 def command_origin(digger: Chat_digger, arguments) -> Command_output:
@@ -210,7 +247,8 @@ def command_origin(digger: Chat_digger, arguments) -> Command_output:
         lines.append("%s  %-7s via %-12s %s" % (format_when(origin.timestamp), origin.operation, origin.tool, origin.file_path))
         lines.append("      %s  —  %s%s" % (origin.title, origin.session_id, version))
         lines.append("")
-    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary)
+    data = {"filename": arguments.filename, "mode": arguments.mode, "count": len(origins), "events": origins}
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=data)
 
 
 def command_family(digger: Chat_digger, arguments) -> Command_output:
@@ -218,7 +256,8 @@ def command_family(digger: Chat_digger, arguments) -> Command_output:
     lines = ["fork family of %d conversation(s):" % len(sessions), ""]
     for session_id in sessions:
         lines.append("  %s" % session_id)
-    return Command_output(body="\n".join(lines), summary="%d sessions" % len(sessions))
+    data = {"session_id": arguments.session_id, "count": len(sessions), "sessions": sessions}
+    return Command_output(body="\n".join(lines), summary="%d sessions" % len(sessions), data=data)
 
 
 def command_families(digger: Chat_digger, arguments) -> Command_output:
@@ -235,19 +274,20 @@ def command_families(digger: Chat_digger, arguments) -> Command_output:
         lines.append("      %s · %d leaves · %d entries" % (shape, family.leaf_count, family.node_count))
         lines.append("      project : %s" % family.project_path)
         lines.append("")
-    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary)
+    data = {"scope": scope, "count": len(families), "families": families}
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=data)
 
 
 def command_tree(digger: Chat_digger, arguments) -> Command_output:
-    diagram = digger.render_conversation_tree(
+    graph = digger.conversation_graph(
         arguments.session_id,
-        diagram_format=Diagram_format(arguments.format),
         detail=Tree_detail(arguments.detail),
         max_nodes=arguments.max_nodes,
         single=arguments.single,
     )
+    diagram = digger.render_graph(graph, Diagram_format(arguments.dialect))
     summary = "%d nodes, %d edges, %d entries folded" % (diagram.node_count, diagram.edge_count, diagram.collapsed_count)
-    return Command_output(body=diagram.source.rstrip("\n"), summary=summary, notes=list(diagram.notes))
+    return Command_output(body=diagram.source.rstrip("\n"), summary=summary, notes=list(diagram.notes), data=graph)
 
 
 def command_list(digger: Chat_digger, arguments) -> Command_output:
@@ -257,7 +297,8 @@ def command_list(digger: Chat_digger, arguments) -> Command_output:
         "%s  %s  %s" % (format_when(conversation.last_active_at), conversation.session_id, conversation.title)
         for conversation in shown
     ]
-    return Command_output(body="\n".join(lines), summary="%d conversations" % len(shown))
+    data = {"count": len(shown), "conversations": shown}
+    return Command_output(body="\n".join(lines), summary="%d conversations" % len(shown), data=data)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -299,7 +340,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     tree_parser = subparsers.add_parser("tree", help="render a conversation's fork family as a diagram")
     tree_parser.add_argument("session_id")
-    tree_parser.add_argument("--format", choices=[fmt.value for fmt in Diagram_format], default="mermaid")
+    tree_parser.add_argument(
+        "--dialect",
+        choices=[fmt.value for fmt in Diagram_format],
+        default="mermaid",
+        help="text drawing language when --format text (ignored for --format json)",
+    )
     tree_parser.add_argument("--detail", choices=[detail.value for detail in Tree_detail], default="forks_only")
     tree_parser.add_argument("--max-nodes", type=int, default=200)
     tree_parser.add_argument("--single", action="store_true", help="restrict to this one session, not the whole family")
@@ -320,7 +366,7 @@ def build_parser() -> argparse.ArgumentParser:
     list_parser.set_defaults(handler=command_list)
 
     for subparser in subparsers.choices.values():
-        add_output_option(subparser)
+        add_output_options(subparser)
 
     return parser
 
@@ -331,7 +377,7 @@ def main() -> None:
     digger = Chat_digger(index_path=arguments.index_path, corpus_root=arguments.corpus_root)
     try:
         output = arguments.handler(digger, arguments)
-        emit(output, arguments.out)
+        emit(output, arguments.out, arguments.format)
     except (ValueError, FileNotFoundError) as error:
         print("error: %s" % error, file=sys.stderr)
         sys.exit(1)
