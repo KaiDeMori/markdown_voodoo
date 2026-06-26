@@ -21,17 +21,20 @@ Run the tool from anywhere by giving Python the absolute path — the working di
 python "C:/Users/devboese/markdown_voodoo/skills/claude-chat-digger/CCD.py" <command> [options]
 ```
 
-## Always check the index first
+## When to rebuild the index
 
-Search only ever reads the SQLite index, and it goes stale as new conversations accrue. Before searching:
+Search only ever reads the SQLite index. The index will almost always be slightly out of date (the current conversation is never indexed yet) — that is fine and expected. Do **not** run `status` or `index` automatically before every search.
 
-1. Run `status`. If it reports the index is stale, missing, or built by a different format version, run `index` to rebuild it.
-2. `index` is the only command that writes; everything else only reads.
+Only rebuild the index when:
+- The user explicitly asks to refresh or rebuild it, **or**
+- `status` reports the index is **missing** or has a **schema mismatch** (not merely stale).
 
 ```bash
 python "C:/Users/devboese/markdown_voodoo/skills/claude-chat-digger/CCD.py" status
 python "C:/Users/devboese/markdown_voodoo/skills/claude-chat-digger/CCD.py" index
 ```
+
+`index` is the only command that writes; everything else only reads. When asked to search, go ahead and search directly.
 
 ## Command map
 
