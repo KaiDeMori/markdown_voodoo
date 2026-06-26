@@ -5,7 +5,7 @@ CCD is three files. `CCD_api.py` defines the shared shapes, `CCD_engine.py` impl
 ## The three modules
 
 ### `CCD.py` — command-line front end
-Argument parsing (`argparse`) and output formatting only. Each subcommand has a `command_*` handler that calls one `Chat_digger` method and prints the result; `build_parser` wires the subcommands and their options. `force_utf8_output` reconfigures stdout/stderr to UTF-8 so non-ASCII content never crashes a legacy console. No corpus or index logic lives here — to add a command, add a subparser plus a handler that delegates to the engine.
+Argument parsing (`argparse`) and output rendering only. Each subcommand has a `command_*` handler that calls one `Chat_digger` method and returns a `Command_output`: the rendered `body` (the payload), a one-line `summary` for the file receipt, and any `notes`. `emit` then routes that result — the body goes to stdout by default, or to the `--out`/`-o` file (written UTF-8 with `\n` line endings), in which case only a receipt and the notes reach stderr. `add_output_option` gives every subcommand the same `--out` flag, and `build_parser` wires the subcommands and their options. `force_utf8_output` reconfigures stdout/stderr to UTF-8 so non-ASCII content never crashes a legacy console. No corpus or index logic lives here — to add a command, add a subparser (it inherits `--out`) plus a handler that delegates to the engine and returns a `Command_output`.
 
 ### `CCD_api.py` — the contract
 The data shapes and the public method surface, with no behaviour. The dataclasses (`Search_options`, `Search_all_result`, `Chat_entry_content`, `Conversation_tree`, `Graph`, `Diagram`, and the rest) and enums (`Match_mode`, `Search_role`, `Tree_detail`, `Diagram_format`, …) are the real, imported types. The `Chat_digger` class in this file is a documentation stub: every method raises `NotImplementedError` and carries the docstring describing intended behaviour. The working class lives in the engine. Keep this file in step whenever you change a signature or a return shape.
@@ -58,5 +58,6 @@ The on-disk chat format is undocumented and drifts between Claude Code versions,
 - **Index, don't re-scan** — the corpus can be hundreds of MB, so one SQLite build makes every later search instant. Full message bodies stay out of the index and are read back on demand from the source file.
 - **Version-stamped index** — because the chat format drifts, a version mismatch fails loudly and asks for a rebuild rather than returning wrong results.
 - **Deterministic diagrams** — a tree reduces to a neutral `Graph` and renders through one emitter, so output is reproducible and any collapsing is reported, never silent.
+- **File output is a flag, not a redirect** — `--out` writes UTF-8 with `\n` straight from Python, where a host shell's redirection (PowerShell `>`) would impose UTF-16/BOM/CRLF and corrupt diagram source or JSON. Diagnostics stay on stderr so the saved payload is never polluted.
 
 For the finer reasoning behind fingerprints, fork detection, and what is indexed versus dropped, read the module and function docstrings in `CCD_engine.py`.

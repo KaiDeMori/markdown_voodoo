@@ -28,6 +28,14 @@ Run from the directory containing `CCD.py`. Pure Python 3 standard library; no i
 | `families` | `[--workspace W] [--project P] [--limit N]` | Overview of fork families. |
 | `list` | `[--limit N]` | Browse indexed conversations. |
 
+## Output (every command)
+
+| Option | Default | Effect |
+|---|---|---|
+| `--out <file>`, `-o` | — | Write the full result to a UTF-8 file (`\n` line endings) and print a one-line receipt to stderr. Without it, the result goes to stdout. |
+
+Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM and CRLF, which corrupts diagram source and JSON. The receipt and any notes are diagnostics on stderr, so the saved file — or a piped stdout — carries the payload only.
+
 ## Search filters (`search`, `in`)
 
 | Option | Default | Effect |
@@ -53,7 +61,6 @@ Run from the directory containing `CCD.py`. Pure Python 3 standard library; no i
 | `--detail` | `forks_only` | `short`, `forks_only`, `turns`, `full`. |
 | `--max-nodes N` | `200` | Coarsen beyond this; the reduction is noted, not silent. |
 | `--single` | off | This session only, not its whole fork family. |
-| `--out FILE`, `-o` | — | Write diagram source to a file; print a one-line summary. |
 
 ## Other defaults
 

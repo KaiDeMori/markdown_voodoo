@@ -82,3 +82,15 @@ python CCD.py families --workspace ~/projects/todo-app --limit 10
 python CCD.py list
 python CCD.py list --limit 100
 ```
+
+## --out — save a result to a file
+
+Every command takes `--out`/`-o`. The file holds the result; a one-line receipt prints to the console.
+
+```
+python CCD.py search "rate limiter" -o matches.txt
+python CCD.py show <session_id> <uuid> -o message.txt
+python CCD.py tree <session_id> --format graph_json -o tree.json
+```
+
+Use it for large results — keep the bulk on disk instead of in the terminal. Prefer it over `> file`, which on PowerShell writes UTF-16/BOM/CRLF and corrupts JSON or diagram source.
