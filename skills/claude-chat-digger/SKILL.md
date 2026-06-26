@@ -46,7 +46,7 @@ Search is tiered — find the conversation, narrow to the matches, then read one
 Beyond search:
 
 - `origin <filename> [--mode all|created|edited|read] [--tool Write,Edit]` — every event where a file was created, edited, or read.
-- `tree <session_id> [--dialect mermaid|dot]` — render a conversation's fork family as a diagram.
+- `tree <session_id> [--diagram-format mermaid|dot]` — render a conversation's fork family as a diagram.
 - `family <session_id>` — the sessions in one conversation's fork family.
 - `families [--workspace W] [--project P]` — an overview of all fork families.
 - `list [--limit N]` — browse indexed conversations, newest first.

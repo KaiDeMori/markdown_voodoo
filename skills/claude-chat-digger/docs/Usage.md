@@ -35,7 +35,7 @@ Run from the directory containing `CCD.py`. Pure Python 3 standard library; no i
 | `--out <file>`, `-o` | — | Write the full result to a UTF-8 file (`\n` line endings) and print a one-line receipt to stderr. Without it, the result goes to stdout. |
 | `--format text\|json` | `text` | Human-readable text, or the full structured result as JSON. |
 
-`--format json` emits the complete structured result — richer than the text (e.g. snippet offsets, roles, per-entry match counts). For `tree` it is the render-neutral graph (`directed`, `nodes`, `edges`, `notes`); `--dialect` is ignored.
+`--format json` emits the complete structured result — richer than the text (e.g. snippet offsets, roles, per-entry match counts). For `tree` it is the render-neutral graph (`directed`, `nodes`, `edges`, `notes`); `--diagram-format` is ignored.
 
 Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM and CRLF, which corrupts JSON and diagram source. The receipt and any notes are diagnostics on stderr, so the saved file — or a piped stdout — carries the payload only, valid JSON included.
 
@@ -60,7 +60,7 @@ Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM a
 
 | Option | Default | Choices / effect |
 |---|---|---|
-| `--dialect` | `mermaid` | Text drawing language: `mermaid` or `dot`. Used when `--format text`; for JSON output use the universal `--format json`. |
+| `--diagram-format` | `mermaid` | Diagram drawing language: `mermaid` or `dot`. Used when `--format text`; for JSON output use the universal `--format json`. |
 | `--detail` | `forks_only` | `short`, `forks_only`, `turns`, `full`. |
 | `--max-nodes N` | `200` | Coarsen beyond this; the reduction is noted, not silent. |
 | `--single` | off | This session only, not its whole fork family. |

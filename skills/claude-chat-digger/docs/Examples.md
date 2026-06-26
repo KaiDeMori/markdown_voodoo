@@ -64,7 +64,7 @@ python CCD.py origin app.css --tool Write,Edit
 ```
 python CCD.py tree <session_id>
 python CCD.py tree <session_id> --detail short
-python CCD.py tree <session_id> --dialect dot -o conversation.dot
+python CCD.py tree <session_id> --diagram-format dot -o conversation.dot
 python CCD.py tree <session_id> --format json -o tree.json     # the graph as JSON
 python CCD.py tree <session_id> --single --detail full
 ```

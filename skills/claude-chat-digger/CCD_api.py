@@ -46,7 +46,7 @@ class Diagram_format(Enum):
     """A text drawing language a conversation graph is rendered to.
 
     JSON is not a member: a graph serialised as JSON is the universal `--format json`
-    output (the render-neutral `Graph` itself), not a diagram dialect.
+    output (the render-neutral `Graph` itself), not a diagram format.
     """
 
     mermaid = "mermaid"
@@ -435,7 +435,7 @@ class Chat_digger:
         """A fork family reduced to a render-neutral graph — the structured tree result.
 
         The same reduction `render_conversation_tree` draws, returned as data rather
-        than a diagram so it can be serialised as JSON or rendered to any text dialect.
+        than a diagram so it can be serialised as JSON or rendered in any diagram format.
         Auto-spans the family; `single=True` restricts to one file.
         """
         raise NotImplementedError
@@ -451,7 +451,7 @@ class Chat_digger:
         """Render the fork family as one diagram, splicing forks at their fork points.
 
         A convenience over `conversation_graph` + `render_graph`: builds the neutral
-        graph then draws it in one text dialect. Auto-spans the family (`single=True`
+        graph then draws it in one diagram format. Auto-spans the family (`single=True`
         restricts to one file). Deterministic end to end; beyond `max_nodes` the tree
         is coarsened and the reduction is noted.
         """

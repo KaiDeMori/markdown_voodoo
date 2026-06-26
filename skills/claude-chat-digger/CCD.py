@@ -285,7 +285,7 @@ def command_tree(digger: Chat_digger, arguments) -> Command_output:
         max_nodes=arguments.max_nodes,
         single=arguments.single,
     )
-    diagram = digger.render_graph(graph, Diagram_format(arguments.dialect))
+    diagram = digger.render_graph(graph, Diagram_format(arguments.diagram_format))
     summary = "%d nodes, %d edges, %d entries folded" % (diagram.node_count, diagram.edge_count, diagram.collapsed_count)
     return Command_output(body=diagram.source.rstrip("\n"), summary=summary, notes=list(diagram.notes), data=graph)
 
@@ -341,10 +341,10 @@ def build_parser() -> argparse.ArgumentParser:
     tree_parser = subparsers.add_parser("tree", help="render a conversation's fork family as a diagram")
     tree_parser.add_argument("session_id")
     tree_parser.add_argument(
-        "--dialect",
+        "--diagram-format",
         choices=[fmt.value for fmt in Diagram_format],
         default="mermaid",
-        help="text drawing language when --format text (ignored for --format json)",
+        help="diagram drawing language when --format text (ignored for --format json)",
     )
     tree_parser.add_argument("--detail", choices=[detail.value for detail in Tree_detail], default="forks_only")
     tree_parser.add_argument("--max-nodes", type=int, default=200)
