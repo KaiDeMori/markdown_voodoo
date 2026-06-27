@@ -387,6 +387,7 @@ def build_top_parser() -> argparse.ArgumentParser:
         epilog_lines.append("  %-*s  %s" % (name_width, name, positionals))
     epilog_lines.append("")
     epilog_lines.append("run  CCD <command> <args> --help  for a command's options")
+    epilog_lines.append('  (the args may be a throwaway, e.g.  CCD search "" --help)')
 
     parser = argparse.ArgumentParser(
         prog="CCD",

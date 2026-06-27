@@ -8,6 +8,8 @@ Run from the directory containing `CCD.py`. Pure Python 3 standard library; no i
 
 **Argument order is fixed.** A command's required arguments are positional: they come first, in the order shown, immediately after the command and before any options. A value may begin with a dash — searching for `-X`, say — and is taken literally, so no `--` escape is needed. Options then follow, in any order among themselves.
 
+A command's own `--help` likewise comes after its arguments, so for a command that takes a required argument, reach it with a throwaway first argument: `CCD search "" --help`. (`CCD -h` always shows the global help and the full command list.)
+
 ## Global options (before the command)
 
 | Option | Default |
