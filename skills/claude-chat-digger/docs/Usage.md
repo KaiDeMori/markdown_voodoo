@@ -6,6 +6,8 @@ python CCD.py [global-options] <command> [arguments] [options]
 
 Run from the directory containing `CCD.py`. Pure Python 3 standard library; no install. Build the index once with `index` before any search.
 
+**Argument order is fixed.** A command's required arguments are positional: they come first, in the order shown, immediately after the command and before any options. A value may begin with a dash — searching for `-X`, say — and is taken literally, so no `--` escape is needed. Options then follow, in any order among themselves.
+
 ## Global options (before the command)
 
 | Option | Default |

@@ -56,6 +56,8 @@ Beyond search:
 
 Common filters on `search` and `in`: `--project`, `--workspace` (a folder and everything under it), `--date-from` / `--date-to`, `--role user|assistant|both`, `--thinking` (also search thinking blocks), `--mode substring|all_terms|wildcard|phrase`, and `--all` (every term in the same message).
 
+A command's required arguments are positional: give them first, in the order shown, before any options. A search term may start with a dash (e.g. `search "-X"`) and is taken literally — no `--` escape needed.
+
 ## Output: file and format
 
 Every command takes two universal output options:

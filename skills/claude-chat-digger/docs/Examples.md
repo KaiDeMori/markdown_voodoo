@@ -13,6 +13,7 @@ python CCD.py status           # show counts and whether a rebuild is due
 
 ```
 python CCD.py search "rate limiter"
+python CCD.py search "-X"                                 # a term may start with a dash; it is taken literally
 python CCD.py search "webhook retry" --limit 5
 python CCD.py search "auth token refresh" --all          # all three words in one message
 python CCD.py search "migrat*" --mode wildcard

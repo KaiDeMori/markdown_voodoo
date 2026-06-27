@@ -1,12 +1,16 @@
 """CCD command line — index and search past Claude Code conversations.
 
 Usage:
-    python CCD.py index [--rebuild]
+    python CCD.py index
     python CCD.py status
     python CCD.py search "<query>" [options]
     python CCD.py in <session_id> "<query>" [--context N] [options]
     python CCD.py show <session_id> <uuid> [--block N] [--thinking]
     python CCD.py list [--limit N]
+
+A command's required arguments are positional: they come first, in the order shown,
+immediately after the command and before any options. A value may begin with a dash
+(searching for "-X", say) and is taken literally, so no "--" escape is needed.
 
 Two output axes apply to every command: --out/-o FILE writes the result to a UTF-8
 file and prints a one-line receipt; --format text|json chooses human-readable text
@@ -20,6 +24,7 @@ import json
 import sys
 from dataclasses import asdict, dataclass, field, is_dataclass
 from enum import Enum
+from typing import Callable, Optional
 
 from CCD_api import (
     Context_unit,
@@ -301,79 +306,136 @@ def command_list(digger: Chat_digger, arguments) -> Command_output:
     return Command_output(body="\n".join(lines), summary="%d conversations" % len(shown), data=data)
 
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="CCD", description="Search past Claude Code conversations.")
-    parser.add_argument("--index-path", default=None)
-    parser.add_argument("--corpus-root", default=None)
-    subparsers = parser.add_subparsers(dest="command", required=True)
+def add_in_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--context", type=int, default=2)
+    add_search_filters(parser)
 
-    index_parser = subparsers.add_parser("index", help="rebuild the search index from scratch")
-    index_parser.set_defaults(handler=command_index)
 
-    status_parser = subparsers.add_parser("status", help="show index status")
-    status_parser.set_defaults(handler=command_status)
+def add_show_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--block", type=int, default=None)
+    parser.add_argument("--thinking", action="store_true")
 
-    search_parser = subparsers.add_parser("search", help="search all conversations")
-    search_parser.add_argument("query")
-    add_search_filters(search_parser)
-    search_parser.set_defaults(handler=command_search)
 
-    in_parser = subparsers.add_parser("in", help="search within one conversation")
-    in_parser.add_argument("session_id")
-    in_parser.add_argument("query")
-    in_parser.add_argument("--context", type=int, default=2)
-    add_search_filters(in_parser)
-    in_parser.set_defaults(handler=command_in)
+def add_origin_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--mode", choices=["all", "created", "edited", "read"], default="all")
+    parser.add_argument("--tool", default=None, help="comma-separated tools, e.g. Write,Edit")
 
-    show_parser = subparsers.add_parser("show", help="show one chat entry in full")
-    show_parser.add_argument("session_id")
-    show_parser.add_argument("uuid")
-    show_parser.add_argument("--block", type=int, default=None)
-    show_parser.add_argument("--thinking", action="store_true")
-    show_parser.set_defaults(handler=command_show)
 
-    origin_parser = subparsers.add_parser("origin", help="find where a file was created/edited/read")
-    origin_parser.add_argument("filename")
-    origin_parser.add_argument("--mode", choices=["all", "created", "edited", "read"], default="all")
-    origin_parser.add_argument("--tool", default=None, help="comma-separated tools, e.g. Write,Edit")
-    origin_parser.set_defaults(handler=command_origin)
-
-    tree_parser = subparsers.add_parser("tree", help="render a conversation's fork family as a diagram")
-    tree_parser.add_argument("session_id")
-    tree_parser.add_argument(
+def add_tree_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
         "--diagram-format",
         choices=[fmt.value for fmt in Diagram_format],
         default="mermaid",
         help="diagram drawing language when --format text (ignored for --format json)",
     )
-    tree_parser.add_argument("--detail", choices=[detail.value for detail in Tree_detail], default="forks_only")
-    tree_parser.add_argument("--max-nodes", type=int, default=200)
-    tree_parser.add_argument("--single", action="store_true", help="restrict to this one session, not the whole family")
-    tree_parser.set_defaults(handler=command_tree)
+    parser.add_argument("--detail", choices=[detail.value for detail in Tree_detail], default="forks_only")
+    parser.add_argument("--max-nodes", type=int, default=200)
+    parser.add_argument("--single", action="store_true", help="restrict to this one session, not the whole family")
 
-    family_parser = subparsers.add_parser("family", help="list the sessions in a conversation's fork family")
-    family_parser.add_argument("session_id")
-    family_parser.set_defaults(handler=command_family)
 
-    families_parser = subparsers.add_parser("families", help="overview of all fork families in a workspace")
-    families_parser.add_argument("--workspace", default=None, help="restrict to a workspace folder and everything under it")
-    families_parser.add_argument("--project", default=None, help="restrict to one exact project path")
-    families_parser.add_argument("--limit", type=int, default=40)
-    families_parser.set_defaults(handler=command_families)
+def add_families_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--workspace", default=None, help="restrict to a workspace folder and everything under it")
+    parser.add_argument("--project", default=None, help="restrict to one exact project path")
+    parser.add_argument("--limit", type=int, default=40)
 
-    list_parser = subparsers.add_parser("list", help="list indexed conversations")
-    list_parser.add_argument("--limit", type=int, default=40)
-    list_parser.set_defaults(handler=command_list)
 
-    for subparser in subparsers.choices.values():
-        add_output_options(subparser)
+def add_list_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--limit", type=int, default=40)
 
+
+@dataclass
+class Command_spec:
+    """The fixed signature of one subcommand: its required positionals in the order they must be
+    given, an optional hook that registers the command's flags, the handler that runs it, and a
+    one-line summary. The required positionals are peeled off the token stream literally before any
+    option parsing, so a value that starts with a dash is taken as-is rather than read as a flag."""
+
+    positionals: list[str]
+    add_options: Optional[Callable[[argparse.ArgumentParser], None]]
+    handler: Callable[..., Command_output]
+    summary: str
+
+
+command_specs = {
+    "index": Command_spec([], None, command_index, "rebuild the search index from scratch"),
+    "status": Command_spec([], None, command_status, "show index status"),
+    "search": Command_spec(["query"], add_search_filters, command_search, "search all conversations"),
+    "in": Command_spec(["session_id", "query"], add_in_options, command_in, "search within one conversation"),
+    "show": Command_spec(["session_id", "uuid"], add_show_options, command_show, "show one chat entry in full"),
+    "origin": Command_spec(["filename"], add_origin_options, command_origin, "find where a file was created/edited/read"),
+    "tree": Command_spec(["session_id"], add_tree_options, command_tree, "render a conversation's fork family as a diagram"),
+    "family": Command_spec(["session_id"], None, command_family, "list the sessions in a conversation's fork family"),
+    "families": Command_spec([], add_families_options, command_families, "overview of all fork families in a workspace"),
+    "list": Command_spec([], add_list_options, command_list, "list indexed conversations"),
+}
+
+
+def command_signature(command: str, spec: Command_spec) -> str:
+    """The one true call form of a command, positionals first in their mandatory order."""
+    parts = ["CCD", command] + ["<%s>" % name for name in spec.positionals] + ["[options]"]
+    return " ".join(parts)
+
+
+def build_top_parser() -> argparse.ArgumentParser:
+    """The pre-parser: it reads the global options and the command name, then sweeps everything that
+    follows into `rest` verbatim. Holding the command's own arguments back from option parsing here is
+    what lets a dash-leading positional such as a "-X" search term survive intact."""
+    epilog_lines = ["commands (arguments must appear in the order shown):"]
+    name_width = max(len(name) for name in command_specs)
+    for name, spec in command_specs.items():
+        positionals = " ".join("<%s>" % positional for positional in spec.positionals)
+        epilog_lines.append("  %-*s  %s" % (name_width, name, positionals))
+    epilog_lines.append("")
+    epilog_lines.append("run  CCD <command> <args> --help  for a command's options")
+
+    parser = argparse.ArgumentParser(
+        prog="CCD",
+        description="Search past Claude Code conversations.",
+        epilog="\n".join(epilog_lines),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--index-path", default=None)
+    parser.add_argument("--corpus-root", default=None)
+    parser.add_argument("command", metavar="command", choices=list(command_specs), help="one of: %s" % ", ".join(command_specs))
+    parser.add_argument("rest", nargs=argparse.REMAINDER, help="the command's arguments, in the fixed order shown below")
     return parser
+
+
+def build_option_parser(command: str, spec: Command_spec) -> argparse.ArgumentParser:
+    """A command's option parser. It carries no positionals — those are peeled off beforehand — so it
+    only ever sees the trailing flags. Its usage line still advertises the full fixed signature."""
+    parser = argparse.ArgumentParser(prog="CCD %s" % command, usage=command_signature(command, spec), description=spec.summary)
+    if spec.add_options is not None:
+        spec.add_options(parser)
+    add_output_options(parser)
+    return parser
+
+
+def parse_command(argv: list[str]) -> argparse.Namespace:
+    """Resolve a full argument list into one namespace ready for its handler.
+
+    The required positionals are taken from the front of the command's arguments by position alone and
+    set on the namespace untouched; only the tokens after them are parsed for options. A required
+    positional that begins with a dash is therefore kept as a literal value, never mistaken for a flag.
+    """
+    arguments = build_top_parser().parse_args(argv)
+    spec = command_specs[arguments.command]
+    option_parser = build_option_parser(arguments.command, spec)
+
+    required = spec.positionals
+    given = arguments.rest
+    if len(given) < len(required):
+        option_parser.error("missing required argument: %s" % ", ".join(required[len(given):]))
+    for name, value in zip(required, given):
+        setattr(arguments, name, value)
+    option_parser.parse_args(given[len(required):], namespace=arguments)
+    arguments.handler = spec.handler
+    return arguments
 
 
 def main() -> None:
     force_utf8_output()
-    arguments = build_parser().parse_args()
+    arguments = parse_command(sys.argv[1:])
     digger = Chat_digger(index_path=arguments.index_path, corpus_root=arguments.corpus_root)
     try:
         output = arguments.handler(digger, arguments)
