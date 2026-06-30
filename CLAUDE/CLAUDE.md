@@ -25,3 +25,6 @@ Unless the user explicitly says otherwise: ignore git.
 
 ## Avoid `AskUserQuestion`
 The UI is quite buggy and the question dialog completely covers the chat, so it is impossible for the user to read anything in chat while the AskUserQuestion tool is active. It is prefered to just ask the questions in chat.
+
+## Workspace agents
+Every claim that comes from a workspace agent must be checked, since they often over-simplify and miss crucial details.
