@@ -1,0 +1,13 @@
+# Netscape HTTP Cookie File
+#
+# This is a placeholder. To enable downloads, copy this file to `cookies.txt`
+# (same folder) and replace its contents with a real cookie export from a
+# logged-in YouTube session. `cookies.txt` is gitignored and must never be
+# committed — it is a live credential for that account.
+#
+# How to export cookies is documented on the yt-dlp pages (search:
+# "yt-dlp how do I pass cookies"). In short: log a throwaway/alt account into
+# YouTube in a Firefox PRIVATE window, export with a "Get cookies.txt LOCALLY"
+# extension, save as cookies.txt here, then close the window WITHOUT logging out.
+#
+# Lines below this point would be the actual cookie jar (one cookie per line).

@@ -1,0 +1,13 @@
+# --- Secrets: live YouTube session cookies. NEVER commit. ---
+cookies/*
+!cookies/cookies.txt.example
+
+# --- Toolchain & deps: rebuilt from docs/Setup.md, never committed. ---
+.venv/
+tools/bgutil-provider/
+__pycache__/
+
+# --- Defensive: outputs belong in the user's workspace (WS/YT-Transcripts), ---
+#     never here. This only catches an accidental local run from the skill dir.
+#     The worked example lives under docs/example/ instead.
+YT-Transcripts/
