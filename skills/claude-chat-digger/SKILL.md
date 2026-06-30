@@ -12,13 +12,13 @@ CCD indexes every past Claude Code conversation — the JSON-Lines logs under `~
 The code and its reference docs live at one single home:
 
 ```
-C:/Users/devboese/markdown_voodoo/skills/claude-chat-digger/
+~/markdown_voodoo/skills/claude-chat-digger/
 ```
 
-Run the tool from anywhere by giving Python the absolute path — the working directory does not matter, and the default `--corpus-root` (`~/.claude/projects`) and `--index-path` (`~/.claude/CCD_index.db`) are already correct, so no paths need to be passed:
+Run the tool from anywhere by giving Python the full path to the script — the working directory does not matter, and the default `--corpus-root` (`~/.claude/projects`) and `--index-path` (`~/.claude/CCD_index.db`) are already correct, so no paths need to be passed:
 
 ```bash
-python "C:/Users/devboese/markdown_voodoo/skills/claude-chat-digger/CCD.py" <command> [options]
+python ~/markdown_voodoo/skills/claude-chat-digger/CCD.py <command> [options]
 ```
 
 ## When to rebuild the index
@@ -30,8 +30,8 @@ Only rebuild the index when:
 - `status` reports the index is **missing** or has a **schema mismatch** (not merely stale).
 
 ```bash
-python "C:/Users/devboese/markdown_voodoo/skills/claude-chat-digger/CCD.py" status
-python "C:/Users/devboese/markdown_voodoo/skills/claude-chat-digger/CCD.py" index
+python ~/markdown_voodoo/skills/claude-chat-digger/CCD.py status
+python ~/markdown_voodoo/skills/claude-chat-digger/CCD.py index
 ```
 
 `index` is the only command that writes; everything else only reads. When asked to search, go ahead and search directly.
