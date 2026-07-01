@@ -152,3 +152,5 @@ rm "<out-dir>/meta/<id>.info.json"
 **Which client to try is a moving target — never hardcode it.** If an obvious client doesn't help, check the current per-client situation on the yt-dlp wiki (PO-Token-Guide / Extractors, linked in Setup.md) and pass what it recommends via `--client`.
 
 **A track exists but its format won't download** — that's the token-gated case; build the bgutil server (Setup.md, escalation B), then retry.
+
+**Benign warnings — don't mistake these for failure.** Messages about missing *video formats* (`Requested format is not available`, `Only images are available`, `n challenge solving failed` / the EJS "remote components" hint) are about media, which this tool never fetches. If a subtitle track was still listed, downloaded, and cleaned, the pull succeeded — ignore them.
