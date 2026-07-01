@@ -1,7 +1,8 @@
 # Python dependencies for the ytx package. Install into a project-local venv:
 #   python -m venv .venv
 #   .venv/Scripts/python -m pip install -r requirements.txt
-# See docs/Setup.md for the full toolchain (deno + bgutil server + cookies).
+# See docs/Setup.md for the full toolchain: deno is the core JS runtime; the
+# bgutil PO-token server and cookies are optional escalation.
 
 yt-dlp
 bgutil-ytdlp-pot-provider

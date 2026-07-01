@@ -6,7 +6,7 @@ one polite request each. Raw files are the download-once source of truth and
 are never edited - cleaning happens later on copies.
 
     python -m ytx.download_subs <id-or-url> [--langs en-orig,de] [--formats json3,vtt] \
-        [--cookies path/to/cookies.txt]
+        [--client web,mweb,tv] [--cookies FILE] [--use-cookies]
 """
 from __future__ import annotations
 
@@ -48,7 +48,8 @@ def find_entry(info: dict, lang: str, fmt: str, kind: str | None = None):
     return None, None
 
 
-def download_pairs(vid, pairs, cookies_file=None, force=False) -> list:
+def download_pairs(vid, pairs, cookies_file=None, force=False,
+                   player_clients=config.DEFAULT_PLAYER_CLIENTS) -> list:
     """Download explicit (lang, kind|None, fmt) tuples into raw/.
 
     Already-present raw files are reused (download-once) unless force=True.
@@ -56,7 +57,7 @@ def download_pairs(vid, pairs, cookies_file=None, force=False) -> list:
     """
     info = load_info(vid)
     config.RAW_DIR.mkdir(parents=True, exist_ok=True)
-    opts = config.base_ydl_opts(cookies_file=cookies_file)
+    opts = config.base_ydl_opts(cookies_file=cookies_file, player_clients=player_clients)
     saved, hits = [], 0
     with yt_dlp.YoutubeDL(opts) as ydl:  # carries the cookie jar for urlopen
         for lang, kind, fmt in pairs:
@@ -79,9 +80,11 @@ def download_pairs(vid, pairs, cookies_file=None, force=False) -> list:
     return saved
 
 
-def download(vid, langs, formats, cookies_file=None, force=False) -> list:
+def download(vid, langs, formats, cookies_file=None, force=False,
+             player_clients=config.DEFAULT_PLAYER_CLIENTS) -> list:
     pairs = [(lang, None, fmt) for lang in langs for fmt in formats]
-    return download_pairs(vid, pairs, cookies_file=cookies_file, force=force)
+    return download_pairs(vid, pairs, cookies_file=cookies_file, force=force,
+                          player_clients=player_clients)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -91,7 +94,18 @@ def main(argv: list[str] | None = None) -> int:
 
     langs_arg = _take_opt(argv, "--langs")
     formats_arg = _take_opt(argv, "--formats")
-    cookies_file = _take_opt(argv, "--cookies")
+    use_cookies_flag = "--use-cookies" in argv
+    if use_cookies_flag:
+        argv.remove("--use-cookies")
+    cookies_file = config.resolve_cookies(
+        _take_opt(argv, "--cookies"),
+        use_cookies=True if use_cookies_flag else None)
+    # --client web,mweb,tv  (comma-separated; "default"/omitted = let yt-dlp pick)
+    client_arg = _take_opt(argv, "--client")
+    if not client_arg or client_arg.lower() == "default":
+        player_clients = config.DEFAULT_PLAYER_CLIENTS
+    else:
+        player_clients = tuple(c.strip() for c in client_arg.split(",") if c.strip())
     langs = tuple(langs_arg.split(",")) if langs_arg else DEFAULT_LANGS
     formats = tuple(formats_arg.split(",")) if formats_arg else DEFAULT_FORMATS
 
@@ -101,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     for target in argv:
         vid = video_id(target)
         print(f"\n=== downloading subs for {vid} : {list(langs)} x {list(formats)} ===")
-        download(vid, langs, formats, cookies_file=cookies_file)
+        download(vid, langs, formats, cookies_file=cookies_file, player_clients=player_clients)
     return 0
 
 

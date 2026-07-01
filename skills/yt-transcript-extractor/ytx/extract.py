@@ -13,7 +13,8 @@ Track-selection rules (best first):
 
     python -m ytx.extract <url> [--prefer en,de] [--also-translation]
                                 [--flow sentences|paragraphs|wrapped|oneline|lines]
-                                [--cookies FILE] [--refresh] [--verbose]
+                                [--client web,mweb,tv] [--cookies FILE] [--use-cookies]
+                                [--refresh] [--verbose]
 """
 from __future__ import annotations
 
@@ -92,7 +93,7 @@ def choose_tracks(info, prefer_langs=("en", "de"), also_translation=False):
     return chosen
 
 
-def _load_or_fetch(url, cookies, verbose, refresh):
+def _load_or_fetch(url, cookies, verbose, refresh, player_clients=config.DEFAULT_PLAYER_CLIENTS):
     """Stage 1, reusing the cached listing when present (no network re-extraction)."""
     vid = video_id(url)
     cached = config.META_DIR / f"{vid}.info.json"
@@ -101,7 +102,8 @@ def _load_or_fetch(url, cookies, verbose, refresh):
         info = json.loads(cached.read_text(encoding="utf-8"))
         return info.get("id") or vid, info
     print(f"[1/3] listing tracks for {vid} (network) ...", file=sys.stderr)
-    vid, info, _summary = fetch_and_cache(url, verbose=verbose, cookies_file=cookies)
+    vid, info, _summary = fetch_and_cache(
+        url, verbose=verbose, cookies_file=cookies, player_clients=player_clients)
     return vid, info
 
 
@@ -121,14 +123,19 @@ def _write_transcript_md(info, vid, lang, kind, fmt, lines, flow):
 
 
 def extract(url, prefer_langs=("en", "de"), also_translation=False,
-            cookies_file=None, verbose=False, refresh=False, flow=None):
+            cookies_file=None, verbose=False, refresh=False, flow=None,
+            player_clients=config.DEFAULT_PLAYER_CLIENTS, use_cookies=None):
     flow = flow or config.DEFAULT_FLOW
-    cookies = config.resolve_cookies(cookies_file)
-    print(f"[cookies] {cookies or 'NONE - YouTube will likely return LOGIN_REQUIRED'}",
-          file=sys.stderr)
+    cookies = config.resolve_cookies(cookies_file, use_cookies=use_cookies)
+    if cookies:
+        print(f"[cookies] using {cookies}", file=sys.stderr)
+    else:
+        print("[cookies] none (default). If this video returns LOGIN_REQUIRED / "
+              "'not a bot' / is age-restricted, enable cookies with --use-cookies "
+              "(or settings.local.json) and a throwaway account.", file=sys.stderr)
 
     # Stage 1 - list (network, or cache)
-    vid, info = _load_or_fetch(url, cookies, verbose, refresh)
+    vid, info = _load_or_fetch(url, cookies, verbose, refresh, player_clients)
     print(f"      title: {info.get('title')!r}  channel: "
           f"{(info.get('channel') or info.get('uploader'))!r}", file=sys.stderr)
 
@@ -144,7 +151,8 @@ def extract(url, prefer_langs=("en", "de"), also_translation=False,
     print(f"[2/3] downloading {len(picks)} track(s) -> {config.RAW_DIR} ...", file=sys.stderr)
     config.CLEAN_DIR.mkdir(parents=True, exist_ok=True)
     download_subs.download_pairs(
-        vid, [(p["lang"], p["kind"], p["fmt"]) for p in picks], cookies_file=cookies)
+        vid, [(p["lang"], p["kind"], p["fmt"]) for p in picks],
+        cookies_file=cookies, player_clients=player_clients)
 
     # Stage 3 - clean (local) -> nicely-named .md deliverables
     print(f"[3/3] cleaning -> {config.OUTPUT_BASE} ...", file=sys.stderr)
@@ -186,9 +194,18 @@ def main(argv: list[str] | None = None) -> int:
     refresh = "--refresh" in argv          # force a fresh listing (ignore cache)
     if refresh:
         argv.remove("--refresh")
+    use_cookies_flag = "--use-cookies" in argv   # opt in to cookies for this run
+    if use_cookies_flag:
+        argv.remove("--use-cookies")
     prefer = _take_opt(argv, "--prefer")
     cookies_file = _take_opt(argv, "--cookies")
     flow = _take_opt(argv, "--flow")       # sentences|paragraphs|wrapped|oneline|lines
+    # --client web,mweb,tv  (comma-separated; "default"/omitted = let yt-dlp pick)
+    client_arg = _take_opt(argv, "--client")
+    if not client_arg or client_arg.lower() == "default":
+        player_clients = config.DEFAULT_PLAYER_CLIENTS
+    else:
+        player_clients = tuple(c.strip() for c in client_arg.split(",") if c.strip())
     prefer_langs = tuple(prefer.split(",")) if prefer else ("en", "de")
 
     if not argv:
@@ -196,7 +213,9 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     for url in argv:
         extract(url, prefer_langs=prefer_langs, also_translation=also_translation,
-                cookies_file=cookies_file, verbose=verbose, refresh=refresh, flow=flow)
+                cookies_file=cookies_file, verbose=verbose, refresh=refresh, flow=flow,
+                player_clients=player_clients,
+                use_cookies=True if use_cookies_flag else None)
     return 0
 
 

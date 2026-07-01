@@ -2,6 +2,9 @@
 cookies/*
 !cookies/cookies.txt.example
 
+# --- Local preferences (your machine only; never committed). ---
+settings.local.json
+
 # --- Toolchain & deps: rebuilt from docs/Setup.md, never committed. ---
 .venv/
 tools/bgutil-provider/

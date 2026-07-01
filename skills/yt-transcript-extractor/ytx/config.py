@@ -1,23 +1,33 @@
-"""Central configuration + the yt-dlp options that carry everything we learned.
+"""Central configuration + the yt-dlp options every stage shares.
 
-WHY THIS FILE EXISTS
---------------------
-Modern YouTube refuses anonymous metadata requests with
-"Sign in to confirm you're not a bot". The cookie-free fix is a
-Proof-of-Origin (PO) token, which needs:
+HOW YOUTUBE ACCESS WORKS HERE
+-----------------------------
+A modest transcript pull from a machine that normally browses YouTube usually
+needs nothing special: yt-dlp already selects clients that avoid a
+Proof-of-Origin (PO) token, and captions are public. The blocks people actually
+hit come from request rate and IP reputation - downloading too fast or too
+parallel, or from a datacenter/VPN address - not from a missing token or cookie.
 
-  * a JS runtime  -> deno (installed user-scope at ~/.deno/bin/deno.exe)
-  * a token provider -> the `bgutil-ytdlp-pot-provider` plugin (pip, in the
-    venv) talking to its locally-built server in "script mode"
-    (tools/bgutil-provider/server, built with `npm install && npx tsc`).
+When a specific video is walled anyway, escalate in order, cheapest first:
+  1. Let yt-dlp pick the client (the default). If a playable video exposes no
+     tracks, try a specific `--client`; which client is current is a moving
+     target, so consult the yt-dlp wiki rather than any list baked in here.
+  2. A PO token, minted by the optional bgutil provider server, helps with
+     token-gated formats/subtitles on web-family clients. It does NOT lift a
+     "Sign in to confirm you're not a bot" / LOGIN_REQUIRED wall.
+  3. Cookies from a throwaway account lift that wall and unlock age-restricted
+     videos, at some risk to the account - so they are off by default and opt-in
+     (see resolve_cookies).
 
-`base_ydl_opts()` wires all of that into a single options dict so callers
-never have to remember the incantation again. No cookies, no account.
+`base_ydl_opts()` wires the shared options (polite throttling, the JS runtime,
+and the PO provider when it has been built). YouTube's enforcement changes
+constantly and the specifics live upstream - see docs/Setup.md for the links.
 
 Run `python -m ytx.config` for a no-network "doctor" report.
 """
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import sys
@@ -37,7 +47,7 @@ def use_utf8_io() -> None:
 
 # --- project layout -------------------------------------------------------
 # PROJECT_DIR is the skill's own home (code + toolchain + cookies). Output NEVER
-# lands here — that is what the output base below is for.
+# lands here - that is what the output base below is for.
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 TOOLS_DIR = PROJECT_DIR / "tools"
 
@@ -65,7 +75,7 @@ def configure(out_dir: str | Path | None) -> Path:
 
     A falsy out_dir keeps the default (env or cwd). Every call site reads
     config.RAW_DIR / CLEAN_DIR / META_DIR fresh at call time, so reassigning the
-    module globals here is enough — nothing has to be threaded through.
+    module globals here is enough - nothing has to be threaded through.
     """
     global OUTPUT_BASE, CLEAN_DIR, RAW_DIR, META_DIR
     if out_dir:
@@ -75,24 +85,64 @@ def configure(out_dir: str | Path | None) -> Path:
         META_DIR = OUTPUT_BASE / "meta"
     return OUTPUT_BASE
 
-# --- toolchain we set up --------------------------------------------------
-# bgutil PO-token provider, built locally in script mode.
+# --- optional PO-token toolchain ------------------------------------------
+# bgutil PO-token provider, built locally in script mode. Optional: only needed
+# when you escalate to a web-family client that requires a token (see the module
+# docstring). An absent build just means base_ydl_opts does not advertise it.
 BGUTIL_SERVER_HOME = TOOLS_DIR / "bgutil-provider" / "server"
+
+
+def bgutil_built() -> bool:
+    """True when the optional PO-token server has been built locally."""
+    return (BGUTIL_SERVER_HOME / "build" / "generate_once.js").is_file()
+
+
 # deno JS runtime, installed via the official user-scope installer.
 DENO_EXE = Path(os.path.expanduser("~")) / ".deno" / "bin" / "deno.exe"
 
-# Default alt-account cookies (YouTube returns LOGIN_REQUIRED without them).
-# Used automatically if present and no explicit --cookies is given. Lives inside
-# the project but is gitignored (never committed). If it expires, re-export from
-# a logged-in private window (see docs/Setup.md).
+# --- cookies (opt-in) -----------------------------------------------------
+# Cookies from a throwaway account, used only when cookie use is enabled (the
+# settings file or --use-cookies) AND this file exists. They lift a
+# LOGIN_REQUIRED / "not a bot" wall and unlock age-restricted videos, at some
+# risk to that account, so cookie use is off by default. Lives inside the
+# project but is gitignored (never committed). Re-export when it expires (see
+# docs/Setup.md).
 DEFAULT_COOKIES = PROJECT_DIR / "cookies" / "cookies.txt"
 
+# Local preferences (gitignored). Copy settings.local.json.example to
+# settings.local.json to change them; an absent file means defaults.
+SETTINGS_FILE = PROJECT_DIR / "settings.local.json"
 
-def resolve_cookies(explicit: str | None = None) -> str | None:
-    """Pick the cookies file to use: explicit > default-if-present > None."""
+
+def load_settings() -> dict:
+    """Read the local settings file; return {} if it is missing or unreadable."""
+    try:
+        return json.loads(SETTINGS_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+# Whether cookies may be used automatically. Off by default: a cookie YouTube
+# decides it dislikes can get the underlying account throttled or banned, so
+# using one is a deliberate opt-in, never a silent default.
+USE_COOKIES = bool(load_settings().get("use_cookies", False))
+
+
+def resolve_cookies(explicit: str | None = None, use_cookies: bool | None = None) -> str | None:
+    """Pick the cookies file to use, honoring the opt-in.
+
+    explicit    - an explicit --cookies path always wins.
+    use_cookies - True/False forces the choice for this run; None falls back to
+                  the USE_COOKIES setting.
+
+    Returns the default cookies file only when cookies are enabled AND it exists.
+    """
     if explicit:
         return explicit
-    return str(DEFAULT_COOKIES) if DEFAULT_COOKIES.is_file() else None
+    enabled = USE_COOKIES if use_cookies is None else use_cookies
+    if enabled and DEFAULT_COOKIES.is_file():
+        return str(DEFAULT_COOKIES)
+    return None
 
 # --- politeness / anti-annoyance defaults ---------------------------------
 SLEEP_REQUESTS = 2.0   # seconds between HTTP requests inside one yt-dlp run
@@ -104,11 +154,12 @@ RETRIES = 3
 DEFAULT_FLOW = "sentences"
 
 
-# Default client set is chosen by yt-dlp (currently android_vr/web_safari) and
-# returns LOGIN_REQUIRED without engaging the PO token. The WebPO token from
-# bgutil is only requested for "web"-family clients, so we force those to make
-# the cookie-free bypass actually fire.
-DEFAULT_PLAYER_CLIENTS = ("web", "mweb", "tv")
+# Let yt-dlp choose the player client. Its maintainers track YouTube's changes
+# and pick a working, least-gated client better than any fixed list could - a
+# hardcoded set here would be stale within days. Override per run with `--client`
+# only when a playable video exposes no tracks, and consult the yt-dlp wiki for
+# which client is currently best.
+DEFAULT_PLAYER_CLIENTS = None
 
 
 def base_ydl_opts(
@@ -117,20 +168,24 @@ def base_ydl_opts(
     cookies_from_browser: str | None = None,
     cookies_file: str | None = None,
 ) -> dict:
-    """Common yt-dlp options: cookie-free PO-token bypass + polite throttling.
+    """Shared yt-dlp options: polite throttling, JS runtime, PO provider if built.
 
-    Pin deno by absolute path (no PATH juggling). The bgutil node fallback
-    finds `node` on PATH on its own. server_home is passed absolute, which is
-    safe via the Python API (the ':' delimiter problem only bites the CLI).
+    Pin deno by absolute path (no PATH juggling). The bgutil node fallback finds
+    `node` on PATH on its own. server_home is passed absolute, which is safe via
+    the Python API (the ':' delimiter problem only bites the CLI).
 
-    player_clients     - force these YouTube clients (web-family => triggers the
-                         WebPO token request to bgutil). None = yt-dlp default.
-    cookies_from_browser - e.g. "firefox": last-resort fallback if PO tokens are
-                         not enough; ties requests to your logged-in account.
+    player_clients     - override YouTube's client selection. None (default) lets
+                         yt-dlp pick; pass a specific client only to work around a
+                         playable video that exposes no tracks.
+    cookies_from_browser - e.g. "firefox": read cookies from a browser profile
+                         instead of a file; ties requests to that account.
     """
-    extractor_args: dict = {
-        "youtubepot-bgutilscript": {"server_home": [str(BGUTIL_SERVER_HOME)]},
-    }
+    extractor_args: dict = {}
+    # Advertise the local PO-token server only when it has been built. yt-dlp
+    # requests a token from it only for clients that need one, so on the default
+    # client this stays dormant.
+    if bgutil_built():
+        extractor_args["youtubepot-bgutilscript"] = {"server_home": [str(BGUTIL_SERVER_HOME)]}
     if player_clients:
         extractor_args["youtube"] = {"player_client": list(player_clients)}
 
@@ -183,30 +238,40 @@ def safe_filename(info: dict, suffix: str = "", max_len: int = 200) -> str:
 
 
 def doctor() -> dict:
-    """Cheap, network-free health check of the toolchain."""
+    """Cheap, network-free health check, split into the always-needed core and
+    the optional escalation pieces (a missing optional piece is fine until you
+    actually need that rung)."""
     node = shutil.which("node")
     return {
-        "deno_exe": (str(DENO_EXE), DENO_EXE.exists()),
-        "node_on_path": (node, node is not None),
-        "bgutil_server_home": (str(BGUTIL_SERVER_HOME), BGUTIL_SERVER_HOME.is_dir()),
-        "bgutil_build_js": (
-            str(BGUTIL_SERVER_HOME / "build" / "generate_once.js"),
-            (BGUTIL_SERVER_HOME / "build" / "generate_once.js").is_file(),
-        ),
-        "bgutil_node_modules": (
-            str(BGUTIL_SERVER_HOME / "node_modules"),
-            (BGUTIL_SERVER_HOME / "node_modules").is_dir(),
-        ),
-        "tools_dir": (str(TOOLS_DIR), TOOLS_DIR.is_dir()),
+        "core": {
+            "deno_exe": (str(DENO_EXE), DENO_EXE.exists()),
+        },
+        "optional_escalation": {
+            "bgutil_server_build": (
+                str(BGUTIL_SERVER_HOME / "build" / "generate_once.js"),
+                bgutil_built(),
+            ),
+            "bgutil_node_modules": (
+                str(BGUTIL_SERVER_HOME / "node_modules"),
+                (BGUTIL_SERVER_HOME / "node_modules").is_dir(),
+            ),
+            "node_on_path": (node, node is not None),
+            "cookies_enabled": (str(SETTINGS_FILE), USE_COOKIES),
+            "cookies_file_present": (str(DEFAULT_COOKIES), DEFAULT_COOKIES.is_file()),
+        },
         "output_base": (str(OUTPUT_BASE), OUTPUT_BASE.is_dir()),  # created on demand per run
     }
 
 
 def main() -> int:
-    import json
-
     print("ytx environment doctor (no network):\n")
     print(json.dumps(doctor(), indent=2))
+    print(
+        "\ncore = always needed; optional_escalation = only when a video is walled "
+        "(see docs/Setup.md).\noutput_base false is expected - it is created per run "
+        "in the workspace you point --out-dir at.",
+        file=sys.stderr,
+    )
     return 0
 
 

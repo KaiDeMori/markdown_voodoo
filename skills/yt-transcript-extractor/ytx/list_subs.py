@@ -5,6 +5,7 @@ the full info-json plus a compact human summary into meta/. Run once per video;
 later stages work off the cached files.
 
     python -m ytx.list_subs "https://www.youtube.com/watch?v=VIDEOID" [more urls]
+        [--client web,mweb,tv] [--cookies FILE] [--use-cookies] [-v]
 """
 from __future__ import annotations
 
@@ -174,19 +175,23 @@ def main(argv: list[str] | None = None) -> int:
         verbose = True
         argv.remove("-v")
 
-    # --client web,mweb,tv   (comma-separated; "default" = let yt-dlp decide)
+    # --client web,mweb,tv   (comma-separated; "default"/omitted = let yt-dlp decide)
     client_arg = _take_opt(argv, "--client")
-    if client_arg is None:
+    if not client_arg or client_arg.lower() == "default":
         player_clients = config.DEFAULT_PLAYER_CLIENTS
-    elif client_arg.lower() == "default":
-        player_clients = None
     else:
         player_clients = tuple(c.strip() for c in client_arg.split(",") if c.strip())
 
     # --cookies-from-browser firefox   (or firefox:profilename for an alt)
     cookies_from_browser = _take_opt(argv, "--cookies-from-browser")
-    # --cookies path/to/cookies.txt   (Netscape export)
-    cookies_file = _take_opt(argv, "--cookies")
+    # --cookies FILE (explicit) wins; --use-cookies opts in to the default cookies
+    # file. Off unless enabled (settings.local.json or the flag).
+    use_cookies_flag = "--use-cookies" in argv
+    if use_cookies_flag:
+        argv.remove("--use-cookies")
+    cookies_file = config.resolve_cookies(
+        _take_opt(argv, "--cookies"),
+        use_cookies=True if use_cookies_flag else None)
 
     if not argv:
         print(__doc__)

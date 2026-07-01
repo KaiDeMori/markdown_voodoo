@@ -6,8 +6,10 @@ Staged pipeline (each network stage is run deliberately, never automatically):
   3. clean      - dedupe/strip raw subs into plain text          (local)
   4. compare    - pick the best transcript                       (local)
 
-All the hard-won setup (deno JS runtime, bgutil PO-token provider,
-throttling) lives in config.py so it is preserved as code, not lore.
+The shared yt-dlp options (JS runtime, polite throttling, and the optional
+PO-token provider when it has been built) live in config.py so callers stay
+simple. Cookies and non-default clients are opt-in escalation - see config.py
+and docs/Setup.md.
 """
 
 __all__ = ["config"]

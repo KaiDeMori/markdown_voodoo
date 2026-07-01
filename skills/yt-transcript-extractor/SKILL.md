@@ -1,6 +1,6 @@
 ---
 name: yt-transcript-extractor
-description: Pull a clean, de-duplicated transcript from a YouTube video, then optionally fact-check its claims. Use when the user wants the transcript or captions of a YouTube video, wants a video turned into readable text/markdown, or wants to verify or fact-check the claims made in a video. Wraps the local `ytx` Python toolchain (yt-dlp + a PO-token provider) that lists tracks, auto-picks the most faithful one, downloads, and cleans it into a markdown transcript saved in the user's current workspace.
+description: Pull a clean, de-duplicated transcript from a YouTube video, then optionally fact-check its claims. Use when the user wants the transcript or captions of a YouTube video, wants a video turned into readable text/markdown, or wants to verify or fact-check the claims made in a video. Wraps the local `ytx` Python toolchain (yt-dlp, with optional PO-token and cookie escalation) that lists tracks, auto-picks the most faithful one, downloads, and cleans it into a markdown transcript saved in the user's current workspace.
 ---
 
 # YouTube Transcript Extractor (ytx)
@@ -23,7 +23,7 @@ PY=".venv/Scripts/python.exe"
 "$PY" -m ytx --out-dir "<WORKSPACE>/YT-Transcripts" "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
-If `.venv` / `tools/` / `cookies/cookies.txt` aren't there yet (a fresh clone), set them up once via [docs/Setup.md](docs/Setup.md). Confirm the toolchain with `"$PY" -m ytx.config` (no network).
+If `.venv` isn't there yet (a fresh clone), set up the toolchain once via [docs/Setup.md](docs/Setup.md) — cookies and the PO-token server are optional escalation, not part of the core install. Confirm with `"$PY" -m ytx.config` (no network).
 
 ## Output location — decide before downloading
 
@@ -62,6 +62,6 @@ For the shape of the finished artifact (method note, verdict-at-a-glance table, 
 ## Full reference
 
 - [docs/AGENTS.md](docs/AGENTS.md) — the complete operating guide: decision rules, every flag, individual stages, troubleshooting.
-- [docs/Setup.md](docs/Setup.md) — one-time install of the venv, deno, the PO-token server, and cookies.
+- [docs/Setup.md](docs/Setup.md) — one-time install of the core toolchain (venv, yt-dlp, deno); the PO-token server and cookies are optional escalation.
 - [docs/Fact_check_prompt.md](docs/Fact_check_prompt.md) — the Phase-2 fact-check prompt (deliberately terse).
 - [docs/example/](docs/example/) — a finished transcript + its fact-check, as a reference for the output.

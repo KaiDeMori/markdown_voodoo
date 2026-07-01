@@ -93,26 +93,40 @@ chapters or usable pauses, so reflow uses the ASR's sentence punctuation:
 `sentences` (one per line) · `paragraphs` (~4 sentences) · `wrapped` (continuous,
 ~88 cols) · `oneline` · `lines` (raw caption breaks).
 
-## Cookies (required on this network)
+## Cookies — opt-in escalation (off by default)
 
-YouTube returns `LOGIN_REQUIRED` for anonymous requests here, and a PO token
-can't fix it (it gates media, not playability). So cookies are needed.
-Default file `cookies/cookies.txt` is auto-used if present (gitignored — never committed).
+Most videos need no cookies. They are the fix for the *walled* case only:
+`LOGIN_REQUIRED` / "Sign in to confirm you're not a bot" / age-restricted. A PO
+token can't help there (it gates formats, not playability) — only cookies lift
+that wall.
 
-If it's expired (LOGIN_REQUIRED returns): log a **throwaway/alt** account into
-YouTube in a Firefox **private** window, export with a "Get cookies.txt LOCALLY"
-extension, overwrite that file, then close the window **without logging out**.
-Use **Firefox, not Chrome** (App-Bound Encryption breaks Chrome cookie reads on Windows).
+Cookies are **off by default** and never used silently: a cookie YouTube
+dislikes can get the underlying account throttled or temporarily banned. Turn
+them on only when a run is actually walled, and only with the user's OK:
+
+- **One run:** add `--use-cookies` (or `--cookies FILE` for an explicit path).
+- **Always on:** copy `settings.local.json.example` → `settings.local.json` and
+  set `"use_cookies": true` (gitignored).
+
+Either way `cookies/cookies.txt` is used when present. To (re-)create it: log a
+**throwaway/alt** account into YouTube in a Firefox **private** window, export
+with a "Get cookies.txt **LOCALLY**" extension, save as `cookies/cookies.txt`,
+then close the window **without logging out**. Use **Firefox, not Chrome**
+(App-Bound Encryption breaks Chrome cookie reads on Windows), and never combine
+`--cookies` with `--cookies-from-browser`. The file is gitignored — never commit it.
 
 ## Setup — see [Setup.md](Setup.md) for a fresh clone; skip if already done
 
-- yt-dlp + `bgutil-ytdlp-pot-provider` in the project `.venv`
-- deno at `~/.deno/bin` (JS runtime); bgutil provider built at `tools/bgutil-provider/server`
-- `"$PY" -m ytx.config` → no-network health check (run this to confirm it's wired up)
+- **Core (all most videos need):** yt-dlp + `bgutil-ytdlp-pot-provider` plugin
+  in the project `.venv`; deno at `~/.deno/bin` (JS runtime).
+- **Optional escalation:** the bgutil provider *server* built at
+  `tools/bgutil-provider/server` (token-gated formats); cookies (off by default).
+- `"$PY" -m ytx.config` → no-network health check, split into `core` and
+  `optional_escalation` (a missing optional piece is fine until you need it).
 
 ## Individual stages (only if you need one alone)
 
-All stages take `--out-dir DIR` and **must share the same one** so they find each other's cached files.
+All stages take `--out-dir DIR` and **must share the same one** so they find each other's cached files. They also accept the escalation flags `--client web,mweb,tv` and `--use-cookies` (see the ladder above); keep the client consistent across stages 1 and 2.
 
 | Command | Stage | Network? |
 |---|---|---|
@@ -122,13 +136,19 @@ All stages take `--out-dir DIR` and **must share the same one** so they find eac
 
 **Note on `ytx.clean` output:** When run standalone, it produces a raw `<id>.<lang>.<kind>.<fmt>.txt` file in the `--out-dir` root — no metadata header, no proper channel/title filename. To get the properly named `<channel> - <title> [<id>].<lang>.md` output, run `"$PY" -m ytx --out-dir DIR <url>` after stages 1+2 — it reuses the cache and any already-downloaded raw files.
 
-## If web/mweb/tv clients miss auto-captions
+## When a pull comes back empty — the escalation ladder
 
-The default player clients (`web`, `mweb`, `tv`) sometimes fail to discover auto-generated captions (the listing shows only `live_chat` or nothing in `auto`). If you can see captions in the YouTube UI but `list_subs` reports none, re-list with default yt-dlp clients and explicit cookies:
+The baseline lets yt-dlp choose the client (no forced list — its maintainers pick better than any snapshot could) and uses no cookies. That is right for most videos. When a pull returns nothing, **read stderr first** — the failures look alike but have different fixes:
+
+**A quiet empty result** — the JSON shows `manual.langs: []` and `auto.total_langs: 0`, and stderr carries `Sign in to confirm you're not a bot` / `LOGIN_REQUIRED`. That is the **bot/login wall**, not "no captions exist", and a PO token will NOT fix it. The fix is **cookies** (see the cookies section): with the user's OK, re-run with `--use-cookies`.
+
+**No tracks, but the video is plainly playable and unrestricted** — try a specific **client**. yt-dlp's default is usually best, but in the days right after a YouTube change a particular client can expose tracks the default misses:
 
 ```bash
 rm "<out-dir>/meta/<id>.info.json"
-"$PY" -m ytx.list_subs --out-dir DIR --client default --cookies "cookies/cookies.txt" "<url>"
+"$PY" -m ytx.list_subs --out-dir DIR --client web,mweb,tv "<url>"
 ```
 
-The cache will then have the correct track list for subsequent stages.
+**Which client to try is a moving target — never hardcode it.** If an obvious client doesn't help, check the current per-client situation on the yt-dlp wiki (PO-Token-Guide / Extractors, linked in Setup.md) and pass what it recommends via `--client`.
+
+**A track exists but its format won't download** — that's the token-gated case; build the bgutil server (Setup.md, escalation B), then retry.
