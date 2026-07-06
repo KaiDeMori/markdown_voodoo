@@ -1,6 +1,6 @@
 ---
 name: claude-chat-digger
-description: Search, recall, and trace past Claude Code conversations. Use when the user wants to find whether a topic, decision, error, or code snippet came up in an earlier Claude Code session; recall what an earlier chat said; find which past conversation created, edited, or read a given file; browse or list prior conversations; or visualize a conversation's fork tree. Wraps the CCD command-line tool over the local ~/.claude/projects conversation logs.
+description: Search, recall, and trace past Claude Code conversations. Use when the user wants to find whether a topic, decision, error, or code snippet came up in an earlier Claude Code session; recall what an earlier chat said; find which past conversation created, edited, or read a given file; browse or list prior conversations; visualize a conversation's fork tree; or check a message's metadata (which model answered, token usage, git branch). Wraps the CCD command-line tool over the local ~/.claude/projects conversation logs.
 ---
 
 # Claude Chat Digger (CCD)
@@ -44,7 +44,7 @@ Search is tiered — find the conversation, narrow to the matches, then read one
 |---|---|---|
 | 1 | `search "<query>"` | Which conversations match, across everything. |
 | 2 | `in <session_id> "<query>" [--context N]` | The matches inside one conversation, with surrounding lines. |
-| 3 | `show <session_id> <uuid> [--block N] [--thinking]` | One message printed in full. |
+| 3 | `show <session_id> <uuid> [--block N] [--thinking] [--meta]` | One message printed in full. |
 
 Beyond search:
 

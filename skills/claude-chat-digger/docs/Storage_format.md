@@ -42,12 +42,12 @@ Message records (`type` of `user` / `assistant`) carry a consistent envelope. Th
 | `parentUuid` | `uuid` of the preceding record; `null` on the first record. | Tree / fork structure. |
 | `timestamp` | ISO-8601 instant the record was written. | The "when"; the time half of a fork fingerprint. |
 | `type` | Record kind (see below). | Dispatch while parsing. |
-| `message` | Payload `{ role, content, id, ... }`. | All searchable text; `id` for dedup. |
+| `message` | Payload `{ role, content, id, model, usage, stop_reason, ... }` — an assistant message carries `model` and `usage` alongside `content`. | All searchable text; `id` for dedup; `model` / `usage` / `stop_reason` for `show --meta`. |
 | `cwd` | The **real** working directory. | The trustworthy project path. |
-| `requestId` | Groups an assistant turn with the tool result answering it. | Telling tool structure from a real fork. |
+| `requestId` | Groups an assistant turn with the tool result answering it. | Telling tool structure from a real fork; also surfaced verbatim by `show --meta`. |
 | `snapshot` | Carries `trackedFileBackups` on file-history records. | File versions / backups for `origin`. |
 
-Other fields are present in real records but **not** consumed by CCD: `sessionId` (redundant with the filename), `gitBranch`, `version`, `entrypoint`, `userType`, `isSidechain`, `isMeta`, `isCompactSummary`, `leafUuid`, `lastPrompt`, `agentId`, `attributionAgent` / `attributionMcpServer` / `attributionMcpTool` / `attributionSkill`, `slug`, `operation`, `permissionMode`. A few of these matter for future features (see Subagents and Gotchas).
+`show --meta` additionally reads `gitBranch`, `version`, `entrypoint`, `userType`, `isSidechain`, `agentId`, `attributionAgent` / `attributionMcpServer` / `attributionMcpTool` / `attributionSkill`, `permissionMode`, `promptId`, `promptSource` straight from the raw record — see `Message_meta` in `CCD_api.py` and `_extract_message_meta` in `CCD_engine.py`. Everything else present on a record (`slug`, `isMeta`, `isCompactSummary`, `stop_details`, `stop_sequence`, `diagnostics`, `container`, `context_management`, `apiErrorStatus`, ...) lands in `Message_meta.extra` rather than being modeled by name or dropped. Fields genuinely unused even by `--meta`: `sessionId` (redundant with the filename), `leafUuid`, `lastPrompt`, `operation`.
 
 ## Record types
 
@@ -153,7 +153,7 @@ CCD reads only `projects/` (the corpus) and `file-history/` (backups). The rest 
 
 ## Subagents / sidechains
 
-`isSidechain` marks subagent traffic. When subagents run, their turns are written into the **same** session file, interleaved, flagged `isSidechain: true` and tagged with an `agentId`. CCD does not currently distinguish sidechain records — it indexes them like any other message — so a search hit is attributed to its parent session without a subagent flag. An `isSidechain` / `agentId` filter is a natural future addition.
+`isSidechain` marks subagent traffic. When subagents run, their turns are written into the **same** session file, interleaved, flagged `isSidechain: true` and tagged with an `agentId`. CCD does not currently distinguish sidechain records for indexing or search — it indexes them like any other message, so a search hit is attributed to its parent session without a subagent flag. `show --meta` on one message will report its `is_sidechain` / `agent_id` (and, for MCP or skill traffic, `attribution_mcp_server` / `attribution_mcp_tool` / `attribution_skill`), but that is a per-message, on-demand lookup, not a search filter — an `isSidechain` / `agentId` filter on `search`/`in` is still a natural future addition.
 
 ## Known gotchas and format drift
 

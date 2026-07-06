@@ -40,6 +40,7 @@ from CCD_api import (
     Graph_node,
     Index_stats,
     Match_mode,
+    Message_meta,
     Search_all_result,
     Search_options,
     Search_role,
@@ -476,6 +477,67 @@ def _record_content_text(record: dict) -> str:
         value = attachment.get("content") or attachment.get("stdout") or ""
         return value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
     return ""
+
+
+RECORD_META_CONSUMED_KEYS = {
+    "uuid",
+    "parentUuid",
+    "timestamp",
+    "type",
+    "message",
+    "cwd",
+    "sessionId",
+    "snapshot",
+    "gitBranch",
+    "version",
+    "entrypoint",
+    "userType",
+    "permissionMode",
+    "isSidechain",
+    "agentId",
+    "requestId",
+    "promptId",
+    "promptSource",
+    "attributionAgent",
+    "attributionMcpServer",
+    "attributionMcpTool",
+    "attributionSkill",
+}
+
+MESSAGE_META_CONSUMED_KEYS = {"content", "role", "id", "model", "usage", "stop_reason"}
+
+
+def _extract_message_meta(record: dict) -> Message_meta:
+    """Everything on a record and its message beyond content, for `show --meta`.
+
+    Reads straight from the already-parsed raw record — model, usage, git branch, and
+    the rest of the well-established fields by name; every other top-level or message
+    field lands in `extra` so a field this function does not yet know about is never
+    silently dropped.
+    """
+    message = record.get("message") if isinstance(record.get("message"), dict) else {}
+    extra = {key: value for key, value in record.items() if key not in RECORD_META_CONSUMED_KEYS}
+    extra.update({key: value for key, value in message.items() if key not in MESSAGE_META_CONSUMED_KEYS})
+    return Message_meta(
+        model=message.get("model"),
+        usage=message.get("usage"),
+        stop_reason=message.get("stop_reason"),
+        git_branch=record.get("gitBranch"),
+        cc_version=record.get("version"),
+        entrypoint=record.get("entrypoint"),
+        user_type=record.get("userType"),
+        permission_mode=record.get("permissionMode"),
+        is_sidechain=bool(record.get("isSidechain")),
+        agent_id=record.get("agentId"),
+        attribution_agent=record.get("attributionAgent"),
+        attribution_mcp_server=record.get("attributionMcpServer"),
+        attribution_mcp_tool=record.get("attributionMcpTool"),
+        attribution_skill=record.get("attributionSkill"),
+        request_id=record.get("requestId"),
+        prompt_id=record.get("promptId"),
+        prompt_source=record.get("promptSource"),
+        extra=extra,
+    )
 
 
 def read_tree_records(path: Path) -> list[dict]:
@@ -1695,6 +1757,7 @@ class Chat_digger:
         session_id: str,
         block_index: Optional[int] = None,
         include_thinking: bool = False,
+        include_meta: bool = False,
     ) -> Chat_entry_content:
         connection = self._open_for_read()
         row = connection.execute(
@@ -1720,6 +1783,7 @@ class Chat_digger:
             project_path=record.get("cwd") or row["project_path"],
             blocks=blocks,
             role=message.get("role"),
+            meta=_extract_message_meta(record) if include_meta else None,
         )
 
     @staticmethod

@@ -219,15 +219,83 @@ def command_in(digger: Chat_digger, arguments) -> Command_output:
     return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=result)
 
 
+def format_message_meta(meta) -> list[str]:
+    """Render a `Message_meta` as one readable line per field that is actually present.
+
+    A user entry has no `model`/`usage`/attribution, an assistant entry has no
+    `permission_mode`/`prompt_id`; empty fields are skipped rather than printed blank.
+    """
+    lines = ["meta:"]
+    if meta.model:
+        lines.append("  model          : %s" % meta.model)
+    if meta.usage:
+        parts = []
+        for key, label in (
+            ("input_tokens", "in"),
+            ("output_tokens", "out"),
+            ("cache_read_input_tokens", "cache_read"),
+            ("cache_creation_input_tokens", "cache_creation"),
+        ):
+            if key in meta.usage:
+                parts.append("%s=%s" % (label, meta.usage[key]))
+        if meta.usage.get("service_tier"):
+            parts.append("service_tier=%s" % meta.usage["service_tier"])
+        lines.append("  usage          : %s" % " ".join(parts))
+    if meta.stop_reason:
+        lines.append("  stop_reason    : %s" % meta.stop_reason)
+    if meta.git_branch:
+        lines.append("  git_branch     : %s" % meta.git_branch)
+    if meta.cc_version:
+        lines.append("  cc_version     : %s" % meta.cc_version)
+    if meta.entrypoint:
+        lines.append("  entrypoint     : %s" % meta.entrypoint)
+    if meta.user_type:
+        lines.append("  user_type      : %s" % meta.user_type)
+    if meta.permission_mode:
+        lines.append("  permission_mode: %s" % meta.permission_mode)
+    if meta.is_sidechain:
+        lines.append("  is_sidechain   : yes")
+    if meta.agent_id:
+        lines.append("  agent_id       : %s" % meta.agent_id)
+    attribution = [
+        pair
+        for pair in (
+            ("agent", meta.attribution_agent),
+            ("mcp_server", meta.attribution_mcp_server),
+            ("mcp_tool", meta.attribution_mcp_tool),
+            ("skill", meta.attribution_skill),
+        )
+        if pair[1]
+    ]
+    if attribution:
+        lines.append("  attribution    : %s" % " ".join("%s=%s" % pair for pair in attribution))
+    if meta.request_id:
+        lines.append("  request_id     : %s" % meta.request_id)
+    if meta.prompt_id:
+        lines.append("  prompt_id      : %s" % meta.prompt_id)
+    if meta.prompt_source:
+        lines.append("  prompt_source  : %s" % meta.prompt_source)
+    if meta.extra:
+        lines.append("  extra          : %s" % json.dumps(meta.extra, ensure_ascii=False, default=str))
+    return lines
+
+
 def command_show(digger: Chat_digger, arguments) -> Command_output:
     entry = digger.get_chat_entry(
-        arguments.uuid, arguments.session_id, block_index=arguments.block, include_thinking=arguments.thinking
+        arguments.uuid,
+        arguments.session_id,
+        block_index=arguments.block,
+        include_thinking=arguments.thinking,
+        include_meta=arguments.meta,
     )
     lines = [
         "%s %s  %s" % (entry.chat_entry_type, format_when(entry.timestamp), entry.uuid),
         "project: %s" % entry.project_path,
-        "",
     ]
+    if entry.meta:
+        lines.append("")
+        lines.extend(format_message_meta(entry.meta))
+    lines.append("")
     for block in entry.blocks:
         header = "[block %d/%s]" % (block.block_index, block.block_type)
         if block.block_type == "tool_use":
@@ -314,6 +382,9 @@ def add_in_options(parser: argparse.ArgumentParser) -> None:
 def add_show_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--block", type=int, default=None)
     parser.add_argument("--thinking", action="store_true")
+    parser.add_argument(
+        "--meta", action="store_true", help="also show full message metadata (model, usage, git branch, ...)"
+    )
 
 
 def add_origin_options(parser: argparse.ArgumentParser) -> None:

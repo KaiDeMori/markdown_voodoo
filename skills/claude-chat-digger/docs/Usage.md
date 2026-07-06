@@ -25,7 +25,7 @@ A command's own `--help` likewise comes after its arguments, so for a command th
 | `status` | — | Index counts, staleness, and format version. |
 | `search` | `<query>` + search filters | Find matching conversations (tier 1). |
 | `in` | `<session_id> <query> [--context N]` + search filters | Matches within one conversation, with context (tier 2). |
-| `show` | `<session_id> <uuid> [--block N] [--thinking]` | Full content of one message (tier 3). |
+| `show` | `<session_id> <uuid> [--block N] [--thinking] [--meta]` | Full content of one message (tier 3). |
 | `origin` | `<filename> [--mode all\|created\|edited\|read] [--tool T,T]` | Where a file was created/edited/read. |
 | `tree` | `<session_id>` + tree options | Render a fork family as a diagram. |
 | `family` | `<session_id>` | List the sessions in this conversation's fork family. |
@@ -71,6 +71,7 @@ Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM a
 
 ## Other defaults
 
+- `show --meta` prints model, token usage, git branch, Claude Code version, and the rest of the message envelope, read from the source `.jsonl` file (never the index) — off by default.
 - `in --context` (lines of context per side): `2`.
 - `families --limit`: `40`. `list --limit`: `40`.
 - `origin --mode`: `all`. Recognised tools: `Read`, `Write`, `Edit`, `MultiEdit`, `NotebookEdit`.

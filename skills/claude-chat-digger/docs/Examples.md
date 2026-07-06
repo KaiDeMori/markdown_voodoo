@@ -48,6 +48,7 @@ Each result line `- <type> <time>  <uuid>` (type is `user` or `assistant`) carri
 python CCD.py show <session_id> <uuid>
 python CCD.py show <session_id> <uuid> --block 2        # just one content block
 python CCD.py show <session_id> <uuid> --thinking       # include thinking blocks
+python CCD.py show <session_id> <uuid> --meta           # model, usage, git branch, and the rest
 ```
 
 ## origin — trace a file

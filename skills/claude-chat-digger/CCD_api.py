@@ -160,6 +160,37 @@ class Block:
 
 
 @dataclass
+class Message_meta:
+    """Everything on a record and its message envelope beyond content, read straight
+    from the raw record on request rather than carried in the index.
+
+    Named fields cover the well-established, generally useful ones — which model
+    answered, token usage, git branch, Claude Code version, subagent/skill attribution.
+    `extra` catches everything else present on the record so a future field is never
+    silently dropped, in keeping with the corpus's undocumented, drifting schema.
+    """
+
+    model: Optional[str] = None
+    usage: Optional[dict] = None
+    stop_reason: Optional[str] = None
+    git_branch: Optional[str] = None
+    cc_version: Optional[str] = None
+    entrypoint: Optional[str] = None
+    user_type: Optional[str] = None
+    permission_mode: Optional[str] = None
+    is_sidechain: bool = False
+    agent_id: Optional[str] = None
+    attribution_agent: Optional[str] = None
+    attribution_mcp_server: Optional[str] = None
+    attribution_mcp_tool: Optional[str] = None
+    attribution_skill: Optional[str] = None
+    request_id: Optional[str] = None
+    prompt_id: Optional[str] = None
+    prompt_source: Optional[str] = None
+    extra: dict = field(default_factory=dict)
+
+
+@dataclass
 class Chat_entry_content:
     """The full content of one chat entry, or a single block of it.
 
@@ -174,6 +205,7 @@ class Chat_entry_content:
     project_path: str
     blocks: list[Block] = field(default_factory=list)
     role: Optional[str] = None
+    meta: Optional[Message_meta] = None
 
 
 @dataclass
@@ -369,6 +401,7 @@ class Chat_digger:
         session_id: str,
         block_index: Optional[int] = None,
         include_thinking: bool = False,
+        include_meta: bool = False,
     ) -> Chat_entry_content:
         """Tier 3: the full content of one chat entry by exact id.
 
@@ -376,6 +409,8 @@ class Chat_digger:
         check — a uuid not found under that session is an error, not an empty result.
         `block_index` returns just that one block (omit for every block), so a one-line
         text block need not drag along a huge `tool_result` in the same entry.
+        `include_meta` additionally populates `Message_meta` from the same raw-record
+        read — model, usage, git branch, and the rest — at no extra cost when omitted.
         """
         raise NotImplementedError
 
