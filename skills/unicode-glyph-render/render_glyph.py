@@ -125,7 +125,7 @@ def render_codepoint(codepoint):
     )
 
     # A fixed-size bitmap glyph (e.g. color emoji) can be larger than the
-    # canvas — render at whatever size actually fits, then resize.
+    # canvas — render it at whatever size actually fits, at its real size.
     working_size = max(CANVAS_SIZE_PIXELS, right - left, bottom - top)
     image = Image.new("RGB", (working_size, working_size), "white")
     draw = ImageDraw.Draw(image)
@@ -139,8 +139,6 @@ def render_codepoint(codepoint):
         embedded_color=spec.has_color,
     )
 
-    if working_size != CANVAS_SIZE_PIXELS:
-        image = image.resize((CANVAS_SIZE_PIXELS, CANVAS_SIZE_PIXELS), Image.LANCZOS)
     return image, spec
 
 
