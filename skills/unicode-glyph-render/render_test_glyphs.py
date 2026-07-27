@@ -8,7 +8,14 @@ render_glyph = importlib.util.module_from_spec(MODULE_SPEC)
 MODULE_SPEC.loader.exec_module(render_glyph)
 
 TEST_GLYPHS = ("U+0041", "U+2211", "U+6F22", "U+1F600", "U+1227C", "U+E0100", "U+a9c2")
-TEST_STRINGS = ("foo", "bar")
+
+
+TEST_STRINGS = ("A⃕᷋͡⃣̸︭᪶", "f̡̬̻̯̠̩̮͙̓᷀̇᷄ͤ̒̄̈́͢ò͈͓̙̙᷿̘᷂̮͇ͣ̑͒͒ͯ̄͘ó̫̳͙̩͎̩̻̀᷉͒᷉͢͢͞͝͝",
+
+                "⃣︭b̅̆⃠᪶ᷓa̳̲ŕ⃔͡")
+
+
+
 OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
 
 

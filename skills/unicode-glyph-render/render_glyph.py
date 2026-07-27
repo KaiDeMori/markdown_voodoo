@@ -251,39 +251,43 @@ def render_string(text):
         for spec, run_text in split_into_font_runs(text)
     ]
 
-    ascenders = []
-    descenders = []
-    for spec, _ in shaped_runs:
-        face = load_freetype_face(spec.path)
-        face.set_pixel_sizes(0, pixel_size)
-        ascenders.append(face.size.ascender / 64)
-        descenders.append(face.size.descender / 64)
-    max_ascender = max(ascenders, default=pixel_size)
-    min_descender = min(descenders, default=0)
-
-    total_advance = sum(glyph[1] for _, glyphs in shaped_runs for glyph in glyphs)
-
-    margin = pixel_size // 8
-    canvas_width = max(pixel_size, round(total_advance)) + margin * 2
-    canvas_height = round(max_ascender - min_descender) + margin * 2
-    image = Image.new("RGB", (canvas_width, canvas_height), "white")
-
-    pen_x = float(margin)
-    baseline_y = margin + max_ascender
-
+    placements = []
+    pen_x = 0.0
+    pen_y = 0.0
     for spec, glyphs in shaped_runs:
         for glyph_index, x_advance, y_advance, x_offset, y_offset in glyphs:
             glyph_image, bitmap_left, bitmap_top = rasterize_glyph(spec, glyph_index, pixel_size)
             if glyph_image is not None:
-                draw_x = round(pen_x + x_offset + bitmap_left)
-                draw_y = round(baseline_y - y_offset - bitmap_top)
-                if glyph_image.mode == "RGBA":
-                    image.paste(glyph_image, (draw_x, draw_y), glyph_image)
-                else:
-                    black_fill = Image.new("RGB", glyph_image.size, (0, 0, 0))
-                    image.paste(black_fill, (draw_x, draw_y), glyph_image)
+                origin_x = pen_x + x_offset + bitmap_left
+                origin_y = pen_y - y_offset - bitmap_top
+                placements.append((glyph_image, origin_x, origin_y))
             pen_x += x_advance
-            baseline_y -= y_advance
+            pen_y -= y_advance
+
+    margin = pixel_size // 8
+    if placements:
+        ink_left = min(origin_x for _, origin_x, _ in placements)
+        ink_top = min(origin_y for _, _, origin_y in placements)
+        ink_right = max(origin_x + glyph_image.width for glyph_image, origin_x, _ in placements)
+        ink_bottom = max(origin_y + glyph_image.height for glyph_image, _, origin_y in placements)
+    else:
+        ink_left = ink_top = 0.0
+        ink_right = ink_bottom = 0.0
+
+    canvas_width = max(pixel_size, round(ink_right - ink_left)) + margin * 2
+    canvas_height = max(pixel_size, round(ink_bottom - ink_top)) + margin * 2
+    image = Image.new("RGB", (canvas_width, canvas_height), "white")
+
+    shift_x = margin - ink_left
+    shift_y = margin - ink_top
+    for glyph_image, origin_x, origin_y in placements:
+        draw_x = round(origin_x + shift_x)
+        draw_y = round(origin_y + shift_y)
+        if glyph_image.mode == "RGBA":
+            image.paste(glyph_image, (draw_x, draw_y), glyph_image)
+        else:
+            black_fill = Image.new("RGB", glyph_image.size, (0, 0, 0))
+            image.paste(black_fill, (draw_x, draw_y), glyph_image)
 
     return image, [spec for spec, _ in shaped_runs]
 
