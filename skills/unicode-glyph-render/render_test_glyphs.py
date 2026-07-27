@@ -12,6 +12,7 @@ OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
 
 
 def main():
+    OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
     for argument in TEST_GLYPHS:
         codepoint = render_glyph.parse_codepoint_argument(argument)
         image, spec = render_glyph.render_codepoint(codepoint)
