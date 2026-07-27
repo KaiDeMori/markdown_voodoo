@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 FONT_DIRECTORY = Path(__file__).parent / "fonts"
 SURROGATE_RANGE = range(0xD800, 0xE000)
+CANVAS_SIZE_PIXELS = 109
 
 
 @dataclass(frozen=True)
@@ -67,11 +68,11 @@ def resolve_font_size(spec, requested_size):
     return min(available_sizes, key=lambda size: abs(size - requested_size))
 
 
-def render_codepoint(codepoint, canvas_size):
+def render_codepoint(codepoint):
     spec = pick_font_for_codepoint(codepoint)
     character = chr(codepoint)
 
-    font_size = resolve_font_size(spec, round(canvas_size * 0.78))
+    font_size = resolve_font_size(spec, round(CANVAS_SIZE_PIXELS * 0.78))
     font = ImageFont.truetype(
         str(FONT_DIRECTORY / spec.filename), size=font_size, index=0
     )
@@ -84,8 +85,8 @@ def render_codepoint(codepoint, canvas_size):
     )
 
     # A fixed-size bitmap glyph (e.g. color emoji) can be larger than the
-    # requested canvas — render at whatever size actually fits, then resize.
-    working_size = max(canvas_size, right - left, bottom - top)
+    # canvas — render at whatever size actually fits, then resize.
+    working_size = max(CANVAS_SIZE_PIXELS, right - left, bottom - top)
     image = Image.new("RGB", (working_size, working_size), "white")
     draw = ImageDraw.Draw(image)
     horizontal_offset = (working_size - (right - left)) / 2 - left
@@ -98,8 +99,8 @@ def render_codepoint(codepoint, canvas_size):
         embedded_color=spec.has_color,
     )
 
-    if working_size != canvas_size:
-        image = image.resize((canvas_size, canvas_size), Image.LANCZOS)
+    if working_size != CANVAS_SIZE_PIXELS:
+        image = image.resize((CANVAS_SIZE_PIXELS, CANVAS_SIZE_PIXELS), Image.LANCZOS)
     return image, spec
 
 
@@ -130,7 +131,6 @@ def main():
         "codepoints", nargs="+", help="e.g. U+1F600, or a single literal character"
     )
     parser.add_argument("--out-dir", required=True, type=Path)
-    parser.add_argument("--size", type=int, default=109)
     arguments = parser.parse_args()
 
     arguments.out_dir.mkdir(parents=True, exist_ok=True)
@@ -140,7 +140,7 @@ def main():
     for argument in arguments.codepoints:
         try:
             codepoint = parse_codepoint_argument(argument)
-            image, spec = render_codepoint(codepoint, arguments.size)
+            image, spec = render_codepoint(codepoint)
             label = format_codepoint_label(codepoint)
             output_path = arguments.out_dir / f"{label}.png"
             image.save(output_path)
