@@ -18,7 +18,7 @@ def main():
         image, spec = render_glyph.render_codepoint(codepoint)
         label = render_glyph.format_codepoint_label(codepoint)
         image.save(OUTPUT_DIRECTORY / f"{label}.png")
-        print(f"{label} -> {spec.filename}")
+        print(f"{label} -> {spec.path.name}")
 
 
 if __name__ == "__main__":
