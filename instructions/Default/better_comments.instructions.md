@@ -12,31 +12,33 @@ applyTo: "**"
 
 # Documentation Comments
 
-Always use proper XML documentation comments for functions, classes, methods, and modules. Avoid inline comments unless absolutely necessary.
+**only applicable if a comment is needed**
+
+Use proper documentation comments (like XML-doc or jsdoc) for functions, classes, methods and modules. Avoid inline comments.
 
 ## No actual values in the comments, except they are necessary for understanding the code.
 
 GOOD:
-// This variable defines the rotation angle in radians.
+This variable defines the rotation angle in radians.
 
 BAD: 
-// Math.PI / 2 (90 degrees) is used to rotate the image by 90 degrees clockwise (in radians).
+Math.PI / 2 (90 degrees) is used to rotate the image by 90 degrees clockwise (in radians).
 
 ## No specific dates or version numbers in comments.
 
 GOOD:
-// This function processes the image data.
+This function processes the image data.
 
 BAD:
-// This function processes the image data as of version 1.2.3.
+This function processes the image data as of version 1.2.3.
 
 ## No specific names in comments, except they are necessary for understanding the code.
 
 GOOD:
-// This function processes the image data.
+This function processes the image data.
 
 BAD:
-// This function processes the image data for the Imaginer project.
+This function processes the image data for the Imaginer project.
 
 ## No redundant comments
 
@@ -52,7 +54,9 @@ void rotate_image(Image image, float angle) {
 BAD:
 
 ```csharp
-// This function rotates an image by a specified angle.
+/**
+ * This function rotates an image by a specified angle.
+ */
 void rotate_image(Image image, float angle) {
    […]
 }
@@ -61,7 +65,7 @@ void rotate_image(Image image, float angle) {
 # No history keeping!
 Do **NOT** reference previous attempts, old ideas or other "historic references" in code comments.
 
-## No useless XML comments
+## No useless comments
 
 GOOD:
 

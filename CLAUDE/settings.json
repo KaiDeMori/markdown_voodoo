@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(C:\\Users\\devboese\\markdown_voodoo\\instructions\\**\\*.instructions.md)",
+      "mcp__agent-lsp",
+      "ListMcpResourcesTool",
+      "ReadMcpResourceTool",
+      "WebSearch",
+      "WebFetch(*)",
+      "Bash(*)",
+      "Skill(update-config)"
+    ],
+    "additionalDirectories": []
+  },
+  "model": "sonnet",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|compact|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "shopt -s nullglob globstar; for f in /c/Users/devboese/markdown_voodoo/instructions/**/*.instructions.md; do echo \"<instruction>\"; cat \"$f\"; echo; echo \"</instruction>\"; done"
+          },
+          {
+            "type": "command",
+            "command": "shopt -s nullglob globstar; for f in \"${CLAUDE_PROJECT_DIR:-.}\"/.github/instructions/**/*.instructions.md; do echo \"<instruction>\"; cat \"$f\"; echo; echo \"</instruction>\"; done"
+          }
+        ]
+      }
+    ]
+  },
+  "effortLevel": "medium",
+  "autoUpdatesChannel": "latest",
+  "theme": "light",
+  "editorMode": "normal",
+  "autoCompactEnabled": false,
+  "switchModelsOnFlag": false,
+  "autoScrollEnabled": true
+}
