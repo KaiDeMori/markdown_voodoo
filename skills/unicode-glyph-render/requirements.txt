@@ -1,2 +1,4 @@
 fonttools>=4.53
 pillow>=10.4
+uharfbuzz>=0.55
+freetype-py>=2.5
