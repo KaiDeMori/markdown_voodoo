@@ -7,6 +7,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
+import freetype
+import uharfbuzz as harfbuzz
 from fontTools.ttLib import TTFont
 from PIL import Image, ImageDraw, ImageFont
 
@@ -169,6 +171,121 @@ def render_vector_codepoint(spec, codepoint):
     )
 
     return image
+
+
+@lru_cache(maxsize=None)
+def load_hb_font(path):
+    with open(path, "rb") as file:
+        face = harfbuzz.Face(file.read())
+    font = harfbuzz.Font(face)
+    font.scale = (face.upem, face.upem)
+    harfbuzz.ot_font_set_funcs(font)
+    return font, face.upem
+
+
+@lru_cache(maxsize=None)
+def load_freetype_face(path):
+    return freetype.Face(str(path))
+
+
+def split_into_font_runs(text):
+    runs = []
+    current_spec = None
+    current_characters = []
+    for character in text:
+        spec = pick_font_for_codepoint(ord(character))
+        if spec != current_spec and current_characters:
+            runs.append((current_spec, "".join(current_characters)))
+            current_characters = []
+        current_spec = spec
+        current_characters.append(character)
+    if current_characters:
+        runs.append((current_spec, "".join(current_characters)))
+    return runs
+
+
+def shape_run(spec, text, pixel_size):
+    hb_font, units_per_em = load_hb_font(spec.path)
+    scale = pixel_size / units_per_em
+    buffer = harfbuzz.Buffer()
+    buffer.add_str(text)
+    buffer.guess_segment_properties()
+    harfbuzz.shape(hb_font, buffer)
+    return [
+        (
+            info.codepoint,
+            position.x_advance * scale,
+            position.y_advance * scale,
+            position.x_offset * scale,
+            position.y_offset * scale,
+        )
+        for info, position in zip(buffer.glyph_infos, buffer.glyph_positions)
+    ]
+
+
+def convert_bitmap_to_image(bitmap):
+    buffer = bytes(bitmap.buffer)
+    if bitmap.pixel_mode == freetype.FT_PIXEL_MODE_BGRA:
+        return Image.frombytes(
+            "RGBA", (bitmap.width, bitmap.rows), buffer, "raw", ("BGRA", bitmap.pitch, 1)
+        )
+    return Image.frombytes(
+        "L", (bitmap.width, bitmap.rows), buffer, "raw", ("L", bitmap.pitch, 1)
+    )
+
+
+def rasterize_glyph(spec, glyph_index, pixel_size):
+    face = load_freetype_face(spec.path)
+    face.set_pixel_sizes(0, pixel_size)
+    face.load_glyph(glyph_index, freetype.FT_LOAD_COLOR | freetype.FT_LOAD_RENDER)
+    bitmap = face.glyph.bitmap
+    if bitmap.width == 0 or bitmap.rows == 0:
+        return None, 0, 0
+    return convert_bitmap_to_image(bitmap), face.glyph.bitmap_left, face.glyph.bitmap_top
+
+
+def render_string(text):
+    pixel_size = CANVAS_SIZE_PIXELS
+    shaped_runs = [
+        (spec, shape_run(spec, run_text, pixel_size))
+        for spec, run_text in split_into_font_runs(text)
+    ]
+
+    ascenders = []
+    descenders = []
+    for spec, _ in shaped_runs:
+        face = load_freetype_face(spec.path)
+        face.set_pixel_sizes(0, pixel_size)
+        ascenders.append(face.size.ascender / 64)
+        descenders.append(face.size.descender / 64)
+    max_ascender = max(ascenders, default=pixel_size)
+    min_descender = min(descenders, default=0)
+
+    total_advance = sum(glyph[1] for _, glyphs in shaped_runs for glyph in glyphs)
+
+    margin = pixel_size // 8
+    canvas_width = max(pixel_size, round(total_advance)) + margin * 2
+    canvas_height = round(max_ascender - min_descender) + margin * 2
+    image = Image.new("RGB", (canvas_width, canvas_height), "white")
+
+    pen_x = float(margin)
+    baseline_y = margin + max_ascender
+
+    for spec, glyphs in shaped_runs:
+        for glyph_index, x_advance, y_advance, x_offset, y_offset in glyphs:
+            glyph_image, bitmap_left, bitmap_top = rasterize_glyph(spec, glyph_index, pixel_size)
+            if glyph_image is not None:
+                draw_x = round(pen_x + x_offset + bitmap_left)
+                draw_y = round(baseline_y - y_offset - bitmap_top)
+                if glyph_image.mode == "RGBA":
+                    image.paste(glyph_image, (draw_x, draw_y), glyph_image)
+                else:
+                    black_fill = Image.new("RGB", glyph_image.size, (0, 0, 0))
+                    image.paste(black_fill, (draw_x, draw_y), glyph_image)
+            pen_x += x_advance
+            baseline_y -= y_advance
+
+    return image, [spec for spec, _ in shaped_runs]
 
 
 def parse_codepoint_argument(argument):
