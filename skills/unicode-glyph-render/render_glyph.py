@@ -10,59 +10,87 @@ from fontTools.ttLib import TTFont
 from PIL import Image, ImageDraw, ImageFont
 
 FONT_DIRECTORY = Path(__file__).parent / "fonts"
+FONT_FILE_EXTENSIONS = (".ttf", ".otf", ".ttc")
+COLOR_TABLE_TAGS = ("CBDT", "COLR", "SVG ")
 SURROGATE_RANGE = range(0xD800, 0xE000)
 CANVAS_SIZE_PIXELS = 109
 
 
 @dataclass(frozen=True)
 class Font_spec:
-    filename: str
+    path: Path
     variation_instance_name: Optional[str] = None
     has_color: bool = False
 
 
-# Ordered by specificity, not coverage size — Last Resort is last because it
-# only ever draws a generic per-block placeholder, never the real glyph.
-FALLBACK_FONTS = (
-    Font_spec("NotoSans[wdth,wght].ttf", variation_instance_name="Regular"),
-    Font_spec("NotoSansSymbols[wght].ttf", variation_instance_name="Regular"),
-    Font_spec("NotoSansSymbols2-Regular.ttf"),
-    Font_spec("NotoSansMath-Regular.ttf"),
-    Font_spec("NotoSansCJK-Regular.ttc"),
-    Font_spec("NotoColorEmoji.ttf", has_color=True),
-    Font_spec("LastResort-Regular.ttf"),
-)
-
-
-def open_font(filename):
-    path = FONT_DIRECTORY / filename
+def open_font(path):
     if path.suffix.lower() == ".ttc":
         return TTFont(path, fontNumber=0)
     return TTFont(path)
 
 
+def find_regular_variation_instance_name(ttfont):
+    if "fvar" not in ttfont:
+        return None
+    instances = ttfont["fvar"].instances
+    if not instances:
+        return None
+    name_table = ttfont["name"]
+    instance_names = [
+        name_table.getDebugName(instance.subfamilyNameID) for instance in instances
+    ]
+    for instance_name in instance_names:
+        if instance_name and instance_name.lower() == "regular":
+            return instance_name
+    return instance_names[0]
+
+
+def has_color_glyphs(ttfont):
+    return any(tag in ttfont for tag in COLOR_TABLE_TAGS)
+
+
 @lru_cache(maxsize=None)
-def load_cmap(filename):
-    return open_font(filename).getBestCmap()
+def load_font_specs():
+    specs = []
+    for path in sorted(FONT_DIRECTORY.iterdir()):
+        if path.suffix.lower() not in FONT_FILE_EXTENSIONS:
+            continue
+        ttfont = open_font(path)
+        specs.append(
+            Font_spec(
+                path=path,
+                variation_instance_name=find_regular_variation_instance_name(ttfont),
+                has_color=has_color_glyphs(ttfont),
+            )
+        )
+    if not specs:
+        raise RuntimeError(f"no fonts found in {FONT_DIRECTORY}")
+    return tuple(specs)
+
+
+@lru_cache(maxsize=None)
+def load_cmap(path):
+    return open_font(path).getBestCmap()
 
 
 def pick_font_for_codepoint(codepoint):
-    for spec in FALLBACK_FONTS:
-        if codepoint in load_cmap(spec.filename):
+    font_specs = load_font_specs()
+    for spec in font_specs:
+        if codepoint in load_cmap(spec.path):
             return spec
-    return FALLBACK_FONTS[-1]
+    return font_specs[-1]
 
 
 @lru_cache(maxsize=None)
-def bitmap_strike_sizes(filename):
-    ttfont = open_font(filename)
+def bitmap_strike_sizes(path):
+    ttfont = open_font(path)
     if "CBLC" not in ttfont:
         return ()
     return tuple(sorted({strike.bitmapSizeTable.ppemY for strike in ttfont["CBLC"].strikes}))
 
 
 def resolve_font_size(spec, requested_size):
-    available_sizes = bitmap_strike_sizes(spec.filename)
+    available_sizes = bitmap_strike_sizes(spec.path)
     if not available_sizes:
         return requested_size
     return min(available_sizes, key=lambda size: abs(size - requested_size))
@@ -73,9 +101,7 @@ def render_codepoint(codepoint):
     character = chr(codepoint)
 
     font_size = resolve_font_size(spec, round(CANVAS_SIZE_PIXELS * 0.78))
-    font = ImageFont.truetype(
-        str(FONT_DIRECTORY / spec.filename), size=font_size, index=0
-    )
+    font = ImageFont.truetype(str(spec.path), size=font_size, index=0)
     if spec.variation_instance_name is not None:
         font.set_variation_by_name(spec.variation_instance_name)
 
@@ -145,9 +171,9 @@ def main():
             output_path = arguments.out_dir / f"{label}.png"
             image.save(output_path)
             images.append(
-                {"codepoint": label, "font": spec.filename, "path": str(output_path)}
+                {"codepoint": label, "font": spec.path.name, "path": str(output_path)}
             )
-            print(f"{label} -> {spec.filename}", file=sys.stderr)
+            print(f"{label} -> {spec.path.name}", file=sys.stderr)
         except Exception as error:
             errors.append({"argument": argument, "error": str(error)})
             print(f"{argument}: {error}", file=sys.stderr)
