@@ -306,30 +306,76 @@ def format_codepoint_label(codepoint):
     return f"U+{codepoint:04X}"
 
 
-def main():
+def build_argument_parser():
     parser = argparse.ArgumentParser(
-        description="Render a Unicode codepoint to a small PNG image for visual inspection."
+        description="Render Unicode text to a small PNG image for visual inspection."
     )
-    parser.add_argument(
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    glyph_parser = subparsers.add_parser("glyph", help="render a single codepoint")
+    glyph_parser.add_argument(
         "codepoint", help="e.g. U+1F600, or a single literal character"
     )
-    parser.add_argument("--out-dir", required=True, type=Path)
-    arguments = parser.parse_args()
+    glyph_parser.add_argument(
+        "--output-file",
+        required=True,
+        type=Path,
+        help="absolute path of the PNG file to write",
+    )
 
-    arguments.out_dir.mkdir(parents=True, exist_ok=True)
+    string_parser = subparsers.add_parser("string", help="render a shaped run of text")
+    string_parser.add_argument("text", help="the text to render")
+    string_parser.add_argument(
+        "--output-file",
+        required=True,
+        type=Path,
+        help="absolute path of the PNG file to write",
+    )
+
+    return parser
+
+
+def require_absolute_output_file(output_file):
+    if not output_file.is_absolute():
+        raise ValueError(
+            f"--output-file must be an absolute path, got '{output_file}'"
+        )
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+
+def run_glyph_command(arguments):
+    require_absolute_output_file(arguments.output_file)
+    codepoint = parse_codepoint_argument(arguments.codepoint)
+    image, spec = render_codepoint(codepoint)
+    label = format_codepoint_label(codepoint)
+    image.save(arguments.output_file)
+    print(f"{label} -> {spec.path.name}", file=sys.stderr)
+    return {"codepoint": label, "fonts": [spec.path.name], "path": str(arguments.output_file)}
+
+
+def run_string_command(arguments):
+    require_absolute_output_file(arguments.output_file)
+    image, specs = render_string(arguments.text)
+    font_names = [spec.path.name for spec in specs]
+    image.save(arguments.output_file)
+    print(f"{arguments.text} -> {', '.join(font_names)}", file=sys.stderr)
+    return {"text": arguments.text, "fonts": font_names, "path": str(arguments.output_file)}
+
+
+def main():
+    arguments = build_argument_parser().parse_args()
+    command_argument = arguments.codepoint if arguments.command == "glyph" else arguments.text
 
     try:
-        codepoint = parse_codepoint_argument(arguments.codepoint)
-        image, spec = render_codepoint(codepoint)
-        label = format_codepoint_label(codepoint)
-        output_path = arguments.out_dir / f"{label}.png"
-        image.save(output_path)
-        print(f"{label} -> {spec.path.name}", file=sys.stderr)
-        print(json.dumps({"codepoint": label, "fonts": [spec.path.name], "path": str(output_path)}))
+        if arguments.command == "glyph":
+            result = run_glyph_command(arguments)
+        else:
+            result = run_string_command(arguments)
+        print(json.dumps(result))
         return 0
     except Exception as error:
-        print(f"{arguments.codepoint}: {error}", file=sys.stderr)
-        print(json.dumps({"argument": arguments.codepoint, "error": str(error)}))
+        print(f"{command_argument}: {error}", file=sys.stderr)
+        print(json.dumps({"argument": command_argument, "error": str(error)}))
         return 1
 
 
