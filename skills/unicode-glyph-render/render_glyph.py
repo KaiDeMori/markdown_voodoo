@@ -240,7 +240,7 @@ def rasterize_glyph(spec, glyph_index, pixel_size):
 
 
 def render_string(text):
-    pixel_size = DEFAULT_SINGLE_GLYPH_SIZE
+    pixel_size = DEFAULT_STRING_GLYPH_SIZE
     shaped_runs = [
         (spec, shape_run(spec, run_text, pixel_size))
         for spec, run_text in split_into_font_runs(text)
@@ -308,35 +308,29 @@ def format_codepoint_label(codepoint):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Render Unicode codepoints to small PNG images for visual inspection."
+        description="Render a Unicode codepoint to a small PNG image for visual inspection."
     )
     parser.add_argument(
-        "codepoints", nargs="+", help="e.g. U+1F600, or a single literal character"
+        "codepoint", help="e.g. U+1F600, or a single literal character"
     )
     parser.add_argument("--out-dir", required=True, type=Path)
     arguments = parser.parse_args()
 
     arguments.out_dir.mkdir(parents=True, exist_ok=True)
 
-    images = []
-    errors = []
-    for argument in arguments.codepoints:
-        try:
-            codepoint = parse_codepoint_argument(argument)
-            image, spec = render_codepoint(codepoint)
-            label = format_codepoint_label(codepoint)
-            output_path = arguments.out_dir / f"{label}.png"
-            image.save(output_path)
-            images.append(
-                {"codepoint": label, "font": spec.path.name, "path": str(output_path)}
-            )
-            print(f"{label} -> {spec.path.name}", file=sys.stderr)
-        except Exception as error:
-            errors.append({"argument": argument, "error": str(error)})
-            print(f"{argument}: {error}", file=sys.stderr)
-
-    print(json.dumps({"images": images, "errors": errors}))
-    return 1 if errors else 0
+    try:
+        codepoint = parse_codepoint_argument(arguments.codepoint)
+        image, spec = render_codepoint(codepoint)
+        label = format_codepoint_label(codepoint)
+        output_path = arguments.out_dir / f"{label}.png"
+        image.save(output_path)
+        print(f"{label} -> {spec.path.name}", file=sys.stderr)
+        print(json.dumps({"codepoint": label, "fonts": [spec.path.name], "path": str(output_path)}))
+        return 0
+    except Exception as error:
+        print(f"{arguments.codepoint}: {error}", file=sys.stderr)
+        print(json.dumps({"argument": arguments.codepoint, "error": str(error)}))
+        return 1
 
 
 if __name__ == "__main__":
