@@ -15,10 +15,6 @@ COLOR_TABLE_TAGS = ("CBDT", "COLR", "SVG ")
 SURROGATE_RANGE = range(0xD800, 0xE000)
 CANVAS_SIZE_PIXELS = 109
 
-# Its cmap technically "covers" every Unicode block, but only ever draws a
-# generic per-block placeholder — it must never win over a font with a real
-# glyph, so it is excluded from normal coverage matching and used only when
-# nothing else covers the codepoint.
 LAST_RESORT_FONT_STEM = "lastresort-regular"
 
 
@@ -114,7 +110,7 @@ def render_codepoint(codepoint):
     spec = pick_font_for_codepoint(codepoint)
     character = chr(codepoint)
 
-    font_size = resolve_font_size(spec, round(CANVAS_SIZE_PIXELS * 0.78))
+    font_size = resolve_font_size(spec, CANVAS_SIZE_PIXELS)
     font = ImageFont.truetype(str(spec.path), size=font_size, index=0)
     if spec.variation_instance_name is not None:
         font.set_variation_by_name(spec.variation_instance_name)
@@ -124,8 +120,6 @@ def render_codepoint(codepoint):
         (0, 0), character, font=font, embedded_color=spec.has_color
     )
 
-    # A fixed-size bitmap glyph (e.g. color emoji) can be larger than the
-    # canvas — render it at whatever size actually fits, at its real size.
     working_size = max(CANVAS_SIZE_PIXELS, right - left, bottom - top)
     image = Image.new("RGB", (working_size, working_size), "white")
     draw = ImageDraw.Draw(image)
