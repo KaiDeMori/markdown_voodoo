@@ -15,6 +15,12 @@ COLOR_TABLE_TAGS = ("CBDT", "COLR", "SVG ")
 SURROGATE_RANGE = range(0xD800, 0xE000)
 CANVAS_SIZE_PIXELS = 109
 
+# Its cmap technically "covers" every Unicode block, but only ever draws a
+# generic per-block placeholder — it must never win over a font with a real
+# glyph, so it is excluded from normal coverage matching and used only when
+# nothing else covers the codepoint.
+LAST_RESORT_FONT_STEM = "lastresort-regular"
+
 
 @dataclass(frozen=True)
 class Font_spec:
@@ -74,11 +80,19 @@ def load_cmap(path):
 
 
 def pick_font_for_codepoint(codepoint):
-    font_specs = load_font_specs()
-    for spec in font_specs:
+    fallback_spec = None
+    for spec in load_font_specs():
+        if spec.path.stem.lower() == LAST_RESORT_FONT_STEM:
+            fallback_spec = spec
+            continue
         if codepoint in load_cmap(spec.path):
             return spec
-    return font_specs[-1]
+    if fallback_spec is not None:
+        return fallback_spec
+    raise RuntimeError(
+        f"no installed font covers U+{codepoint:04X} and no "
+        f"{LAST_RESORT_FONT_STEM} fallback is present in {FONT_DIRECTORY}"
+    )
 
 
 @lru_cache(maxsize=None)
