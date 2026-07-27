@@ -16,7 +16,7 @@ FONT_DIRECTORY = Path(__file__).parent / "fonts"
 FONT_FILE_EXTENSIONS = (".ttf", ".otf", ".ttc")
 COLOR_TABLE_TAGS = ("CBDT", "COLR", "SVG ")
 SURROGATE_RANGE = range(0xD800, 0xE000)
-CANVAS_SIZE_PIXELS = 109
+CANVAS_SIZE_PIXELS = 256
 
 LAST_RESORT_FONT_STEM = "lastresort-regular"
 
@@ -135,14 +135,8 @@ def render_codepoint(codepoint):
 
 def render_bitmap_codepoint(spec, codepoint):
     glyph_image = load_bitmap_glyph_image(spec, codepoint)
-    canvas_width = max(CANVAS_SIZE_PIXELS, glyph_image.width)
-    canvas_height = max(CANVAS_SIZE_PIXELS, glyph_image.height)
-    image = Image.new("RGB", (canvas_width, canvas_height), "white")
-    offset = (
-        (canvas_width - glyph_image.width) // 2,
-        (canvas_height - glyph_image.height) // 2,
-    )
-    image.paste(glyph_image, offset, glyph_image)
+    image = Image.new("RGB", glyph_image.size, "white")
+    image.paste(glyph_image, (0, 0), glyph_image)
     return image
 
 
