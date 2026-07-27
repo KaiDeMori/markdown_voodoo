@@ -7,7 +7,7 @@ MODULE_SPEC = importlib.util.spec_from_file_location(
 render_glyph = importlib.util.module_from_spec(MODULE_SPEC)
 MODULE_SPEC.loader.exec_module(render_glyph)
 
-TEST_GLYPHS = ("U+0041", "U+2211", "U+6F22", "U+1F600", "U+1227C", "U+E0100", "U+a9c2")
+TEST_GLYPHS = ("U+0041", "U+2211", "U+6F22", "U+1F600", "U+1227C", "U+E0100", "U+a9c2", "𒉼")
 
 
 TEST_STRINGS = ("A⃕᷋͡⃣̸︭᪶", "f̡̬̻̯̠̩̮͙̓᷀̇᷄ͤ̒̄̈́͢ò͈͓̙̙᷿̘᷂̮͇ͣ̑͒͒ͯ̄͘ó̫̳͙̩͎̩̻̀᷉͒᷉͢͢͞͝͝",
@@ -21,10 +21,10 @@ OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
 
 def main():
     OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
-    for argument in TEST_GLYPHS:
-        codepoint = render_glyph.parse_codepoint_argument(argument)
+    for glyph in TEST_GLYPHS:
+        codepoint = render_glyph.parse_codepoint_argument(glyph)
         image, spec = render_glyph.render_codepoint(codepoint)
-        label = render_glyph.format_codepoint_label(codepoint)
+        label = glyph
         image.save(OUTPUT_DIRECTORY / f"{label}.png")
         print(f"{label} -> {spec.path.name}")
     for text in TEST_STRINGS:
