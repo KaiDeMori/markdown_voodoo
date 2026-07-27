@@ -16,7 +16,8 @@ FONT_DIRECTORY = Path(__file__).parent / "fonts"
 FONT_FILE_EXTENSIONS = (".ttf", ".otf", ".ttc")
 COLOR_TABLE_TAGS = ("CBDT", "COLR", "SVG ")
 SURROGATE_RANGE = range(0xD800, 0xE000)
-CANVAS_SIZE_PIXELS = 256
+DEFAULT_SINGLE_GLYPH_SIZE = 256
+DEFAULT_STRING_GLYPH_SIZE = 109
 
 LAST_RESORT_FONT_STEM = "lastresort-regular"
 
@@ -119,7 +120,7 @@ def load_cbdt_strikes(path):
 
 def load_bitmap_glyph_image(spec, codepoint):
     glyph_name = load_cmap(spec.path)[codepoint]
-    strike_index = resolve_bitmap_strike_index(spec.path, CANVAS_SIZE_PIXELS)
+    strike_index = resolve_bitmap_strike_index(spec.path, DEFAULT_SINGLE_GLYPH_SIZE)
     png_bytes = load_cbdt_strikes(spec.path)[strike_index][glyph_name].imageData
     return Image.open(io.BytesIO(png_bytes)).convert("RGBA")
 
@@ -142,7 +143,7 @@ def render_bitmap_codepoint(spec, codepoint):
 
 def render_vector_codepoint(spec, codepoint):
     character = chr(codepoint)
-    font = ImageFont.truetype(str(spec.path), size=CANVAS_SIZE_PIXELS, index=0)
+    font = ImageFont.truetype(str(spec.path), size=DEFAULT_SINGLE_GLYPH_SIZE, index=0)
     if spec.variation_instance_name is not None:
         font.set_variation_by_name(spec.variation_instance_name)
 
@@ -151,7 +152,7 @@ def render_vector_codepoint(spec, codepoint):
         (0, 0), character, font=font, embedded_color=spec.has_color
     )
 
-    working_size = max(CANVAS_SIZE_PIXELS, right - left, bottom - top)
+    working_size = max(DEFAULT_SINGLE_GLYPH_SIZE, right - left, bottom - top)
     image = Image.new("RGB", (working_size, working_size), "white")
     draw = ImageDraw.Draw(image)
     horizontal_offset = (working_size - (right - left)) / 2 - left
@@ -239,7 +240,7 @@ def rasterize_glyph(spec, glyph_index, pixel_size):
 
 
 def render_string(text):
-    pixel_size = CANVAS_SIZE_PIXELS
+    pixel_size = DEFAULT_SINGLE_GLYPH_SIZE
     shaped_runs = [
         (spec, shape_run(spec, run_text, pixel_size))
         for spec, run_text in split_into_font_runs(text)
