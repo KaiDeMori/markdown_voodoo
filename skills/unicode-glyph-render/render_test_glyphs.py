@@ -7,7 +7,7 @@ MODULE_SPEC = importlib.util.spec_from_file_location(
 render_glyph = importlib.util.module_from_spec(MODULE_SPEC)
 MODULE_SPEC.loader.exec_module(render_glyph)
 
-TEST_GLYPHS = ("U+0041", "U+2211", "U+6F22", "U+1F600", "U+1227C", "U+E0100")
+TEST_GLYPHS = ("U+0041", "U+2211", "U+6F22", "U+1F600", "U+1227C", "U+E0100", "U+a9c2")
 OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
 
 
