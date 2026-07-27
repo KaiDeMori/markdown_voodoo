@@ -1,4 +1,5 @@
 import argparse
+import io
 import json
 import sys
 from dataclasses import dataclass
@@ -23,6 +24,7 @@ class Font_spec:
     path: Path
     variation_instance_name: Optional[str] = None
     has_color: bool = False
+    has_bitmap: bool = False
 
 
 def open_font(path):
@@ -51,6 +53,10 @@ def has_color_glyphs(ttfont):
     return any(tag in ttfont for tag in COLOR_TABLE_TAGS)
 
 
+def has_bitmap_glyphs(ttfont):
+    return "CBDT" in ttfont
+
+
 @lru_cache(maxsize=None)
 def load_font_specs():
     specs = []
@@ -63,6 +69,7 @@ def load_font_specs():
                 path=path,
                 variation_instance_name=find_regular_variation_instance_name(ttfont),
                 has_color=has_color_glyphs(ttfont),
+                has_bitmap=has_bitmap_glyphs(ttfont),
             )
         )
     if not specs:
@@ -92,26 +99,53 @@ def pick_font_for_codepoint(codepoint):
 
 
 @lru_cache(maxsize=None)
-def bitmap_strike_sizes(path):
-    ttfont = open_font(path)
-    if "CBLC" not in ttfont:
-        return ()
-    return tuple(sorted({strike.bitmapSizeTable.ppemY for strike in ttfont["CBLC"].strikes}))
+def bitmap_strike_ppems(path):
+    return tuple(
+        strike.bitmapSizeTable.ppemY for strike in open_font(path)["CBLC"].strikes
+    )
 
 
-def resolve_font_size(spec, requested_size):
-    available_sizes = bitmap_strike_sizes(spec.path)
-    if not available_sizes:
-        return requested_size
-    return min(available_sizes, key=lambda size: abs(size - requested_size))
+def resolve_bitmap_strike_index(path, requested_size):
+    ppems = bitmap_strike_ppems(path)
+    return min(range(len(ppems)), key=lambda index: abs(ppems[index] - requested_size))
+
+
+@lru_cache(maxsize=None)
+def load_cbdt_strikes(path):
+    return open_font(path)["CBDT"].strikeData
+
+
+def load_bitmap_glyph_image(spec, codepoint):
+    glyph_name = load_cmap(spec.path)[codepoint]
+    strike_index = resolve_bitmap_strike_index(spec.path, CANVAS_SIZE_PIXELS)
+    png_bytes = load_cbdt_strikes(spec.path)[strike_index][glyph_name].imageData
+    return Image.open(io.BytesIO(png_bytes)).convert("RGBA")
 
 
 def render_codepoint(codepoint):
     spec = pick_font_for_codepoint(codepoint)
-    character = chr(codepoint)
+    if spec.has_bitmap:
+        image = render_bitmap_codepoint(spec, codepoint)
+    else:
+        image = render_vector_codepoint(spec, codepoint)
+    return image, spec
 
-    font_size = resolve_font_size(spec, CANVAS_SIZE_PIXELS)
-    font = ImageFont.truetype(str(spec.path), size=font_size, index=0)
+
+def render_bitmap_codepoint(spec, codepoint):
+    glyph_image = load_bitmap_glyph_image(spec, codepoint)
+    working_size = max(CANVAS_SIZE_PIXELS, glyph_image.width, glyph_image.height)
+    image = Image.new("RGB", (working_size, working_size), "white")
+    offset = (
+        (working_size - glyph_image.width) // 2,
+        (working_size - glyph_image.height) // 2,
+    )
+    image.paste(glyph_image, offset, glyph_image)
+    return image
+
+
+def render_vector_codepoint(spec, codepoint):
+    character = chr(codepoint)
+    font = ImageFont.truetype(str(spec.path), size=CANVAS_SIZE_PIXELS, index=0)
     if spec.variation_instance_name is not None:
         font.set_variation_by_name(spec.variation_instance_name)
 
@@ -133,7 +167,7 @@ def render_codepoint(codepoint):
         embedded_color=spec.has_color,
     )
 
-    return image, spec
+    return image
 
 
 def parse_codepoint_argument(argument):
