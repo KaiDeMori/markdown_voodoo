@@ -133,11 +133,12 @@ def render_codepoint(codepoint):
 
 def render_bitmap_codepoint(spec, codepoint):
     glyph_image = load_bitmap_glyph_image(spec, codepoint)
-    working_size = max(CANVAS_SIZE_PIXELS, glyph_image.width, glyph_image.height)
-    image = Image.new("RGB", (working_size, working_size), "white")
+    canvas_width = max(CANVAS_SIZE_PIXELS, glyph_image.width)
+    canvas_height = max(CANVAS_SIZE_PIXELS, glyph_image.height)
+    image = Image.new("RGB", (canvas_width, canvas_height), "white")
     offset = (
-        (working_size - glyph_image.width) // 2,
-        (working_size - glyph_image.height) // 2,
+        (canvas_width - glyph_image.width) // 2,
+        (canvas_height - glyph_image.height) // 2,
     )
     image.paste(glyph_image, offset, glyph_image)
     return image
