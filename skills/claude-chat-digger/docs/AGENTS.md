@@ -8,7 +8,10 @@ It is pure Python 3 standard library — no dependencies, no `pip install`. Run 
 
 - `CCD.py` — the command-line front end: argument parsing and output formatting.
 - `CCD_api.py` — the public contract: data shapes and method signatures, no behaviour.
-- `CCD_engine.py` — the implementation: parsing, indexing, search, fork trees, diagrams.
+- `CCD_parsing.py` — corpus parsing: raw `.jsonl` records to structured rows.
+- `CCD_search.py` — content search: matching primitives and the search methods.
+- `CCD_tree.py` — conversation structure: fork fingerprints, trees, fork families, diagrams.
+- `CCD_engine.py` — the orchestrator: binds the three modules above to the SQLite index as `Chat_digger`.
 
 ## Documentation
 

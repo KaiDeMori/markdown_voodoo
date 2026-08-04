@@ -1,6 +1,6 @@
 # Claude Code chat storage — format notes
 
-How Claude Code persists conversation history on disk, and how CCD parses it. The on-disk schema is **undocumented and drifts between Claude Code versions**, so CCD parses defensively: skip what it does not recognise, and trust each record's own `cwd` over anything derived from a path. This file is the format reference behind [CCD_architecture.md](CCD_architecture.md); claims about what CCD does are kept in step with `CCD_engine.py`.
+How Claude Code persists conversation history on disk, and how CCD parses it. The on-disk schema is **undocumented and drifts between Claude Code versions**, so CCD parses defensively: skip what it does not recognise, and trust each record's own `cwd` over anything derived from a path. This file is the format reference behind [CCD_architecture.md](CCD_architecture.md); claims about what CCD does are kept in step with `CCD_parsing.py`, `CCD_search.py`, and `CCD_tree.py`.
 
 ## Mental model
 
@@ -47,7 +47,7 @@ Message records (`type` of `user` / `assistant`) carry a consistent envelope. Th
 | `requestId` | Groups an assistant turn with the tool result answering it. | Telling tool structure from a real fork; also surfaced verbatim by `show --meta`. |
 | `snapshot` | Carries `trackedFileBackups` on file-history records. | File versions / backups for `origin`. |
 
-`show --meta` additionally reads `gitBranch`, `version`, `entrypoint`, `userType`, `isSidechain`, `agentId`, `attributionAgent` / `attributionMcpServer` / `attributionMcpTool` / `attributionSkill`, `permissionMode`, `promptId`, `promptSource` straight from the raw record — see `Message_meta` in `CCD_api.py` and `_extract_message_meta` in `CCD_engine.py`. Everything else present on a record (`slug`, `isMeta`, `isCompactSummary`, `stop_details`, `stop_sequence`, `diagnostics`, `container`, `context_management`, `apiErrorStatus`, ...) lands in `Message_meta.extra` rather than being modeled by name or dropped. Fields genuinely unused even by `--meta`: `sessionId` (redundant with the filename), `leafUuid`, `lastPrompt`, `operation`.
+`show --meta` additionally reads `gitBranch`, `version`, `entrypoint`, `userType`, `isSidechain`, `agentId`, `attributionAgent` / `attributionMcpServer` / `attributionMcpTool` / `attributionSkill`, `permissionMode`, `promptId`, `promptSource` straight from the raw record — see `Message_meta` in `CCD_api.py` and `_extract_message_meta` in `CCD_parsing.py`. Everything else present on a record (`slug`, `isMeta`, `isCompactSummary`, `stop_details`, `stop_sequence`, `diagnostics`, `container`, `context_management`, `apiErrorStatus`, ...) lands in `Message_meta.extra` rather than being modeled by name or dropped. Fields genuinely unused even by `--meta`: `sessionId` (redundant with the filename), `leafUuid`, `lastPrompt`, `operation`.
 
 ## Record types
 

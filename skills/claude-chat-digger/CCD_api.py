@@ -13,6 +13,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
+MESSAGE_TYPES = ("user", "assistant")
+
 
 class Match_mode(Enum):
     substring = "substring"
