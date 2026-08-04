@@ -1,3 +1,5 @@
 __pycache__
 
 skills/unicode-glyph-render/test_images
+*.instructions.IFS_DEACTIVATED.md
+*.instructions.md
