@@ -4,12 +4,15 @@
 python CCD.py [global-options] <command> [arguments] [options]
 ```
 
-Run from the directory containing `CCD.py`. Pure Python 3 standard library; no install. Build the index once with `index` before any search.
+Run from the directory containing `CCD.py`.
+Pure Python 3 standard library; no install.
+Build the index once with `index` before any search.
 
 ## Argument order
 
 - Positionals first, in the order shown for the command, then options.
-- A positional value may start with a dash (e.g. `-X`). It is read literally; no `--` escape needed.
+- A positional value may start with a dash (e.g. `-X`).
+  It is read literally; no `--` escape needed.
 - Options follow the positionals, in any order.
 - Exception: `--help`/`-h` given alone directly after the command name (e.g. `CCD search --help`) shows that command's options, not read as a positional.
 - `CCD -h` shows global help and the full command list.
@@ -43,9 +46,11 @@ Run from the directory containing `CCD.py`. Pure Python 3 standard library; no i
 | `--out <file>`, `-o` | — | Write the full result to a UTF-8 file (`\n` line endings) and print a one-line receipt to stderr. Without it, the result goes to stdout. |
 | `--format text\|json` | `text` | Human-readable text, or the full structured result as JSON. |
 
-`--format json` emits the complete structured result — richer than the text (e.g. snippet offsets, roles, per-entry match counts). For `tree` it is the render-neutral graph (`directed`, `nodes`, `edges`, `notes`); `--diagram-format` is ignored.
+`--format json` emits the complete structured result — richer than the text (e.g. snippet offsets, roles, per-entry match counts).
+For `tree` it is the render-neutral graph (`directed`, `nodes`, `edges`, `notes`); `--diagram-format` is ignored.
 
-Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM and CRLF, which corrupts JSON and diagram source. The receipt and any notes are diagnostics on stderr, so the saved file — or a piped stdout — carries the payload only, valid JSON included.
+Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM and CRLF, which corrupts JSON and diagram source.
+The receipt and any notes are diagnostics on stderr, so the saved file — or a piped stdout — carries the payload only, valid JSON included.
 
 ## Search filters (`search`, `in`)
 
@@ -69,8 +74,10 @@ Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM a
 - `*` matches zero or more characters.
 - `?` matches exactly one character.
 - `[...]` character classes pass through unmodified.
-- Tier 1 (`search`): SQL `GLOB`, a whole-string test. Greediness does not apply.
-- Tier 2/3 (`in`): non-greedy regex translation. Each `*` matches the shortest possible span, so multiple occurrences in one block stay separate.
+- Tier 1 (`search`): SQL `GLOB`, a whole-string test.
+  Greediness does not apply.
+- Tier 2/3 (`in`): non-greedy regex translation.
+  Each `*` matches the shortest possible span, so multiple occurrences in one block stay separate.
 - Example: pattern `fix*bug` on text containing both `fix-the-bug` and `fix-the-other-bug` produces two matches, not one match spanning both.
 
 ## `tree` options
@@ -86,7 +93,10 @@ Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM a
 
 - `show --meta` prints model, token usage, git branch, Claude Code version, and the rest of the message envelope, read from the source `.jsonl` file (never the index) — off by default.
 - `in --context` (lines of context per side): `2`.
-- `families --limit`: `40`. `list --limit`: `40`.
-- `origin --mode`: `all`. Recognised tools: `Read`, `Write`, `Edit`, `MultiEdit`, `NotebookEdit`.
-- Index format version: `3`. A search refuses to run against an index built by a different version — rebuild with `index`.
+- `families --limit`: `40`.
+  `list --limit`: `40`.
+- `origin --mode`: `all`.
+  Recognised tools: `Read`, `Write`, `Edit`, `MultiEdit`, `NotebookEdit`.
+- Index format version: `3`.
+  A search refuses to run against an index built by a different version — rebuild with `index`.
 - Output is always UTF-8.

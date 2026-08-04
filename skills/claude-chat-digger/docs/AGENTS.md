@@ -1,8 +1,11 @@
 # Claude Chat Digger (CCD)
 
-CCD is a command-line tool that indexes and searches your past Claude Code conversations. Claude Code stores every conversation as a JSON-Lines file under `~/.claude/projects`; CCD reads those files into a single SQLite index and then lets you find which conversation a word or phrase appeared in (and when, and in which project), read the surrounding context, pull a full message, trace where a file was created or edited, and draw a conversation's fork tree.
+CCD is a command-line tool that indexes and searches your past Claude Code conversations.
+Claude Code stores every conversation as a JSON-Lines file under `~/.claude/projects`; CCD reads those files into a single SQLite index and then lets you find which conversation a word or phrase appeared in (and when, and in which project), read the surrounding context, pull a full message, trace where a file was created or edited, and draw a conversation's fork tree.
 
-It is pure Python 3 standard library — no dependencies, no `pip install`. Run it as `python CCD.py <command>` from the directory that contains `CCD.py`. The first command to run is `index`, which builds the search index; everything else reads from it.
+It is pure Python 3 standard library — no dependencies, no `pip install`.
+Run it as `python CCD.py <command>` from the directory that contains `CCD.py`.
+The first command to run is `index`, which builds the search index; everything else reads from it.
 
 ## Source layout
 

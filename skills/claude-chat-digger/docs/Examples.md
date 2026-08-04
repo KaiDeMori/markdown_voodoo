@@ -1,11 +1,12 @@
 # Examples
 
-`<session_id>` and `<uuid>` come from the output of an earlier command: `search` prints session ids, `in` prints message uuids. The search terms, paths, and ids below are illustrative.
+`<session_id>` and `<uuid>` come from the output of an earlier command: `search` prints session ids, `in` prints message uuids.
+The search terms, paths, and ids below are illustrative.
 
 ## First run
 
 ```
-python CCD.py index            # build the index (required before searching)
+python CCD.py index            # required before searching
 python CCD.py status           # show counts and whether a rebuild is due
 ```
 
@@ -98,4 +99,6 @@ python CCD.py search "rate limiter" --format json -o m.json  # structured, to a 
 python CCD.py in <session_id> "retry" --format json | jq '.chat_entries[].uuid'
 ```
 
-`--out` is for large results — keep the bulk on disk instead of in the terminal. Prefer it over `> file`, which on PowerShell writes UTF-16/BOM/CRLF and corrupts JSON or diagram source. `--format json` is for piping into tools like `jq`; the payload stays pure (notes go to stderr).
+`--out` is for large results — keep the bulk on disk instead of in the terminal.
+Prefer it over `> file`, which on PowerShell writes UTF-16/BOM/CRLF and corrupts JSON or diagram source.
+`--format json` is for piping into tools like `jq`; the payload stays pure (notes go to stderr).

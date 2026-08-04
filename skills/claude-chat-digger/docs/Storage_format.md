@@ -1,10 +1,15 @@
 # Claude Code chat storage — format notes
 
-How Claude Code persists conversation history on disk, and how CCD parses it. The on-disk schema is **undocumented and drifts between Claude Code versions**, so CCD parses defensively: skip what it does not recognise, and trust each record's own `cwd` over anything derived from a path. This file is the format reference behind [CCD_architecture.md](CCD_architecture.md); claims about what CCD does are kept in step with `CCD_parsing.py`, `CCD_search.py`, and `CCD_tree.py`.
+How Claude Code persists conversation history on disk, and how CCD parses it.
+The on-disk schema is **undocumented and drifts between Claude Code versions**, so CCD parses defensively: skip what it does not recognise, and trust each record's own `cwd` over anything derived from a path.
+This file is the format reference behind [CCD_architecture.md](CCD_architecture.md); claims about what CCD does are kept in step with `CCD_parsing.py`, `CCD_search.py`, and `CCD_tree.py`.
 
 ## Mental model
 
-Every conversation is a single append-only **JSON-Lines** file named after its session id, living in a per-project folder under `~/.claude/projects`. Each line is one self-contained JSON record. Records form a parent/child tree via `uuid` / `parentUuid`, but in practice a single conversation is almost a straight line — the only in-file branches are tool-call structure. To search, CCD streams every line of every file, pulls the human-meaningful text out of each record, and keeps the record's `session_id` (the filename), `timestamp`, and real `cwd` alongside it.
+Every conversation is a single append-only **JSON-Lines** file named after its session id, living in a per-project folder under `~/.claude/projects`.
+Each line is one self-contained JSON record.
+Records form a parent/child tree via `uuid` / `parentUuid`, but in practice a single conversation is almost a straight line — the only in-file branches are tool-call structure.
+To search, CCD streams every line of every file, pulls the human-meaningful text out of each record, and keeps the record's `session_id` (the filename), `timestamp`, and real `cwd` alongside it.
 
 ## Where chats live
 
@@ -24,17 +29,20 @@ Claude Code produces the `<encoded-cwd>` folder name by replacing every non-alph
 folder = re.sub(r'[^A-Za-z0-9]', '-', cwd)
 ```
 
-So `:`, `\`, `/`, `_`, `.`, and spaces all collapse to `-`. This is **not reversible** and genuinely collides:
+So `:`, `\`, `/`, `_`, `.`, and spaces all collapse to `-`.
+This is **not reversible** and genuinely collides:
 
 - A dash in the folder name could have been any of several source characters; e.g. a project named `My_Tool` and a hypothetical `My-Tool` encode to the identical folder.
 - Drive-letter case is preserved, not normalised, so two launches of the same project from different entrypoints can land in two different folders.
 - A single folder can hold records from **several** `cwd`s — the root plus any subdirectory entered during the session.
 
-Therefore CCD treats the `projects/<encoded>` folder as an **opaque bucket id used only to find files** and recovers the real project path from each record's `cwd`. In `parse_session_file` it counts every record's `cwd` and takes the most common as the conversation's `project_path`.
+Therefore CCD treats the `projects/<encoded>` folder as an **opaque bucket id used only to find files** and recovers the real project path from each record's `cwd`.
+In `parse_session_file` it counts every record's `cwd` and takes the most common as the conversation's `project_path`.
 
 ## The record envelope
 
-Message records (`type` of `user` / `assistant`) carry a consistent envelope. The fields CCD reads:
+Message records (`type` of `user` / `assistant`) carry a consistent envelope.
+The fields CCD reads:
 
 | Field | Meaning | Used by CCD for |
 |---|---|---|
@@ -47,11 +55,14 @@ Message records (`type` of `user` / `assistant`) carry a consistent envelope. Th
 | `requestId` | Groups an assistant turn with the tool result answering it. | Telling tool structure from a real fork; also surfaced verbatim by `show --meta`. |
 | `snapshot` | Carries `trackedFileBackups` on file-history records. | File versions / backups for `origin`. |
 
-`show --meta` additionally reads `gitBranch`, `version`, `entrypoint`, `userType`, `isSidechain`, `agentId`, `attributionAgent` / `attributionMcpServer` / `attributionMcpTool` / `attributionSkill`, `permissionMode`, `promptId`, `promptSource` straight from the raw record — see `Message_meta` in `CCD_api.py` and `_extract_message_meta` in `CCD_parsing.py`. Everything else present on a record (`slug`, `isMeta`, `isCompactSummary`, `stop_details`, `stop_sequence`, `diagnostics`, `container`, `context_management`, `apiErrorStatus`, ...) lands in `Message_meta.extra` rather than being modeled by name or dropped. Fields genuinely unused even by `--meta`: `sessionId` (redundant with the filename), `leafUuid`, `lastPrompt`, `operation`.
+`show --meta` additionally reads `gitBranch`, `version`, `entrypoint`, `userType`, `isSidechain`, `agentId`, `attributionAgent` / `attributionMcpServer` / `attributionMcpTool` / `attributionSkill`, `permissionMode`, `promptId`, `promptSource` straight from the raw record — see `Message_meta` in `CCD_api.py` and `_extract_message_meta` in `CCD_parsing.py`.
+Everything else present on a record (`slug`, `isMeta`, `isCompactSummary`, `stop_details`, `stop_sequence`, `diagnostics`, `container`, `context_management`, `apiErrorStatus`, ...) lands in `Message_meta.extra` rather than being modeled by name or dropped.
+Fields genuinely unused even by `--meta`: `sessionId` (redundant with the filename), `leafUuid`, `lastPrompt`, `operation`.
 
 ## Record types
 
-Distinguished by the `type` field. Observed types and how CCD treats each:
+Distinguished by the `type` field.
+Observed types and how CCD treats each:
 
 | `type` | What it is | CCD |
 |---|---|---|
@@ -63,37 +74,55 @@ Distinguished by the `type` field. Observed types and how CCD treats each:
 | `attachment` | Injected context: hook output, pasted content, command stdout. | Skipped as a record type. |
 | `last-prompt`, `queue-operation`, `mode`, `permission-mode`, `system` | Bookmark / control / meta records. | Skipped. |
 
-New `type` values appear over versions. `parse_session_file` decides what to index with an **allow-list on the record `type`**: `user` / `assistant` records go through `iter_searchable_blocks`, `ai-title` / `custom-title` / `file-history-snapshot` are handled specially, and every other type — known or not — is skipped. Skipping is non-fatal, so an unrecognised type never breaks parsing. (An `attachment` *field* on a `user` / `assistant` record can still supply fork-fingerprint content as a fallback; a record whose `type` is literally `attachment` is skipped.)
+New `type` values appear over versions.
+`parse_session_file` decides what to index with an **allow-list on the record `type`**: `user` / `assistant` records go through `iter_searchable_blocks`, `ai-title` / `custom-title` / `file-history-snapshot` are handled specially, and every other type — known or not — is skipped.
+Skipping is non-fatal, so an unrecognised type never breaks parsing.
+(An `attachment` *field* on a `user` / `assistant` record can still supply fork-fingerprint content as a fallback; a record whose `type` is literally `attachment` is skipped.)
 
 ## Message content shapes
 
-`message.content` is **either a plain string or an array of typed blocks**. Block types seen: `text`, `thinking`, `tool_use`, `tool_result`, `document`. A `tool_result` arrives nested inside a record whose `role` is `user`. `iter_searchable_blocks` handles both the string and the array form; block types it does not recognise (e.g. `document`) are simply not indexed.
+`message.content` is **either a plain string or an array of typed blocks**.
+Block types seen: `text`, `thinking`, `tool_use`, `tool_result`, `document`.
+A `tool_result` arrives nested inside a record whose `role` is `user`.
+`iter_searchable_blocks` handles both the string and the array form; block types it does not recognise (e.g. `document`) are simply not indexed.
 
 ## Threading: a tree that is practically a line
 
-`uuid` + `parentUuid` link records into a tree. The first record has `parentUuid: null`; each later record points back at its predecessor. Within a single file the branches that exist are tool-call structure — an assistant `tool_use` and the `user` `tool_result` answering it, sharing a `requestId`.
+`uuid` + `parentUuid` link records into a tree.
+The first record has `parentUuid: null`; each later record points back at its predecessor.
+Within a single file the branches that exist are tool-call structure — an assistant `tool_use` and the `user` `tool_result` answering it, sharing a `requestId`.
 
 Consequences, and how CCD handles them:
 
-- **For indexing and search, iterate all lines in file order.** That is sufficient and robust; records are written append-only in causal order. CCD never reconstructs the conversation by walking the parent chain to decide what to index.
-- **A known bug lets `parentUuid` reference a `uuid` that exists nowhere in the file.** When CCD *does* use the parent links — for the tree view — `read_tree_records` reparents each message to its nearest message ancestor, and a parent that resolves to nothing becomes a local root, so a phantom parent never silently drops messages.
+- **For indexing and search, iterate all lines in file order.**
+  That is sufficient and robust; records are written append-only in causal order.
+  CCD never reconstructs the conversation by walking the parent chain to decide what to index.
+- **A known bug lets `parentUuid` reference a `uuid` that exists nowhere in the file.**
+  When CCD *does* use the parent links — for the tree view — `read_tree_records` reparents each message to its nearest message ancestor, and a parent that resolves to nothing becomes a local root, so a phantom parent never silently drops messages.
 
 ## One file = one session (resume and compaction)
 
 - Every record in a file shares the filename's session id; `uuid`s are globally unique with no cross-file references.
-- **Resume / continue appends to the same file.** Sessions with multi-day internal idle gaps keep an unbroken chain in one growing file.
-- **`/compact`** writes an `isCompactSummary: true` user record mid-file and the conversation continues in the same file; the summary text restates earlier turns. CCD indexes it like any other message.
-- Older pure-CLI `--resume` builds historically wrote a **new** session-id file. So treat each file as a conversation but never *rely* on one-file-per-conversation.
+- **Resume / continue appends to the same file.**
+  Sessions with multi-day internal idle gaps keep an unbroken chain in one growing file.
+- **`/compact`** writes an `isCompactSummary: true` user record mid-file and the conversation continues in the same file; the summary text restates earlier turns.
+  CCD indexes it like any other message.
+- Older pure-CLI `--resume` builds historically wrote a **new** session-id file.
+  So treat each file as a conversation but never *rely* on one-file-per-conversation.
 
 ## Forks across files
 
-A **fork** copies the conversation prefix into a *new* session file, assigning new uuids but preserving each copied record's original `timestamp` and content, with no stored back-reference to the origin. CCD reconstructs the relationship from the data itself:
+A **fork** copies the conversation prefix into a *new* session file, assigning new uuids but preserving each copied record's original `timestamp` and content, with no stored back-reference to the origin.
+CCD reconstructs the relationship from the data itself:
 
-- `fork_fingerprint` keys a record by `timestamp + "|" + hash(content)` (falling back to a uuid-based id when timestamp or content is missing, so unstamped records never merge by accident). Because nothing other than a fork writes the same millisecond-stamped, same-content record into a second file, a shared fingerprint across files **is** a copied record.
+- `fork_fingerprint` keys a record by `timestamp + "|" + hash(content)` (falling back to a uuid-based id when timestamp or content is missing, so unstamped records never merge by accident).
+  Because nothing other than a fork writes the same millisecond-stamped, same-content record into a second file, a shared fingerprint across files **is** a copied record.
 - `_assign_families` runs union-find over fingerprints shared by more than one session, grouping a conversation and all its forks into a **fork family** (a lone conversation is a family of one), and stores a `family_id` per session.
-- `family_structure` rebuilds the family tree keyed by fingerprint: the shared prefix produces identical fingerprint edges in every file and collapses to one trunk, while the divergent tails become branches. A fork point can land mid-turn (the copy can stop inside a thinking block, with the answer regenerated in the fork); fingerprint matching finds the true split wherever it falls.
+- `family_structure` rebuilds the family tree keyed by fingerprint: the shared prefix produces identical fingerprint edges in every file and collapses to one trunk, while the divergent tails become branches.
+  A fork point can land mid-turn (the copy can stop inside a thinking block, with the answer regenerated in the fork); fingerprint matching finds the true split wherever it falls.
 
-This is the load-bearing assumption behind the `tree`, `family`, and `families` commands: it relies on forks preserving original timestamps. A future Claude Code that re-stamped copied records would weaken it.
+This is the load-bearing assumption behind the `tree`, `family`, and `families` commands: it relies on forks preserving original timestamps.
+A future Claude Code that re-stamped copied records would weaken it.
 
 ## Labeling a conversation ("which conversation")
 
@@ -105,11 +134,14 @@ Title records carry only `{ type, session, aiTitle | customTitle }` — no `uuid
 
 ## Timestamps ("when")
 
-Every record has an ISO-8601 `timestamp`. For "when did this word appear", CCD uses the timestamp of the **matching message record**, not the file's overall span — a single session can run across several days. The conversation's `started_at` / `last_active_at` are the min / max record timestamps.
+Every record has an ISO-8601 `timestamp`.
+For "when did this word appear", CCD uses the timestamp of the **matching message record**, not the file's overall span — a single session can run across several days.
+The conversation's `started_at` / `last_active_at` are the min / max record timestamps.
 
 ## What CCD indexes, what it drops
 
-One row goes into the `blocks` table per searchable block. Block kinds and when they are searched:
+One row goes into the `blocks` table per searchable block.
+Block kinds and when they are searched:
 
 | Block kind | Source | Searched by default? |
 |---|---|---|
@@ -118,7 +150,9 @@ One row goes into the `blocks` table per searchable block. Block kinds and when 
 | `tool_input` | Text pulled from `tool_use.input` (see keys below). | Yes — `--no-tool-input` to skip. |
 | `tool_result` | Tool output text. | No — `--tool-result` to include (noisy). |
 
-`tool_input` text is extracted (`extract_tool_input_text`) from these `input` keys, in this order: `command`, `description`, `content`, `query`, `pattern`, `prompt`, `old_string`, `new_string`, `url`, `file_path`, `path`, `todos`, `questions`, `plan`. String values are taken as-is; list / dict values are JSON-encoded. Pure flags (`limit`, `offset`, `timeout`, …) are never indexed.
+`tool_input` text is extracted (`extract_tool_input_text`) from these `input` keys, in this order: `command`, `description`, `content`, `query`, `pattern`, `prompt`, `old_string`, `new_string`, `url`, `file_path`, `path`, `todos`, `questions`, `plan`.
+String values are taken as-is; list / dict values are JSON-encoded.
+Pure flags (`limit`, `offset`, `timeout`, …) are never indexed.
 
 Dropped or deduped to avoid false and duplicate hits:
 
@@ -129,14 +163,17 @@ Dropped or deduped to avoid false and duplicate hits:
 
 ## File history and backups
 
-Edited-file backups live under `~/.claude/file-history/<session_id>/`. A `file-history-snapshot` record's `snapshot.trackedFileBackups` maps a tracked path to a `{ version, backupFileName, backupTime }`. `find_file_origin` joins file-touching tool calls (`Read`, `Write`, `Edit`, `MultiEdit`, `NotebookEdit`) to these backups:
+Edited-file backups live under `~/.claude/file-history/<session_id>/`.
+A `file-history-snapshot` record's `snapshot.trackedFileBackups` maps a tracked path to a `{ version, backupFileName, backupTime }`.
+`find_file_origin` joins file-touching tool calls (`Read`, `Write`, `Edit`, `MultiEdit`, `NotebookEdit`) to these backups:
 
 - Operation is classified from the tool and version (`classify_file_operation`): `Read` → `read`; `Edit` / `MultiEdit` / `NotebookEdit` → `edited`; a `Write` with version `None` or `1` → `created`, otherwise `edited`.
 - The nearest backup by time supplies the version number; `has_backup` is true only when the named backup file actually exists on disk under `file-history/<session_id>/`.
 
 ## Other storage under `~/.claude`
 
-CCD reads only `projects/` (the corpus) and `file-history/` (backups). The rest is mapped here for future features:
+CCD reads only `projects/` (the corpus) and `file-history/` (backups).
+The rest is mapped here for future features:
 
 | Location | Holds | Useful for chat search? |
 |---|---|---|
@@ -153,11 +190,15 @@ CCD reads only `projects/` (the corpus) and `file-history/` (backups). The rest 
 
 ## Subagents / sidechains
 
-`isSidechain` marks subagent traffic. When subagents run, their turns are written into the **same** session file, interleaved, flagged `isSidechain: true` and tagged with an `agentId`. CCD does not currently distinguish sidechain records for indexing or search — it indexes them like any other message, so a search hit is attributed to its parent session without a subagent flag. `show --meta` on one message will report its `is_sidechain` / `agent_id` (and, for MCP or skill traffic, `attribution_mcp_server` / `attribution_mcp_tool` / `attribution_skill`), but that is a per-message, on-demand lookup, not a search filter — an `isSidechain` / `agentId` filter on `search`/`in` is still a natural future addition.
+`isSidechain` marks subagent traffic.
+When subagents run, their turns are written into the **same** session file, interleaved, flagged `isSidechain: true` and tagged with an `agentId`.
+CCD does not currently distinguish sidechain records for indexing or search — it indexes them like any other message, so a search hit is attributed to its parent session without a subagent flag.
+`show --meta` on one message will report its `is_sidechain` / `agent_id` (and, for MCP or skill traffic, `attribution_mcp_server` / `attribution_mcp_tool` / `attribution_skill`), but that is a per-message, on-demand lookup, not a search filter — an `isSidechain` / `agentId` filter on `search`/`in` is still a natural future addition.
 
 ## Known gotchas and format drift
 
-- The schema is **undocumented and version-specific**; new `type`s appear over time. Default to skipping unknown records, not crashing.
+- The schema is **undocumented and version-specific**; new `type`s appear over time.
+  Default to skipping unknown records, not crashing.
 - **Phantom `parentUuid`** values that reference nothing in the file — iterate all lines for indexing; treat unresolved parents as roots when building trees.
 - **Streamed duplicate** assistant records — dedup on `message.id` / `uuid`.
 - **`messageId` / `uuid` collisions** on resume — do not assume id uniqueness across different record types.
