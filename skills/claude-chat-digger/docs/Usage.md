@@ -6,9 +6,13 @@ python CCD.py [global-options] <command> [arguments] [options]
 
 Run from the directory containing `CCD.py`. Pure Python 3 standard library; no install. Build the index once with `index` before any search.
 
-**Argument order is fixed.** A command's required arguments are positional: they come first, in the order shown, immediately after the command and before any options. A value may begin with a dash — searching for `-X`, say — and is taken literally, so no `--` escape is needed. Options then follow, in any order among themselves.
+## Argument order
 
-A command's own `--help` likewise comes after its arguments, so for a command that takes a required argument, reach it with a throwaway first argument: `CCD search "" --help`. (`CCD -h` always shows the global help and the full command list.)
+- Positionals first, in the order shown for the command, then options.
+- A positional value may start with a dash (e.g. `-X`). It is read literally; no `--` escape needed.
+- Options follow the positionals, in any order.
+- Exception: `--help`/`-h` given alone directly after the command name (e.g. `CCD search --help`) shows that command's options, not read as a positional.
+- `CCD -h` shows global help and the full command list.
 
 ## Global options (before the command)
 
@@ -62,11 +66,12 @@ Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM a
 
 ### Wildcard matching (`--mode wildcard`)
 
-`*` matches any sequence of characters and `?` matches exactly one — standard glob syntax, `[...]` character classes included on a best-effort basis.
-
-`*` is **non-greedy**: each `*` matches the shortest span that still lets the rest of the pattern match, not the longest. This only affects match counting and snippet positions (tier 2/3) — the tier-1 filter that decides whether a conversation matches at all has no notion of greediness either way.
-
-Example: `fix*bug` against text containing `fix-the-bug`, then later `fix-the-other-bug` finds **two separate matches**, each snippet bounded to its own occurrence. A greedy `*` would instead find one match spanning from the first `fix` to the last `bug`, swallowing everything in between into a single sprawling snippet.
+- `*` matches zero or more characters.
+- `?` matches exactly one character.
+- `[...]` character classes pass through unmodified.
+- Tier 1 (`search`): SQL `GLOB`, a whole-string test. Greediness does not apply.
+- Tier 2/3 (`in`): non-greedy regex translation. Each `*` matches the shortest possible span, so multiple occurrences in one block stay separate.
+- Example: pattern `fix*bug` on text containing both `fix-the-bug` and `fix-the-other-bug` produces two matches, not one match spanning both.
 
 ## `tree` options
 

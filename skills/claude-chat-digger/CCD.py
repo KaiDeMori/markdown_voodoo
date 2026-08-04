@@ -457,8 +457,7 @@ def build_top_parser() -> argparse.ArgumentParser:
         positionals = " ".join("<%s>" % positional for positional in spec.positionals)
         epilog_lines.append("  %-*s  %s" % (name_width, name, positionals))
     epilog_lines.append("")
-    epilog_lines.append("run  CCD <command> <args> --help  for a command's options")
-    epilog_lines.append('  (the args may be a throwaway, e.g.  CCD search "" --help)')
+    epilog_lines.append("run  CCD <command> --help  for a command's options")
 
     parser = argparse.ArgumentParser(
         prog="CCD",
@@ -488,7 +487,10 @@ def parse_command(argv: list[str]) -> argparse.Namespace:
 
     The required positionals are taken from the front of the command's arguments by position alone and
     set on the namespace untouched; only the tokens after them are parsed for options. A required
-    positional that begins with a dash is therefore kept as a literal value, never mistaken for a flag.
+    positional that begins with a dash is therefore kept as a literal value, never mistaken for a flag —
+    with one deliberate exception: `rest` consisting of exactly `-h` or `--help` and nothing else shows
+    that command's help instead of being read as a positional, since no one searches for that literally
+    and everyone typing `<command> --help` expects help.
     """
     arguments = build_top_parser().parse_args(argv)
     spec = command_specs[arguments.command]
@@ -496,6 +498,8 @@ def parse_command(argv: list[str]) -> argparse.Namespace:
 
     required = spec.positionals
     given = arguments.rest
+    if given in (["-h"], ["--help"]):
+        option_parser.parse_args(given)  # argparse prints help and exits
     if len(given) < len(required):
         option_parser.error("missing required argument: %s" % ", ".join(required[len(given):]))
     for name, value in zip(required, given):
