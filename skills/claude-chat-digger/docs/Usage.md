@@ -47,7 +47,7 @@ Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM a
 
 | Option | Default | Effect |
 |---|---|---|
-| `--mode substring\|all_terms\|wildcard\|phrase\|regex` | `substring` | Match mode. `wildcard` = glob `*` `?`; `regex` is reserved and errors if used. |
+| `--mode substring\|all_terms\|wildcard\|phrase\|regex` | `substring` | Match mode. `wildcard` = glob `*` `?`, see below; `regex` is reserved and errors if used. |
 | `--all` | off | Shorthand for `--mode all_terms`: every whitespace-separated term must appear in the same message. |
 | `--case-sensitive` | off | Case-sensitive matching. |
 | `--role user\|assistant\|both` | `both` | Restrict by speaker. |
@@ -59,6 +59,14 @@ Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM a
 | `--tool-result` | off | Also search tool-result bodies. |
 | `--no-tool-input` | off | Do not search tool inputs (searched by default). |
 | `--limit N` | `20` | Cap the number of results. |
+
+### Wildcard matching (`--mode wildcard`)
+
+`*` matches any sequence of characters and `?` matches exactly one — standard glob syntax, `[...]` character classes included on a best-effort basis.
+
+`*` is **non-greedy**: each `*` matches the shortest span that still lets the rest of the pattern match, not the longest. This only affects match counting and snippet positions (tier 2/3) — the tier-1 filter that decides whether a conversation matches at all has no notion of greediness either way.
+
+Example: `fix*bug` against text containing `fix-the-bug`, then later `fix-the-other-bug` finds **two separate matches**, each snippet bounded to its own occurrence. A greedy `*` would instead find one match spanning from the first `fix` to the last `bug`, swallowing everything in between into a single sprawling snippet.
 
 ## `tree` options
 
