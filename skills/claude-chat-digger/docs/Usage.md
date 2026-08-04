@@ -56,7 +56,7 @@ The receipt and any notes are diagnostics on stderr, so the saved file — or a 
 
 | Option | Default | Effect |
 |---|---|---|
-| `--mode substring\|all_terms\|wildcard\|phrase\|regex` | `substring` | Match mode. `wildcard` = glob `*` `?`, see below; `regex` is reserved and errors if used. |
+| `--mode substring\|all_terms\|wildcard\|regex` | `substring` | Match mode. `wildcard` = glob `*` `?`, see below; `regex` is reserved and errors if used. |
 | `--all` | off | Shorthand for `--mode all_terms`: every whitespace-separated term must appear in the same message. |
 | `--case-sensitive` | off | Case-sensitive matching. |
 | `--role user\|assistant\|both` | `both` | Restrict by speaker. |

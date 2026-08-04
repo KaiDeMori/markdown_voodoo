@@ -19,7 +19,6 @@ class Match_mode(Enum):
     substring = "substring"
     all_terms = "all_terms"  # every whitespace-separated term, same chat_entry, any order
     wildcard = "wildcard"  # glob-style * and ?
-    phrase = "phrase"
     regex = "regex"
 
 

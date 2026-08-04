@@ -58,7 +58,7 @@ def _wildcard_pattern(query: str, case_sensitive: bool) -> re.Pattern:
 
 
 def count_occurrences(content: str, query: str, options: Search_options) -> int:
-    if options.match_mode in (Match_mode.substring, Match_mode.phrase):
+    if options.match_mode is Match_mode.substring:
         if options.case_sensitive:
             return content.count(query)
         return content.lower().count(query.lower())
