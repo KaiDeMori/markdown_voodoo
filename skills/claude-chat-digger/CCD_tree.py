@@ -1,10 +1,7 @@
 """CCD conversation structure — fork fingerprints, trees, fork families, diagrams.
 
-Module-level functions build a render-neutral `Graph` from a session's `uuid`/
-`parentUuid` structure or from a whole fork family; `graph_to_mermaid` / `graph_to_dot`
-are the only two diagram emitters. `Tree_mixin` is mixed into `Chat_digger` (see
-`CCD_engine.py`); its methods rely on `self._open_for_read()`, which the concrete class
-provides.
+Module-level functions build a render-neutral `Graph` from a session's `uuid`/`parentUuid` structure or from a whole fork family; `graph_to_mermaid` / `graph_to_dot` are the only two diagram emitters.
+`Tree_mixin` is mixed into `Chat_digger` (see `CCD_engine.py`); its methods rely on `self._open_for_read()`, which the concrete class provides.
 """
 
 from __future__ import annotations
@@ -36,9 +33,8 @@ TREE_PREVIEW_LENGTH = 40
 def fork_fingerprint(timestamp: Optional[str], content_text: str, uuid: str) -> str:
     """A copy-stable id for a record: timestamp + content hash.
 
-    A fork copies records verbatim, so two records sharing this fingerprint across
-    files are the same copied record. Records with no timestamp or empty content fall
-    back to a uuid-based id so they never merge across files by accident.
+    A fork copies records verbatim, so two records sharing this fingerprint across files are the same copied record.
+    Records with no timestamp or empty content fall back to a uuid-based id so they never merge across files by accident.
     """
     text = (content_text if isinstance(content_text, str) else str(content_text or "")).strip()
     if timestamp and text:
@@ -80,10 +76,8 @@ def _record_content_text(record: dict) -> str:
 def read_tree_records(path: Path) -> list[dict]:
     """Read a session's conversation messages with metadata for tree rendering.
 
-    Only `user` / `assistant` records become tree nodes; injected attachment / system /
-    queue records are skipped and each message is reparented to its nearest message
-    ancestor, so the tree is the conversation flow rather than the plumbing — and forks
-    are not confused by attachments being linked differently across copied files.
+    Only `user` / `assistant` records become tree nodes.
+    Injected attachment / system / queue records are skipped and each message is reparented to its nearest message ancestor, so the tree is the conversation flow rather than the plumbing — and forks are not confused by attachments being linked differently across copied files.
     """
     raw = []
     with open(path, encoding="utf-8", errors="replace") as handle:
@@ -196,8 +190,7 @@ SHORT_FORK_MIN_BRANCH = 3
 def _subtree_sizes(children: dict, nodes: list) -> dict:
     """Descendant count (inclusive) under each node, for telling a real branch from a stub.
 
-    Iterative so a long conversation cannot overflow the recursion limit; a node reached
-    by more than one parent is sized once, which is good enough for the branch test.
+    Iterative so a long conversation cannot overflow the recursion limit; a node reached by more than one parent is sized once, which is good enough for the branch test.
     """
     size: dict = {}
     for start in nodes:
@@ -226,12 +219,8 @@ def _subtree_sizes(children: dict, nodes: list) -> dict:
 def _reduce_to_forks(meta: dict, children: dict, roots: list, branch_kind: dict, max_nodes: int) -> Graph:
     """Reduce a node tree to its real forks plus the entries immediately around them.
 
-    A fork is a node where two or more branches each carry real content; a branch of only
-    a entry or two is treated as noise (tool structure, a dead-end rewind) rather than a
-    fork, so a long backbone does not turn every turn into a branch. Each fork keeps the
-    entry just before it and the first entry of each branch after it; everything else
-    between forks folds into one aggregated count node, and dead-end runs below a fork fold
-    into a single count node rather than several parallel ones.
+    A fork is a node where two or more branches each carry real content; a branch of only an entry or two is treated as noise (tool structure, a dead-end rewind) rather than a fork, so a long backbone does not turn every turn into a branch.
+    Each fork keeps the entry just before it and the first entry of each branch after it; everything else between forks folds into one aggregated count node, and dead-end runs below a fork fold into a single count node rather than several parallel ones.
     """
     sizes = _subtree_sizes(children, list(meta.keys()))
     forks = set()
@@ -336,8 +325,8 @@ def _reduce_to_forks(meta: dict, children: dict, roots: list, branch_kind: dict,
 def _reduce_to_graph(meta: dict, children: dict, roots: list, branch_kind: dict, detail: Tree_detail, max_nodes: int) -> Graph:
     """Collapse a node tree to a render-neutral graph per the detail level.
 
-    `meta[node_id]` carries `type`, `has_tool_result`, `label`, and `ref`. Works for a
-    single file (nodes keyed by uuid) or a whole fork family (nodes keyed by fingerprint).
+    `meta[node_id]` carries `type`, `has_tool_result`, `label`, and `ref`.
+    Works for a single file (nodes keyed by uuid) or a whole fork family (nodes keyed by fingerprint).
     """
     if detail is Tree_detail.short:
         return _reduce_to_forks(meta, children, roots, branch_kind, max_nodes)
@@ -458,8 +447,7 @@ def _classify_family_branch(meta: dict, children: dict, fingerprint: str) -> str
 def family_structure(rows: list[dict], session_titles: dict):
     """Build a fingerprint-keyed tree from the tree_nodes of one or more sessions.
 
-    Records a fork copied share a fingerprint and collapse to one node; the within-file
-    parent links, translated to fingerprints and unioned, reveal the cross-file forks.
+    Records a fork copied share a fingerprint and collapse to one node; the within-file parent links, translated to fingerprints and unioned, reveal the cross-file forks.
     Returns (meta, children, roots, branch_kind).
     """
     fingerprint_of = {}

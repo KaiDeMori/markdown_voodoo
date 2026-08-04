@@ -1,7 +1,6 @@
 """CCD content search — matching primitives plus the `Chat_digger` search methods.
 
-`Search_mixin` is mixed into `Chat_digger` (see `CCD_engine.py`); its methods rely on
-`self._open_for_read()` / `self.index_path`, which the concrete class provides.
+`Search_mixin` is mixed into `Chat_digger` (see `CCD_engine.py`); its methods rely on `self._open_for_read()` / `self.index_path`, which the concrete class provides.
 """
 
 from __future__ import annotations
@@ -41,15 +40,9 @@ WILDCARD_TOKEN_PATTERN = re.compile(r"\*|\?|\[[^\]]*\]|[^*?\[]+|.", re.DOTALL)
 def _wildcard_pattern(query: str, case_sensitive: bool) -> re.Pattern:
     """A glob pattern as a "find each occurrence" regex.
 
-    This is deliberately not the same test the SQL GLOB filter runs: GLOB is a whole-
-    string membership test with no notion of greediness, while this pattern locates and
-    counts individual occurrences within a block, so `*` is translated to a non-greedy
-    `.*?` rather than the mathematically literal "any sequence". A greedy `*` would let
-    one occurrence span from its first anchor to the *last* matching text anywhere later
-    in the block, collapsing what should be several separate hits (e.g. three instances
-    of "fix...bug" in one block) into a single sprawling match. Bracket expressions
-    (`[...]`) pass through unmodified, on a best-effort basis: glob's bracket syntax and
-    Python regex character classes mostly overlap but are not guaranteed identical.
+    This is deliberately not the same test the SQL GLOB filter runs: GLOB is a whole-string membership test with no notion of greediness, while this pattern locates and counts individual occurrences within a block, so `*` is translated to a non-greedy `.*?` rather than the mathematically literal "any sequence".
+    A greedy `*` would let one occurrence span from its first anchor to the *last* matching text anywhere later in the block, collapsing what should be several separate hits (e.g. three instances of "fix...bug" in one block) into a single sprawling match.
+    Bracket expressions (`[...]`) pass through unmodified, on a best-effort basis: glob's bracket syntax and Python regex character classes mostly overlap but are not guaranteed identical.
     """
     parts = []
     for token in WILDCARD_TOKEN_PATTERN.findall(query):

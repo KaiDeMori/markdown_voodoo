@@ -8,13 +8,10 @@ Usage:
     python CCD.py show <session_id> <uuid> [--block N] [--thinking]
     python CCD.py list [--limit N]
 
-A command's required arguments are positional: they come first, in the order shown,
-immediately after the command and before any options. A value may begin with a dash
-(searching for "-X", say) and is taken literally, so no "--" escape is needed.
+A command's required arguments are positional: they come first, in the order shown, immediately after the command and before any options.
+A value may begin with a dash (searching for "-X", say) and is taken literally, so no "--" escape is needed.
 
-Two output axes apply to every command: --out/-o FILE writes the result to a UTF-8
-file and prints a one-line receipt; --format text|json chooses human-readable text
-(the default) or the full structured result as JSON.
+Two output axes apply to every command: --out/-o FILE writes the result to a UTF-8 file and prints a one-line receipt; --format text|json chooses human-readable text (the default) or the full structured result as JSON.
 """
 
 from __future__ import annotations
@@ -42,10 +39,8 @@ from CCD_engine import CCD_INDEX_VERSION, Chat_digger
 class Command_output:
     """A command's rendered result, decoupled from where and how it is sent.
 
-    `body` is the human-readable text and `data` the structured result; `--format`
-    picks which becomes the payload. `summary` is a one-line detail for the file
-    receipt, and `notes` are deterministic reductions reported alongside the result —
-    both diagnostics, never folded into the payload so a saved file stays clean.
+    `body` is the human-readable text and `data` the structured result; `--format` picks which becomes the payload.
+    `summary` is a one-line detail for the file receipt, and `notes` are deterministic reductions reported alongside the result — both diagnostics, never folded into the payload so a saved file stays clean.
     """
 
     body: str
@@ -117,9 +112,8 @@ def add_search_filters(parser: argparse.ArgumentParser) -> None:
 def add_output_options(parser: argparse.ArgumentParser) -> None:
     """Give a subcommand the two universal output axes: destination and encoding.
 
-    `--out` writes through Python rather than shell redirection, which guarantees a
-    UTF-8 file with newline line endings on any shell and keeps the receipt out of the
-    saved payload. `--format` selects text or the full structured result as JSON.
+    `--out` writes through Python rather than shell redirection, which guarantees a UTF-8 file with newline line endings on any shell and keeps the receipt out of the saved payload.
+    `--format` selects text or the full structured result as JSON.
     """
     parser.add_argument(
         "--out",
@@ -138,9 +132,7 @@ def add_output_options(parser: argparse.ArgumentParser) -> None:
 def emit(output: Command_output, out_path, output_format: str) -> None:
     """Send a command's result to its destination in the chosen encoding.
 
-    The payload (text or JSON) is the only thing on the chosen sink; the receipt and
-    any notes are diagnostics on stderr, so a piped or redirected payload stays pure
-    even as JSON, where a trailing note line would be invalid.
+    The payload (text or JSON) is the only thing on the chosen sink; the receipt and any notes are diagnostics on stderr, so a piped or redirected payload stays pure even as JSON, where a trailing note line would be invalid.
     """
     if output_format == "json" and output.data is not None:
         payload = render_json(output.data)
@@ -222,8 +214,8 @@ def command_in(digger: Chat_digger, arguments) -> Command_output:
 def format_message_meta(meta) -> list[str]:
     """Render a `Message_meta` as one readable line per field that is actually present.
 
-    A user entry has no `model`/`usage`/attribution, an assistant entry has no
-    `permission_mode`/`prompt_id`; empty fields are skipped rather than printed blank.
+    A user entry has no `model`/`usage`/attribution, an assistant entry has no `permission_mode`/`prompt_id`.
+    Empty fields are skipped rather than printed blank.
     """
     lines = ["meta:"]
     if meta.model:
@@ -416,10 +408,10 @@ def add_list_options(parser: argparse.ArgumentParser) -> None:
 
 @dataclass
 class Command_spec:
-    """The fixed signature of one subcommand: its required positionals in the order they must be
-    given, an optional hook that registers the command's flags, the handler that runs it, and a
-    one-line summary. The required positionals are peeled off the token stream literally before any
-    option parsing, so a value that starts with a dash is taken as-is rather than read as a flag."""
+    """The fixed signature of one subcommand: its required positionals in the order they must be given, an optional hook that registers the command's flags, the handler that runs it, and a one-line summary.
+
+    The required positionals are peeled off the token stream literally before any option parsing, so a value that starts with a dash is taken as-is rather than read as a flag.
+    """
 
     positionals: list[str]
     add_options: Optional[Callable[[argparse.ArgumentParser], None]]
@@ -448,9 +440,10 @@ def command_signature(command: str, spec: Command_spec) -> str:
 
 
 def build_top_parser() -> argparse.ArgumentParser:
-    """The pre-parser: it reads the global options and the command name, then sweeps everything that
-    follows into `rest` verbatim. Holding the command's own arguments back from option parsing here is
-    what lets a dash-leading positional such as a "-X" search term survive intact."""
+    """The pre-parser: it reads the global options and the command name, then sweeps everything that follows into `rest` verbatim.
+
+    Holding the command's own arguments back from option parsing here is what lets a dash-leading positional such as a "-X" search term survive intact.
+    """
     epilog_lines = ["commands (arguments must appear in the order shown):"]
     name_width = max(len(name) for name in command_specs)
     for name, spec in command_specs.items():
@@ -473,8 +466,11 @@ def build_top_parser() -> argparse.ArgumentParser:
 
 
 def build_option_parser(command: str, spec: Command_spec) -> argparse.ArgumentParser:
-    """A command's option parser. It carries no positionals — those are peeled off beforehand — so it
-    only ever sees the trailing flags. Its usage line still advertises the full fixed signature."""
+    """A command's option parser.
+
+    It carries no positionals — those are peeled off beforehand — so it only ever sees the trailing flags.
+    Its usage line still advertises the full fixed signature.
+    """
     parser = argparse.ArgumentParser(prog="CCD %s" % command, usage=command_signature(command, spec), description=spec.summary)
     if spec.add_options is not None:
         spec.add_options(parser)
@@ -485,12 +481,9 @@ def build_option_parser(command: str, spec: Command_spec) -> argparse.ArgumentPa
 def parse_command(argv: list[str]) -> argparse.Namespace:
     """Resolve a full argument list into one namespace ready for its handler.
 
-    The required positionals are taken from the front of the command's arguments by position alone and
-    set on the namespace untouched; only the tokens after them are parsed for options. A required
-    positional that begins with a dash is therefore kept as a literal value, never mistaken for a flag —
-    with one deliberate exception: `rest` consisting of exactly `-h` or `--help` and nothing else shows
-    that command's help instead of being read as a positional, since no one searches for that literally
-    and everyone typing `<command> --help` expects help.
+    The required positionals are taken from the front of the command's arguments by position alone and set on the namespace untouched.
+    Only the tokens after them are parsed for options.
+    A required positional that begins with a dash is therefore kept as a literal value, never mistaken for a flag — with one deliberate exception: `rest` consisting of exactly `-h` or `--help` and nothing else shows that command's help instead of being read as a positional, since no one searches for that literally and everyone typing `<command> --help` expects help.
     """
     arguments = build_top_parser().parse_args(argv)
     spec = command_specs[arguments.command]

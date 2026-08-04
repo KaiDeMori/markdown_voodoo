@@ -1,16 +1,12 @@
 """CCD engine — indexing and the `Chat_digger` orchestrator.
 
-The index is a plain SQLite database with one row per searchable block; matching uses
-substring / glob scans (the agreed wildcard model) rather than a tokenised full-text
-index. A separate table records file create/edit/read events for `find_file_origin`.
-Indexing is always a full rebuild — searches read the stored index and refuse to run if
-its `CCD_version` does not match this code. The public surface mirrors `CCD_api.py`.
+The index is a plain SQLite database with one row per searchable block; matching uses substring / glob scans rather than a tokenised full-text index.
+A separate table records file create/edit/read events for `find_file_origin`.
+Indexing is always a full rebuild — searches read the stored index and refuse to run if its `CCD_version` does not match this code.
+The public surface mirrors `CCD_api.py`.
 
-`Chat_digger` binds three concerns to the SQLite index: corpus parsing (`CCD_parsing`),
-content search (`CCD_search.Search_mixin`), and conversation structure — fork families,
-trees, diagrams (`CCD_tree.Tree_mixin`). This module holds connection/schema management,
-indexing, and the handful of methods (`find_file_origin`, `get_chat_entry`, ...) that
-don't belong to either mixin.
+`Chat_digger` binds three concerns to the SQLite index: corpus parsing (`CCD_parsing`), content search (`CCD_search.Search_mixin`), and conversation structure — fork families, trees, diagrams (`CCD_tree.Tree_mixin`).
+This module holds connection/schema management, indexing, and the handful of methods (`find_file_origin`, `get_chat_entry`, ...) that don't belong to either mixin.
 """
 
 from __future__ import annotations
@@ -133,7 +129,10 @@ class Chat_digger(Search_mixin, Tree_mixin):
         return version
 
     def build_index(self) -> Index_stats:
-        """Rebuild the whole index from scratch. The only path that writes it."""
+        """Rebuild the whole index from scratch.
+
+        The only path that writes it.
+        """
         file_history_root = self._file_history_root()
         connection = self._connect()
         connection.executescript(

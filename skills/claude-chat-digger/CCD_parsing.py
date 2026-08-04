@@ -1,8 +1,7 @@
 """CCD corpus parsing — raw `.jsonl` records to structured rows.
 
-Turns one session file into a conversation row, block rows, and file-event rows
-(`parse_session_file`), and reads a record's full metadata on demand for `show --meta`
-(`_extract_message_meta`). No SQLite or search logic lives here.
+Turns one session file into a conversation row, block rows, and file-event rows (`parse_session_file`), and reads a record's full metadata on demand for `show --meta` (`_extract_message_meta`).
+No SQLite or search logic lives here.
 """
 
 from __future__ import annotations
@@ -182,8 +181,7 @@ def _parse_iso(timestamp: Optional[str]):
 def _collect_backups(record: dict, backups_by_basename: dict) -> None:
     """Record file-history versions per basename: {basename: {version: (time, backup_name)}}.
 
-    `trackedFileBackups` is a cumulative per-version map, so versions are keyed directly
-    and a backup file name is preferred over a null when the same version recurs.
+    `trackedFileBackups` is a cumulative per-version map, so versions are keyed directly and a backup file name is preferred over a null when the same version recurs.
     """
     tracked = (record.get("snapshot") or {}).get("trackedFileBackups")
     if not isinstance(tracked, dict):
@@ -368,10 +366,7 @@ MESSAGE_META_CONSUMED_KEYS = {"content", "role", "id", "model", "usage", "stop_r
 def _extract_message_meta(record: dict) -> Message_meta:
     """Everything on a record and its message beyond content, for `show --meta`.
 
-    Reads straight from the already-parsed raw record — model, usage, git branch, and
-    the rest of the well-established fields by name; every other top-level or message
-    field lands in `extra` so a field this function does not yet know about is never
-    silently dropped.
+    Reads straight from the already-parsed raw record — model, usage, git branch, and the rest of the well-established fields by name; every other top-level or message field lands in `extra` so a field this function does not yet know about is never silently dropped.
     """
     message = record.get("message") if isinstance(record.get("message"), dict) else {}
     extra = {key: value for key, value in record.items() if key not in RECORD_META_CONSUMED_KEYS}

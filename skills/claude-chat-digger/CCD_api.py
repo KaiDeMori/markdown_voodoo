@@ -1,10 +1,9 @@
 """CCD public API — shapes only.
 
-Signatures and return types for discussion; no behaviour is implemented. The three
-search methods form a progressive-disclosure ladder: locate without content, then
-bounded snippets, then full content by exact id. A conversation tree is serialised to
-diagram-ready text deterministically — the model never draws a graph by hand. See
-api_design.md for rationale.
+Signatures and return types for discussion; no behaviour is implemented.
+The three search methods form a progressive-disclosure ladder: locate without content, then bounded snippets, then full content by exact id.
+A conversation tree is serialised to diagram-ready text deterministically — the model never draws a graph by hand.
+See api_design.md for rationale.
 """
 
 from __future__ import annotations
@@ -47,8 +46,7 @@ class Tree_detail(Enum):
 class Diagram_format(Enum):
     """A text drawing language a conversation graph is rendered to.
 
-    JSON is not a member: a graph serialised as JSON is the universal `--format json`
-    output (the render-neutral `Graph` itself), not a diagram format.
+    JSON is not a member: a graph serialised as JSON is the universal `--format json` output (the render-neutral `Graph` itself), not a diagram format.
     """
 
     mermaid = "mermaid"
@@ -117,8 +115,7 @@ class Search_all_result:
 class Snippet:
     """A single match plus its bounded surrounding context, located to a block.
 
-    `block_index` is the position of the matched block within its entry — the handle
-    a tier-3 `get_chat_entry(..., block_index=...)` uses to fetch just that block.
+    `block_index` is the position of the matched block within its entry — the handle a tier-3 `get_chat_entry(..., block_index=...)` uses to fetch just that block.
     """
 
     block_index: int
@@ -163,13 +160,10 @@ class Block:
 
 @dataclass
 class Message_meta:
-    """Everything on a record and its message envelope beyond content, read straight
-    from the raw record on request rather than carried in the index.
+    """Everything on a record and its message envelope beyond content, read straight from the raw record on request rather than carried in the index.
 
-    Named fields cover the well-established, generally useful ones — which model
-    answered, token usage, git branch, Claude Code version, subagent/skill attribution.
-    `extra` catches everything else present on the record so a future field is never
-    silently dropped, in keeping with the corpus's undocumented, drifting schema.
+    Named fields cover the well-established, generally useful ones — which model answered, token usage, git branch, Claude Code version, subagent/skill attribution.
+    `extra` catches everything else present on the record so a future field is never silently dropped, in keeping with the corpus's undocumented, drifting schema.
     """
 
     model: Optional[str] = None
@@ -196,8 +190,7 @@ class Message_meta:
 class Chat_entry_content:
     """The full content of one chat entry, or a single block of it.
 
-    The only shape that returns unbounded content; a `block_index` fetch narrows it to
-    one block so a small text block need not drag along a huge `tool_result`.
+    The only shape that returns unbounded content; a `block_index` fetch narrows it to one block so a small text block need not drag along a huge `tool_result`.
     """
 
     uuid: str
@@ -246,9 +239,8 @@ class Branch_point:
 class Conversation_tree:
     """A fork family reduced to its branch points and leaves.
 
-    Spans the whole family (a lone conversation is a family of one). Nodes are keyed by
-    fork fingerprint, so a record copied into several forked files is one node; the
-    `sessions` it carries say which conversations share it.
+    Spans the whole family (a lone conversation is a family of one).
+    Nodes are keyed by fork fingerprint, so a record copied into several forked files is one node; the `sessions` it carries say which conversations share it.
     """
 
     session_id: str
@@ -260,8 +252,9 @@ class Conversation_tree:
 
 @dataclass
 class Graph_node:
-    """A render-neutral node. `ref_uuid` ties it back to a chat entry for
-    click-through; `collapsed_count` is how many original entries it stands in for.
+    """A render-neutral node.
+
+    `ref_uuid` ties it back to a chat entry for click-through; `collapsed_count` is how many original entries it stands in for.
     """
 
     id: str
@@ -292,8 +285,7 @@ class Graph:
 class Diagram:
     """Diagram-ready source text plus a record of what it took to fit on a page.
 
-    `notes` carries any deterministic reductions (collapsed runs, applied caps) so a
-    reader is told what was hidden rather than it vanishing silently.
+    `notes` carries any deterministic reductions (collapsed runs, applied caps) so a reader is told what was hidden rather than it vanishing silently.
     """
 
     diagram_format: Diagram_format
@@ -320,10 +312,8 @@ class Conversation_meta:
 class Family_summary:
     """One fork family condensed for a workspace overview.
 
-    A lone conversation is a family of one — `session_count` 1 and, for a linear chat,
-    one leaf. `root_session_id` is the family's original (oldest) conversation, the one
-    to hand to `tree`; `node_count` is the family's unique entries, the shared prefix
-    counted once across forks.
+    A lone conversation is a family of one — `session_count` 1 and, for a linear chat, one leaf.
+    `root_session_id` is the family's original (oldest) conversation, the one to hand to `tree`; `node_count` is the family's unique entries, the shared prefix counted once across forks.
     """
 
     family_id: str
@@ -348,8 +338,7 @@ class Index_stats:
 class Chat_digger:
     """Entry point over an indexed corpus of Claude Code conversations.
 
-    `index_path` is where the search index lives; the corpus root defaults to the
-    standard `~/.claude/projects` location when not given.
+    `index_path` is where the search index lives; the corpus root defaults to the standard `~/.claude/projects` location when not given.
     """
 
     def __init__(self, index_path: Optional[str] = None, corpus_root: Optional[str] = None) -> None:
@@ -358,16 +347,13 @@ class Chat_digger:
     def build_index(self) -> Index_stats:
         """Rebuild the whole search index from scratch — the only path that builds it.
 
-        Always a full rebuild (no incremental). Searches never build on their own; they
-        read whatever this last produced and refuse to run against an index whose stored
-        `CCD_version` does not match the code.
+        Always a full rebuild (no incremental).
+        Searches never build on their own; they read whatever this last produced and refuse to run against an index whose stored `CCD_version` does not match the code.
         """
         raise NotImplementedError
 
     def index_status(self) -> Index_stats:
-        """Report what the index holds and whether it is stale — i.e. the corpus
-        changed since the last `build_index`, so a rebuild is due.
-        """
+        """Report what the index holds and whether it is stale — i.e. the corpus changed since the last `build_index`, so a rebuild is due."""
         raise NotImplementedError
 
     def list_conversations(self, options: Optional[Search_options] = None) -> list[Conversation_meta]:
@@ -377,8 +363,8 @@ class Chat_digger:
     def search_all(self, query: str, options: Optional[Search_options] = None) -> Search_all_result:
         """Tier 1: locate matches across all conversations.
 
-        Returns conversation metadata and matched chat-entry locators only. Never
-        returns chat content or snippets.
+        Returns conversation metadata and matched chat-entry locators only.
+        Never returns chat content or snippets.
         """
         raise NotImplementedError
 
@@ -391,9 +377,8 @@ class Chat_digger:
     ) -> Conversation_search_result:
         """Tier 2: matches within one conversation, each as bounded snippets.
 
-        A chat entry is never returned whole here, regardless of its size; only
-        `context` worth of surrounding text accompanies each match. Each snippet
-        carries its `block_index` so the exact block can be fetched at tier 3.
+        A chat entry is never returned whole here, regardless of its size; only `context` worth of surrounding text accompanies each match.
+        Each snippet carries its `block_index` so the exact block can be fetched at tier 3.
         """
         raise NotImplementedError
 
@@ -407,12 +392,9 @@ class Chat_digger:
     ) -> Chat_entry_content:
         """Tier 3: the full content of one chat entry by exact id.
 
-        `session_id` is required: it locates the file directly and doubles as a safety
-        check — a uuid not found under that session is an error, not an empty result.
-        `block_index` returns just that one block (omit for every block), so a one-line
-        text block need not drag along a huge `tool_result` in the same entry.
-        `include_meta` additionally populates `Message_meta` from the same raw-record
-        read — model, usage, git branch, and the rest — at no extra cost when omitted.
+        `session_id` is required: it locates the file directly and doubles as a safety check — a uuid not found under that session is an error, not an empty result.
+        `block_index` returns just that one block (omit for every block), so a one-line text block need not drag along a huge `tool_result` in the same entry.
+        `include_meta` additionally populates `Message_meta` from the same raw-record read — model, usage, git branch, and the rest — at no extra cost when omitted.
         """
         raise NotImplementedError
 
@@ -424,10 +406,9 @@ class Chat_digger:
     ) -> list[File_origin]:
         """Conversations where a file was created, edited, or read.
 
-        Reads `file-history-snapshot` records and Read/Write/Edit/NotebookEdit tool
-        calls rather than free-text search. `filename` is matched against the recorded
-        path's basename (case-insensitive). `mode` is one of created | edited | read |
-        all; `tools` defaults to all four tools when not given.
+        Reads `file-history-snapshot` records and Read/Write/Edit/NotebookEdit tool calls rather than free-text search.
+        `filename` is matched against the recorded path's basename (case-insensitive).
+        `mode` is one of created | edited | read | all; `tools` defaults to all four tools when not given.
         """
         raise NotImplementedError
 
@@ -443,9 +424,9 @@ class Chat_digger:
     ) -> "list[Family_summary]":
         """Every fork family in a workspace, condensed to one summary each.
 
-        Each lone conversation is its own family of one, so the overview is uniform: one
-        line per family with its session and leaf counts. `workspace` matches a project
-        folder and everything under it; `project` is one exact path. Most recent first.
+        Each lone conversation is its own family of one, so the overview is uniform: one line per family with its session and leaf counts.
+        `workspace` matches a project folder and everything under it; `project` is one exact path.
+        Most recent first.
         """
         raise NotImplementedError
 
@@ -471,8 +452,7 @@ class Chat_digger:
     ) -> Graph:
         """A fork family reduced to a render-neutral graph — the structured tree result.
 
-        The same reduction `render_conversation_tree` draws, returned as data rather
-        than a diagram so it can be serialised as JSON or rendered in any diagram format.
+        The same reduction `render_conversation_tree` draws, returned as data rather than a diagram so it can be serialised as JSON or rendered in any diagram format.
         Auto-spans the family; `single=True` restricts to one file.
         """
         raise NotImplementedError
@@ -487,17 +467,16 @@ class Chat_digger:
     ) -> Diagram:
         """Render the fork family as one diagram, splicing forks at their fork points.
 
-        A convenience over `conversation_graph` + `render_graph`: builds the neutral
-        graph then draws it in one diagram format. Auto-spans the family (`single=True`
-        restricts to one file). Deterministic end to end; beyond `max_nodes` the tree
-        is coarsened and the reduction is noted.
+        A convenience over `conversation_graph` + `render_graph`: builds the neutral graph then draws it in one diagram format.
+        Auto-spans the family (`single=True` restricts to one file).
+        Deterministic end to end; beyond `max_nodes` the tree is coarsened and the reduction is noted.
         """
         raise NotImplementedError
 
     def render_graph(self, graph: Graph, diagram_format: Diagram_format = Diagram_format.mermaid) -> Diagram:
         """Serialise an already-built render-neutral graph into one diagram format.
 
-        Pure: identifiers are sanitised and labels escaped per the target format; no
-        corpus access. This is the single point every diagram format is emitted from.
+        Pure: identifiers are sanitised and labels escaped per the target format; no corpus access.
+        This is the single point every diagram format is emitted from.
         """
         raise NotImplementedError
