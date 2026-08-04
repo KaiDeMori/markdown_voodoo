@@ -1,7 +1,8 @@
 """Minimal isolated tests for CCD's index/search - see Test_idea.md.
 
 Uses a scratch corpus and scratch index under this directory; never touches the real
-~/.claude corpus or index. One test function per search mode, run against a single
+~/.claude corpus or index. One test function per search mode, plus a few checks on
+indexing behaviour deliberately baked into the example chat, all run against a single
 index build of the injected example chat.
 """
 
@@ -15,7 +16,7 @@ SCRIPT_DIRECTORY = Path(__file__).resolve().parent
 SKILL_ROOT = SCRIPT_DIRECTORY.parent
 sys.path.insert(0, str(SKILL_ROOT))
 
-from CCD_api import Match_mode, Search_options
+from CCD_api import Match_mode, Search_options, Search_role
 from CCD_engine import Chat_digger
 
 EXAMPLE_CHAT_DIRECTORY = SCRIPT_DIRECTORY / "example_chat"
@@ -25,7 +26,9 @@ SCRATCH_INDEX_PATH = SCRATCH_DIRECTORY / "CCD_index.db"
 
 UNIQUE_STRING = "hyednesenc"
 EXPECTED_SESSION_ID = "a90d5763-7f6a-4139-9226-d4684f23f3e3"
+FIZOTONITU_QUESTION_UUID = "31af7b9a-30a9-4e07-a364-6c49cbddb08f"
 FIZOTONITU_ANSWER_UUID = "ebc2f46e-58b5-423c-a85f-c5be094fef56"
+HYEDNESENC_QUESTION_UUID = "59813b71-984a-4e58-acdf-57381e0853c2"
 HYEDNESENC_ANSWER_UUID = "3b5ccc09-fca3-4924-8428-bbf0576e7fda"
 
 
@@ -89,6 +92,50 @@ def test_regex_mode_is_reserved(digger: Chat_digger) -> None:
         raise AssertionError("regex mode should raise NotImplementedError")
 
 
+def test_machine_wrapper_is_not_indexed(digger: Chat_digger) -> None:
+    result = digger.search_all("Test_idea.md")
+    assert result.total_matches == 0, "an <ide_opened_file> wrapper block must never be indexed as user content"
+    print("ok: machine wrapper - <ide_opened_file> block is excluded from the index")
+
+
+def test_streamed_duplicate_dedup(digger: Chat_digger) -> None:
+    conversations = digger.list_conversations()
+    conversation = next(item for item in conversations if item.session_id == EXPECTED_SESSION_ID)
+    assert conversation.chat_entry_count == 4, (
+        "expected 4 entries (2 user, 2 assistant) once the streamed thinking-stub duplicate collapses "
+        "into its final copy, got %d" % conversation.chat_entry_count
+    )
+    print("ok: dedup - streamed thinking-stub duplicate collapses into its final message.id copy")
+
+
+def test_role_filter(digger: Chat_digger) -> None:
+    user_only = digger.search_all("fizotonitu", Search_options(roles=Search_role.user))
+    user_uuids = {entry.uuid for conversation in user_only.conversations for entry in conversation.matched_chat_entries}
+    assert user_uuids == {FIZOTONITU_QUESTION_UUID}, "role=user must find only the question, got %s" % user_uuids
+
+    assistant_only = digger.search_all("fizotonitu", Search_options(roles=Search_role.assistant))
+    assistant_uuids = {
+        entry.uuid for conversation in assistant_only.conversations for entry in conversation.matched_chat_entries
+    }
+    assert assistant_uuids == {FIZOTONITU_ANSWER_UUID}, "role=assistant must find only the answer, got %s" % assistant_uuids
+    print("ok: role filter - user/assistant each restrict to their own side")
+
+
+def test_case_sensitivity(digger: Chat_digger) -> None:
+    exact = digger.search_all("Hyednesenc", Search_options(case_sensitive=True))
+    exact_uuids = {entry.uuid for conversation in exact.conversations for entry in conversation.matched_chat_entries}
+    assert exact_uuids == {HYEDNESENC_ANSWER_UUID}, (
+        "case-sensitive 'Hyednesenc' must miss the lowercase question, got %s" % exact_uuids
+    )
+
+    insensitive = digger.search_all("Hyednesenc")
+    insensitive_uuids = {
+        entry.uuid for conversation in insensitive.conversations for entry in conversation.matched_chat_entries
+    }
+    assert HYEDNESENC_QUESTION_UUID in insensitive_uuids, "case-insensitive search must also find the lowercase question"
+    print("ok: case sensitivity - --case-sensitive distinguishes 'Hyednesenc' from 'hyednesenc'")
+
+
 def main() -> None:
     reset_scratch_directory()
     digger = Chat_digger(index_path=str(SCRATCH_INDEX_PATH), corpus_root=str(SCRATCH_CORPUS_ROOT))
@@ -100,6 +147,10 @@ def main() -> None:
     test_all_terms_mode(digger)
     test_wildcard_mode(digger)
     test_regex_mode_is_reserved(digger)
+    test_machine_wrapper_is_not_indexed(digger)
+    test_streamed_duplicate_dedup(digger)
+    test_role_filter(digger)
+    test_case_sensitivity(digger)
 
     shutil.rmtree(SCRATCH_DIRECTORY)
     print("PASS")
