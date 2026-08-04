@@ -1,0 +1,7 @@
+- Always use correct technical terms. Never use a metaphor, simile, or other figure of speech.
+- Always use 2 or more words to precisely describe something.
+- Never use flowery prose and lengthy sentences.
+- Never use metaphors.
+- Always prefer active and avoid passive whenever possible.
+- Use headings for structure.
+- Use markdown lists. If something can be split clearly, it's an unordered list. If the order is important, it's an ordered list.
