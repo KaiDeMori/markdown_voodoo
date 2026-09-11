@@ -28,14 +28,15 @@ Keep this file in step whenever you change a signature or a return shape.
 
 ### `CCD_parsing.py` — corpus parsing
 Raw `.jsonl` records to structured rows, no SQLite or search logic.
-`parse_session_file` reads one session into a conversation row, block rows, and file-event rows.
+`parse_session_file` reads one session into a conversation row, block rows, file-event rows, and model-count rows.
+The model id is taken from `message.model` of each deduplicated assistant entry, carried onto that entry's block rows, and counted once per entry into the model-count rows.
 `iter_searchable_blocks` decides what text is indexable (user/assistant text, thinking, selected tool-input keys, tool results) and drops injected machine wrappers via `is_machine_wrapper`.
 Streamed assistant duplicates are collapsed on `message.id`.
 `_extract_message_meta` reads a record's full metadata (model, usage, git branch, subagent/skill attribution, ...) on demand for `show --meta`; fields it does not name land in `Message_meta.extra` rather than being dropped.
 
 ### `CCD_search.py` — content search
 Matching primitives plus `Search_mixin`, the `Chat_digger` methods for tier-1 (`search_all`) and tier-2 (`search_in_conversation`) search.
-Both build a content predicate (`_content_predicate`: `instr` for substring, `GLOB` for wildcard) and combine it with shared filter clauses (`_filter_clauses`).
+Both build a content predicate (`_content_predicate`: `instr` for substring, `GLOB` for wildcard) and combine it with shared filter clauses (`_filter_clauses`: block kind, role, model, project, workspace, date range).
 `all_terms` mode has its own path requiring every term in one entry.
 Wildcard mode uses two different notions of matching on purpose: the tier-1 `GLOB` predicate is a whole-string membership test (does this block match at all — greediness is meaningless there), while counting occurrences (`count_occurrences`) and locating them for snippets (`_iter_match_positions`) go through `_wildcard_pattern`, a hand-rolled glob-to-regex translator that makes `*` non-greedy so several occurrences in one block stay separate instead of collapsing into one match spanning from the first anchor to the last.
 
@@ -52,7 +53,7 @@ There is no `graph_json` diagram format: a graph as JSON is the universal `--for
 
 ### `CCD_engine.py` — the orchestrator
 Binds the three modules above to the SQLite index.
-`Chat_digger(Search_mixin, Tree_mixin)` owns connection/schema management (`_connect`, `_ensure_schema`, `_open_for_read`), indexing (`build_index`, `_assign_families`), and the handful of methods that don't belong to either mixin: `index_status`, `list_conversations`, `find_file_origin`, `get_chat_entry`.
+`Chat_digger(Search_mixin, Tree_mixin)` owns connection/schema management (`_connect`, `_ensure_schema`, `_open_for_read`), indexing (`build_index`, `_assign_families`), and the handful of methods that don't belong to either mixin: `index_status`, `list_conversations`, `list_models`, `find_file_origin`, `get_chat_entry`.
 `build_index` is the only writer: it drops and recreates the schema and reloads every session via `CCD_parsing.parse_session_file` and `CCD_tree.read_tree_records`.
 Reads go through `_open_for_read`, which refuses an index whose stored version is not `CCD_INDEX_VERSION`.
 `get_chat_entry` (tier 3) re-reads the original `.jsonl` by `source_path` for full content — full message bodies are never stored in the index; `include_meta=True` costs nothing extra to the index and nothing when omitted.
@@ -71,7 +72,8 @@ Tables:
 | Table | Holds |
 |---|---|
 | `conversations` | One row per session, keyed by `session_id`: title, project path, time span, entry count, source file path, `family_id`. |
-| `blocks` | One row per searchable block — the search target. |
+| `blocks` | One row per searchable block — the search target. Carries the `model` of its assistant entry (`NULL` on user blocks). |
+| `conversation_models` | One row per session and model: the deduplicated assistant message count. Exact where `blocks` is not, since an assistant entry without searchable text has no block row. |
 | `file_events` | File create/edit/read events for `origin`. |
 | `tree_nodes` | Per-record `uuid` / `parent_uuid` / `fingerprint` for tree and family building. |
 | `meta` | Key/value pairs: `built_at`, `CCD_version`. |

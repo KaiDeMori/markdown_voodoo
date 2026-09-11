@@ -1,7 +1,7 @@
 """CCD engine — indexing and the `Chat_digger` orchestrator.
 
 The index is a plain SQLite database with one row per searchable block; matching uses substring / glob scans rather than a tokenised full-text index.
-A separate table records file create/edit/read events for `find_file_origin`.
+A separate table records file create/edit/read events for `find_file_origin`, and another holds the per-session assistant message count of each model.
 Indexing is always a full rebuild — searches read the stored index and refuse to run if its `CCD_version` does not match this code.
 The public surface mirrors `CCD_api.py`.
 
@@ -17,7 +17,16 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from CCD_api import Block, Chat_entry_content, Conversation_meta, File_origin, Index_stats, Search_options
+from CCD_api import (
+    Block,
+    Chat_entry_content,
+    Conversation_meta,
+    Conversation_models,
+    File_origin,
+    Index_stats,
+    Model_usage,
+    Search_options,
+)
 from CCD_parsing import (
     default_corpus_root,
     default_index_path,
@@ -30,7 +39,7 @@ from CCD_parsing import (
 from CCD_search import Search_mixin
 from CCD_tree import Tree_mixin, read_tree_records
 
-CCD_INDEX_VERSION = 3
+CCD_INDEX_VERSION = 4
 
 
 class Chat_digger(Search_mixin, Tree_mixin):
@@ -72,9 +81,16 @@ class Chat_digger(Search_mixin, Tree_mixin):
                 block_kind TEXT,
                 timestamp TEXT,
                 project_path TEXT,
-                content TEXT
+                content TEXT,
+                model TEXT
             );
             CREATE INDEX IF NOT EXISTS index_blocks_session ON blocks(session_id);
+            CREATE TABLE IF NOT EXISTS conversation_models (
+                session_id TEXT,
+                model TEXT,
+                message_count INTEGER
+            );
+            CREATE INDEX IF NOT EXISTS index_conversation_models_session ON conversation_models(session_id);
             CREATE TABLE IF NOT EXISTS file_events (
                 session_id TEXT,
                 chat_entry_uuid TEXT,
@@ -137,11 +153,12 @@ class Chat_digger(Search_mixin, Tree_mixin):
         connection = self._connect()
         connection.executescript(
             "DROP TABLE IF EXISTS files; DROP TABLE IF EXISTS blocks; DROP TABLE IF EXISTS conversations; "
-            "DROP TABLE IF EXISTS file_events; DROP TABLE IF EXISTS tree_nodes; DROP TABLE IF EXISTS meta;"
+            "DROP TABLE IF EXISTS file_events; DROP TABLE IF EXISTS tree_nodes; DROP TABLE IF EXISTS meta; "
+            "DROP TABLE IF EXISTS conversation_models;"
         )
         self._ensure_schema(connection)
         for path in iter_session_files(self.corpus_root):
-            conversation_row, block_rows, file_event_rows = parse_session_file(path, file_history_root)
+            conversation_row, block_rows, file_event_rows, model_count_rows = parse_session_file(path, file_history_root)
             if not conversation_row:
                 continue
             connection.execute(
@@ -150,8 +167,9 @@ class Chat_digger(Search_mixin, Tree_mixin):
                 "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 conversation_row,
             )
-            connection.executemany("INSERT INTO blocks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", block_rows)
+            connection.executemany("INSERT INTO blocks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", block_rows)
             connection.executemany("INSERT INTO file_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", file_event_rows)
+            connection.executemany("INSERT INTO conversation_models VALUES (?, ?, ?)", model_count_rows)
             session_id = path.stem
             tree_rows = [
                 (
@@ -260,6 +278,23 @@ class Chat_digger(Search_mixin, Tree_mixin):
             )
             for row in rows
         ]
+
+    def list_models(self, session_id: str) -> Conversation_models:
+        connection = self._open_for_read()
+        conversation = connection.execute("SELECT title FROM conversations WHERE session_id = ?", (session_id,)).fetchone()
+        if conversation is None:
+            connection.close()
+            raise ValueError("unknown session_id: %s" % session_id)
+        rows = connection.execute(
+            "SELECT model, message_count FROM conversation_models WHERE session_id = ? ORDER BY message_count DESC, model",
+            (session_id,),
+        ).fetchall()
+        connection.close()
+        return Conversation_models(
+            session_id=session_id,
+            title=conversation["title"],
+            models=[Model_usage(model=row["model"], message_count=row["message_count"]) for row in rows],
+        )
 
     def find_file_origin(self, filename: str, mode: str = "all", tools: Optional[list[str]] = None) -> list[File_origin]:
         basename = path_basename(filename).lower()

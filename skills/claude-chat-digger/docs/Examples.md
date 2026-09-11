@@ -20,6 +20,7 @@ python CCD.py search "auth token refresh" --all          # all three words in on
 python CCD.py search "migrat*" --mode wildcard
 python CCD.py search "deadlock" --role assistant --date-from 2025-01-01
 python CCD.py search "TODO" --workspace ~/projects/todo-app
+python CCD.py search "refactor" --model claude-opus-5        # only answers written by this model
 ```
 
 Sample output:
@@ -51,6 +52,24 @@ python CCD.py show <session_id> <uuid> --block 2        # just one content block
 python CCD.py show <session_id> <uuid> --thinking       # include thinking blocks
 python CCD.py show <session_id> <uuid> --meta           # model, usage, git branch, and the rest
 ```
+
+## models — which models answered
+
+```
+python CCD.py models <session_id>
+```
+
+Sample output:
+
+```
+models in Add request throttling to the API gateway — 3f2a9c10-7b4e-4d61-8a2c-0e1f2a3b4c5d
+2 models
+
+  claude-opus-5                    41 messages
+  claude-sonnet-5                  12 messages
+```
+
+Counts are deduplicated assistant messages; the ids are the exact values `--model` accepts.
 
 ## origin — trace a file
 

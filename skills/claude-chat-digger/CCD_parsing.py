@@ -1,6 +1,6 @@
 """CCD corpus parsing — raw `.jsonl` records to structured rows.
 
-Turns one session file into a conversation row, block rows, and file-event rows (`parse_session_file`), and reads a record's full metadata on demand for `show --meta` (`_extract_message_meta`).
+Turns one session file into a conversation row, block rows, file-event rows, and per-model message counts (`parse_session_file`), and reads a record's full metadata on demand for `show --meta` (`_extract_message_meta`).
 No SQLite or search logic lives here.
 """
 
@@ -216,10 +216,11 @@ def _nearest_backup(per_version: dict, event_time):
 
 
 def parse_session_file(path: Path, file_history_root: Path):
-    """Read one session file into a conversation row, block rows, and file-event rows.
+    """Read one session file into a conversation row, block rows, file-event rows, and model-count rows.
 
     Streaming assistant duplicates (same message id) are collapsed to the last copy.
-    Returns (conversation_row, block_rows, file_event_rows) or (None, [], []).
+    The model id lives only on assistant records, at `message.model`; it is carried onto every block row of that entry and counted once per deduplicated entry, so a model-count row is exact even for an assistant entry with no searchable block.
+    Returns (conversation_row, block_rows, file_event_rows, model_count_rows) or (None, [], [], []).
     """
     session_id = path.stem
     title_ai = None
@@ -271,20 +272,24 @@ def parse_session_file(path: Path, file_history_root: Path):
                     "chat_entry_type": record_type,
                     "timestamp": timestamp,
                     "cwd": record_cwd,
+                    "model": message.get("model"),
                     "blocks": blocks,
                     "file_ops": list(iter_file_operations(record)),
                 }
 
     if started_at is None and not entries:
-        return None, [], []
+        return None, [], [], []
 
     project_path = working_directories.most_common(1)[0][0] if working_directories else ""
     title = title_custom or title_ai or first_user_prompt or "(untitled)"
 
     block_rows = []
     file_event_rows = []
+    messages_per_model = collections.Counter()
     for entry in entries.values():
         entry_cwd = entry["cwd"] or project_path
+        if entry["model"]:
+            messages_per_model[entry["model"]] += 1
         for block_index, block_kind, content in entry["blocks"]:
             block_rows.append(
                 (
@@ -297,6 +302,7 @@ def parse_session_file(path: Path, file_history_root: Path):
                     entry["timestamp"],
                     entry_cwd,
                     content,
+                    entry["model"],
                 )
             )
         event_time = _parse_iso(entry["timestamp"])
@@ -332,7 +338,8 @@ def parse_session_file(path: Path, file_history_root: Path):
         len(entries),
         str(path),
     )
-    return conversation_row, block_rows, file_event_rows
+    model_count_rows = [(session_id, model, count) for model, count in sorted(messages_per_model.items())]
+    return conversation_row, block_rows, file_event_rows, model_count_rows
 
 
 RECORD_META_CONSUMED_KEYS = {

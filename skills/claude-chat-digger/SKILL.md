@@ -1,6 +1,6 @@
 ---
 name: claude-chat-digger
-description: Search, recall, and trace past Claude Code conversations. Use when the user wants to find whether a topic, decision, error, or code snippet came up in an earlier Claude Code session; recall what an earlier chat said; find which past conversation created, edited, or read a given file; browse or list prior conversations; visualize a conversation's fork tree; or check a message's metadata (which model answered, token usage, git branch). Wraps the CCD command-line tool over the local ~/.claude/projects conversation logs.
+description: Search, recall, and trace past Claude Code conversations. Use when the user wants to find whether a topic, decision, error, or code snippet came up in an earlier Claude Code session; recall what an earlier chat said; find which past conversation created, edited, or read a given file; browse or list prior conversations; visualize a conversation's fork tree; check a message's metadata (which model answered, token usage, git branch); list which models answered in a conversation; or restrict a search to answers by one model. Wraps the CCD command-line tool over the local ~/.claude/projects conversation logs.
 ---
 
 # Claude Chat Digger (CCD)
@@ -50,13 +50,14 @@ Search is tiered — find the conversation, narrow to the matches, then read one
 
 Beyond search:
 
+- `models <session_id>` — which models answered in a conversation, with a message count each.
 - `origin <filename> [--mode all|created|edited|read] [--tool Write,Edit]` — every event where a file was created, edited, or read.
 - `tree <session_id> [--diagram-format mermaid|dot]` — render a conversation's fork family as a diagram.
 - `family <session_id>` — the sessions in one conversation's fork family.
 - `families [--workspace W] [--project P]` — an overview of all fork families.
 - `list [--limit N]` — browse indexed conversations, newest first.
 
-Common filters on `search` and `in`: `--project`, `--workspace` (a folder and everything under it), `--date-from` / `--date-to`, `--role user|assistant|both`, `--thinking` (also search thinking blocks), `--mode substring|all_terms|wildcard` (wildcard's `*` is non-greedy — `fix*bug` finds each separate occurrence rather than one span from the first `fix` to the last `bug`), and `--all` (every term in the same message).
+Common filters on `search` and `in`: `--project`, `--workspace` (a folder and everything under it), `--date-from` / `--date-to`, `--role user|assistant|both`, `--model <model_id>` (only answers by that exact model, e.g. `claude-opus-5`), `--thinking` (also search thinking blocks), `--mode substring|all_terms|wildcard` (wildcard's `*` is non-greedy — `fix*bug` finds each separate occurrence rather than one span from the first `fix` to the last `bug`), and `--all` (every term in the same message).
 
 A command's required arguments are positional: give them first, in the order shown, before any options.
 A search term may start with a dash (e.g. `search "-X"`) and is taken literally — no `--` escape needed.

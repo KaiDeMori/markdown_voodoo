@@ -26,6 +26,7 @@ SCRATCH_INDEX_PATH = SCRATCH_DIRECTORY / "CCD_index.db"
 
 UNIQUE_STRING = "hyednesenc"
 EXPECTED_SESSION_ID = "a90d5763-7f6a-4139-9226-d4684f23f3e3"
+EXPECTED_MODEL = "claude-sonnet-5"
 FIZOTONITU_QUESTION_UUID = "31af7b9a-30a9-4e07-a364-6c49cbddb08f"
 FIZOTONITU_ANSWER_UUID = "ebc2f46e-58b5-423c-a85f-c5be094fef56"
 HYEDNESENC_QUESTION_UUID = "59813b71-984a-4e58-acdf-57381e0853c2"
@@ -136,6 +137,55 @@ def test_case_sensitivity(digger: Chat_digger) -> None:
     print("ok: case sensitivity - --case-sensitive distinguishes 'Hyednesenc' from 'hyednesenc'")
 
 
+def test_model_is_indexed(digger: Chat_digger) -> None:
+    connection = digger._open_for_read()
+    models_by_role = {
+        row["role"]: set(row["models"].split(",")) if row["models"] else set()
+        for row in connection.execute(
+            "SELECT role, GROUP_CONCAT(DISTINCT model) AS models FROM blocks WHERE session_id = ? GROUP BY role",
+            (EXPECTED_SESSION_ID,),
+        ).fetchall()
+    }
+    model_counts = [
+        (row["model"], row["message_count"])
+        for row in connection.execute(
+            "SELECT model, message_count FROM conversation_models WHERE session_id = ?", (EXPECTED_SESSION_ID,)
+        ).fetchall()
+    ]
+    connection.close()
+    assert models_by_role.get("assistant") == {EXPECTED_MODEL}, (
+        "every assistant block must carry the message's model, got %s" % models_by_role.get("assistant")
+    )
+    assert models_by_role.get("user") == set(), "user blocks carry no model, got %s" % models_by_role.get("user")
+    assert model_counts == [(EXPECTED_MODEL, 2)], (
+        "expected one model row counting the 2 deduplicated assistant entries, got %s" % model_counts
+    )
+    print("ok: model - assistant blocks carry '%s', user blocks none, conversation_models counts 2 entries" % EXPECTED_MODEL)
+
+
+def test_model_filter(digger: Chat_digger) -> None:
+    matching = digger.search_all("fizotonitu", Search_options(model=EXPECTED_MODEL))
+    matching_uuids = {entry.uuid for conversation in matching.conversations for entry in conversation.matched_chat_entries}
+    assert matching_uuids == {FIZOTONITU_ANSWER_UUID}, "model filter must keep only the assistant answer, got %s" % matching_uuids
+
+    other = digger.search_all("fizotonitu", Search_options(model="claude-opus-5"))
+    assert other.total_matches == 0, "a model that never answered must match nothing"
+    print("ok: model filter - restricts to assistant entries answered by the given model")
+
+
+def test_list_models(digger: Chat_digger) -> None:
+    result = digger.list_models(EXPECTED_SESSION_ID)
+    usages = [(usage.model, usage.message_count) for usage in result.models]
+    assert usages == [(EXPECTED_MODEL, 2)], "expected the one model with 2 deduplicated answers, got %s" % usages
+    try:
+        digger.list_models("no-such-session")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("an unknown session_id must raise ValueError")
+    print("ok: models - lists '%s' with 2 messages, unknown session raises" % EXPECTED_MODEL)
+
+
 def main() -> None:
     reset_scratch_directory()
     digger = Chat_digger(index_path=str(SCRATCH_INDEX_PATH), corpus_root=str(SCRATCH_CORPUS_ROOT))
@@ -151,6 +201,9 @@ def main() -> None:
     test_streamed_duplicate_dedup(digger)
     test_role_filter(digger)
     test_case_sensitivity(digger)
+    test_model_is_indexed(digger)
+    test_model_filter(digger)
+    test_list_models(digger)
 
     shutil.rmtree(SCRATCH_DIRECTORY)
     print("PASS")

@@ -50,7 +50,7 @@ The fields CCD reads:
 | `parentUuid` | `uuid` of the preceding record; `null` on the first record. | Tree / fork structure. |
 | `timestamp` | ISO-8601 instant the record was written. | The "when"; the time half of a fork fingerprint. |
 | `type` | Record kind (see below). | Dispatch while parsing. |
-| `message` | Payload `{ role, content, id, model, usage, stop_reason, ... }` — an assistant message carries `model` and `usage` alongside `content`. | All searchable text; `id` for dedup; `model` / `usage` / `stop_reason` for `show --meta`. |
+| `message` | Payload `{ role, content, id, model, usage, stop_reason, ... }` — an assistant message carries `model` and `usage` alongside `content`. | All searchable text; `id` for dedup; `model` indexed per block and counted per session (see below); `model` / `usage` / `stop_reason` for `show --meta`. |
 | `cwd` | The **real** working directory. | The trustworthy project path. |
 | `requestId` | Groups an assistant turn with the tool result answering it. | Telling tool structure from a real fork; also surfaced verbatim by `show --meta`. |
 | `snapshot` | Carries `trackedFileBackups` on file-history records. | File versions / backups for `origin`. |
@@ -58,6 +58,20 @@ The fields CCD reads:
 `show --meta` additionally reads `gitBranch`, `version`, `entrypoint`, `userType`, `isSidechain`, `agentId`, `attributionAgent` / `attributionMcpServer` / `attributionMcpTool` / `attributionSkill`, `permissionMode`, `promptId`, `promptSource` straight from the raw record — see `Message_meta` in `CCD_api.py` and `_extract_message_meta` in `CCD_parsing.py`.
 Everything else present on a record (`slug`, `isMeta`, `isCompactSummary`, `stop_details`, `stop_sequence`, `diagnostics`, `container`, `context_management`, `apiErrorStatus`, ...) lands in `Message_meta.extra` rather than being modeled by name or dropped.
 Fields genuinely unused even by `--meta`: `sessionId` (redundant with the filename), `leafUuid`, `lastPrompt`, `operation`.
+
+### The model id
+
+The model id lives in exactly one place: `message.model` on records of `type` `assistant`.
+It never appears at the record top level and never on `user` records; every assistant record observed carries one.
+
+- Values are API model ids such as `claude-sonnet-5`, `claude-opus-5`, `claude-fable-5-1`, `claude-haiku-4-5-20251001`.
+- `<synthetic>` marks an assistant message that Claude Code wrote locally rather than receiving from the API — an API error notice, for instance, usually alongside `isApiErrorMessage: true` and an `error` field.
+  CCD stores the value as-is.
+- Sidechain (subagent) records carry the subagent's own model, which is often a different model from the main conversation's.
+- Streamed duplicates of one `message.id` never differ in model, so the dedup keeps the right value.
+- A raw text search for `"model":` also hits the `model` key inside an `Agent` tool call's `input` (values like `sonnet`); that is a tool parameter, not a message model, and CCD does not read it.
+
+`parse_session_file` carries the model onto every `blocks` row of its assistant entry (`NULL` on user blocks) and writes one `conversation_models` row per session and model with the deduplicated assistant entry count.
 
 ## Record types
 

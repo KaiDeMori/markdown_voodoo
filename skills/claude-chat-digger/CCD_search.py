@@ -131,6 +131,9 @@ class Search_mixin:
         if options.roles is not Search_role.both:
             clauses.append("role = ?")
             params.append(options.roles.value)
+        if options.model:
+            clauses.append("model = ?")
+            params.append(options.model)
         if options.projects:
             clauses.append("project_path IN (%s)" % ",".join("?" * len(options.projects)))
             params.extend(options.projects)

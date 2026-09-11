@@ -6,6 +6,7 @@ Usage:
     python CCD.py search "<query>" [options]
     python CCD.py in <session_id> "<query>" [--context N] [options]
     python CCD.py show <session_id> <uuid> [--block N] [--thinking]
+    python CCD.py models <session_id>
     python CCD.py list [--limit N]
 
 A command's required arguments are positional: they come first, in the order shown, immediately after the command and before any options.
@@ -87,6 +88,7 @@ def build_search_options(arguments) -> Search_options:
         date_from=arguments.date_from,
         date_to=arguments.date_to,
         roles=Search_role(arguments.role),
+        model=arguments.model,
         include_thinking=arguments.thinking,
         include_tool_input=not arguments.no_tool_input,
         include_tool_result=arguments.tool_result,
@@ -99,6 +101,7 @@ def add_search_filters(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--all", action="store_true", help="require ALL whitespace-separated terms in the same chat_entry")
     parser.add_argument("--case-sensitive", action="store_true")
     parser.add_argument("--role", choices=[role.value for role in Search_role], default="both")
+    parser.add_argument("--model", default=None, help="restrict to assistant messages answered by this exact model id")
     parser.add_argument("--project", default=None, help="restrict to one exact project path")
     parser.add_argument("--workspace", default=None, help="restrict to a workspace folder and everything under it")
     parser.add_argument("--date-from", default=None)
@@ -316,6 +319,15 @@ def command_origin(digger: Chat_digger, arguments) -> Command_output:
     return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=data)
 
 
+def command_models(digger: Chat_digger, arguments) -> Command_output:
+    result = digger.list_models(arguments.session_id)
+    summary = "%d model%s" % (len(result.models), "" if len(result.models) == 1 else "s")
+    lines = ["models in %s — %s" % (result.title, result.session_id), summary, ""]
+    for usage in result.models:
+        lines.append("  %-32s %d messages" % (usage.model, usage.message_count))
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=result)
+
+
 def command_family(digger: Chat_digger, arguments) -> Command_output:
     sessions = digger.get_fork_family(arguments.session_id)
     lines = ["fork family of %d conversation(s):" % len(sessions), ""]
@@ -427,6 +439,7 @@ command_specs = {
     "show": Command_spec(["session_id", "uuid"], add_show_options, command_show, "show one chat entry in full"),
     "origin": Command_spec(["filename"], add_origin_options, command_origin, "find where a file was created/edited/read"),
     "tree": Command_spec(["session_id"], add_tree_options, command_tree, "render a conversation's fork family as a diagram"),
+    "models": Command_spec(["session_id"], None, command_models, "list the models that answered in a conversation"),
     "family": Command_spec(["session_id"], None, command_family, "list the sessions in a conversation's fork family"),
     "families": Command_spec([], add_families_options, command_families, "overview of all fork families in a workspace"),
     "list": Command_spec([], add_list_options, command_list, "list indexed conversations"),

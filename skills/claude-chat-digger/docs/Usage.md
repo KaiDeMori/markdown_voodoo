@@ -33,6 +33,7 @@ Build the index once with `index` before any search.
 | `search` | `<query>` + search filters | Find matching conversations (tier 1). |
 | `in` | `<session_id> <query> [--context N]` + search filters | Matches within one conversation, with context (tier 2). |
 | `show` | `<session_id> <uuid> [--block N] [--thinking] [--meta]` | Full content of one message (tier 3). |
+| `models` | `<session_id>` | The models that answered in one conversation, with a message count each. |
 | `origin` | `<filename> [--mode all\|created\|edited\|read] [--tool T,T]` | Where a file was created/edited/read. |
 | `tree` | `<session_id>` + tree options | Render a fork family as a diagram. |
 | `family` | `<session_id>` | List the sessions in this conversation's fork family. |
@@ -60,6 +61,7 @@ The receipt and any notes are diagnostics on stderr, so the saved file — or a 
 | `--all` | off | Shorthand for `--mode all_terms`: every whitespace-separated term must appear in the same message. |
 | `--case-sensitive` | off | Case-sensitive matching. |
 | `--role user\|assistant\|both` | `both` | Restrict by speaker. |
+| `--model <model_id>` | — | Restrict to assistant messages answered by this exact model id (e.g. `claude-opus-5`). User messages carry no model, so they never match. `models <session_id>` lists the ids present. |
 | `--project <path>` | — | One exact project path. |
 | `--workspace <folder>` | — | A project folder and everything under it (case-insensitive). |
 | `--date-from <YYYY-MM-DD>` | — | Lower time bound. |
@@ -92,11 +94,12 @@ The receipt and any notes are diagnostics on stderr, so the saved file — or a 
 ## Other defaults
 
 - `show --meta` prints model, token usage, git branch, Claude Code version, and the rest of the message envelope, read from the source `.jsonl` file (never the index) — off by default.
+- `models` counts deduplicated assistant messages per model, read from the index; the order is most-used first.
 - `in --context` (lines of context per side): `2`.
 - `families --limit`: `40`.
   `list --limit`: `40`.
 - `origin --mode`: `all`.
   Recognised tools: `Read`, `Write`, `Edit`, `MultiEdit`, `NotebookEdit`.
-- Index format version: `3`.
+- Index format version: `4`.
   A search refuses to run against an index built by a different version — rebuild with `index`.
 - Output is always UTF-8.

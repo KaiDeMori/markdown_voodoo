@@ -63,6 +63,7 @@ class Search_options:
     date_from: Optional[str] = None
     date_to: Optional[str] = None
     roles: Search_role = Search_role.both
+    model: Optional[str] = None  # exact model id; only assistant entries carry one
     include_thinking: bool = False
     include_tool_input: bool = True
     include_tool_result: bool = False
@@ -308,6 +309,23 @@ class Conversation_meta:
 
 
 @dataclass
+class Model_usage:
+    """How many deduplicated assistant messages one model answered within a conversation."""
+
+    model: str
+    message_count: int
+
+
+@dataclass
+class Conversation_models:
+    """The models that answered in one conversation, most-used first."""
+
+    session_id: str
+    title: str
+    models: list[Model_usage] = field(default_factory=list)
+
+
+@dataclass
 class Family_summary:
     """One fork family condensed for a workspace overview.
 
@@ -394,6 +412,13 @@ class Chat_digger:
         `session_id` is required: it locates the file directly and doubles as a safety check — a uuid not found under that session is an error, not an empty result.
         `block_index` returns just that one block (omit for every block), so a one-line text block need not drag along a huge `tool_result` in the same entry.
         `include_meta` additionally populates `Message_meta` from the same raw-record read — model, usage, git branch, and the rest — at no extra cost when omitted.
+        """
+        raise NotImplementedError
+
+    def list_models(self, session_id: str) -> Conversation_models:
+        """Which models answered in one conversation, with a deduplicated assistant message count each.
+
+        Read from the index, not the source file; an unknown `session_id` is an error.
         """
         raise NotImplementedError
 
