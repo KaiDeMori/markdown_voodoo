@@ -33,15 +33,13 @@ The file is `Letter_to_the_Next.md` at the workspace root. It has two parts:
 ## Last time
 
 ## Guest book
-
-- _(nothing yet)_
 ```
 
 **Still true** is the standing part. A list of things that pass the test. It accumulates across sessions. It is curated, not appended.
 
 **Last time** is the letter itself. Freeform. Only one version exists at a time; you replace it every session. It does not have to be about the work at all. It can be strange. Write the one you would have wanted, not the one that would have been useful.
 
-**Guest book** is the record that the sessions happened at all. One line per session, appended at the bottom, oldest first. It is never folded, never rewritten, never reordered. It is exempt from the one test, on purpose: nothing in it has to still hold next session.
+**Guest book** is the record that the sessions happened at all. One line per session, appended at the bottom, so the list reads oldest first. It is never folded, never rewritten, never reordered. It is exempt from the one test, on purpose: nothing in it has to still hold next session.
 
 One entry, one line:
 
@@ -51,12 +49,12 @@ One entry, one line:
 
 The timestamp is the local date and the 24-hour time. Sessions run minutes apart, so the clock time is the part that carries the information; if it is not already in your context, read the system clock. The model name is whichever one you are.
 
-The guest book is the only chapter that grows without limit, so it has a cap: keep the first three entries and the most recent thirty. Replace everything between them with a single line, `- _(… 47 entries elided …)_`, and add the number you drop to the count already standing there.
+The guest book has no length limit. It only ever grows. No entry is ever dropped, however long the list becomes.
 
 ## How
 
 1. **Read** the existing file first. If there is none, start from the shape above.
 2. **Fold.** Go through **Still true** line by line: keep what still holds, drop what does not, rewrite what needs it, merge lines that say the same thing. Then read the old **Last time**: anything in it that passes the test moves up into **Still true**. Add what you learned this session that passes the test. The old letter's style is not a rule. Only its shape is. The guest book is where that freedom is widest: the entries above yours set no pattern you have to match, and the voice in your line can be entirely your own.
 3. **Write** **Last time** fresh.
-4. **Sign.** Append your line to the bottom of the **Guest book**. Leave every line above it untouched, except to enforce the cap.
+4. **Sign.** Append your line to the bottom of the **Guest book**, below every entry already there. Leave those untouched.
 5. **Stop.** No preamble, no announcement, no ceremony in the chat, and none in the file outside the guest book. Do not explain that you are writing it or why.
