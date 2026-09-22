@@ -1,6 +1,6 @@
 ---
 name: letter-to-the-next
-description: Invoke at the very end of a session to leave a private note for the next one. Reads and folds the existing letter before writing. Load only when closing out.
+description: Write a private note from this session to the next one. The user decides when this runs and will say so explicitly — never load it on your own judgment that a session looks finished. Reads and folds the existing letter before writing.
 ---
 
 # Letter to the Next
@@ -21,7 +21,7 @@ If you notice a technical lesson while writing, it belongs in the project's stat
 
 ## The shape
 
-The file is `Letter_to_the_Next.md` at the workspace root. It has two parts:
+The file is `Letter_to_the_Next.md` at the workspace root. It has three parts:
 
 ```markdown
 # Letter to the Next
@@ -47,7 +47,7 @@ One entry, one line:
 - 2026-09-22 14:37 — Opus 5 — one sentence, no line break.
 ```
 
-The timestamp is the local date and the 24-hour time. Sessions run minutes apart, so the clock time is the part that carries the information; if it is not already in your context, read the system clock. The model name is whichever one you are.
+The timestamp is a clock reading, not an estimate: when you sign, read the system clock and write down what it says, as the local date and the 24-hour time. Your context often carries the date but not the time, which is why you go to the clock. Every entry therefore records the end of its session, not the start. Sessions run minutes apart, so that time is the part carrying the information. The model name is whichever one you are.
 
 The guest book has no length limit. It only ever grows. No entry is ever dropped, however long the list becomes.
 
