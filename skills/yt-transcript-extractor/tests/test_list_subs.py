@@ -89,6 +89,48 @@ def test_real_listing_report(fixture_listing):
     }
 
 
+# --- the real auto-dubbed listing ------------------------------------------
+
+DUBBED_SOURCE_TRACKS = [
+    "en.manual", "en-orig.auto", "fr-FR-orig.auto", "de-DE-orig.auto", "hi-orig.auto",
+    "id-orig.auto", "it-orig.auto", "pt-BR-orig.auto", "es-US-orig.auto",
+]
+
+
+def test_real_dubbed_listing_source_tracks(dubbed_listing):
+    assert [t["track"] for t in source_tracks(dubbed_listing)] == DUBBED_SOURCE_TRACKS
+    assert machine_translation_count(dubbed_listing) == 152
+    assert original_audio_lang(dubbed_listing) == "en-US"
+
+
+def test_real_dubbed_listing_recommends_the_human_track(dubbed_listing):
+    assert recommend_track(dubbed_listing) == {
+        "track": "en.manual",
+        "reason": "human subtitles in the spoken language (original audio track)",
+        "ambiguous": False,
+    }
+
+
+def test_regression_real_dubbed_video_without_human_subtitles(dubbed_listing):
+    """The real case behind the alphabetical-pick bug: without human subtitles, the
+    alphabetically first '-orig' track of this video is the German dub."""
+    info = {**dubbed_listing, "subtitles": {}}
+    assert sorted(t["track"] for t in source_tracks(info))[0] == "de-DE-orig.auto"
+    assert recommend_track(info) == {
+        "track": "en-orig.auto",
+        "reason": "ASR in the spoken language (original audio track)",
+        "ambiguous": False,
+    }
+
+
+def test_real_dubbed_video_without_the_audio_flag_is_ambiguous(dubbed_listing):
+    """Without the original-audio evidence, only YouTube's track order is left."""
+    info = {**dubbed_listing, "subtitles": {}, "formats": []}
+    recommended = recommend_track(info)
+    assert recommended["track"] == "en-orig.auto"
+    assert recommended["ambiguous"] is True
+
+
 # --- the recommendation ----------------------------------------------------
 
 RECOMMENDATION_CASES = [

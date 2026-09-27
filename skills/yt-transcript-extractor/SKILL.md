@@ -119,6 +119,7 @@ Don't trust the labels — read the file and confirm:
 
 - **Language is what it should be.** The text reads as its `source_lang`, and that is the language the video is spoken in (title, channel, description). If not, see the failure modes below and extract another `--track`.
 - **"Manual" really is human-made.** A `manual` track should read like edited prose — punctuation, capitalization, no caption run-ons. If it reads like raw ASR, the label is wrong.
+- **Names are the weak spot — in manual tracks too.** Human captioners mishear proper names and technical terms ("the Miami region" for the Maya region, "Barry Phelan" for Barry Fell). "Manual" means human, not error-free: when a name matters, verify it before building on it.
 - **Length is plausible.** Speech runs roughly 120–220 words per minute; lively conversations sit at the top of that range. Far fewer means an empty or partial track.
 - **It's coherent, not garbage.** Real sentences, not truncated, empty, or endlessly repeated lines.
 
@@ -134,6 +135,8 @@ Don't trust the labels — read the file and confirm:
 ## Phase 2 — fact-check (on request)
 
 When the user wants the video's claims verified, apply the prompt in [docs/Fact_check_prompt.md](docs/Fact_check_prompt.md) (read it on demand) to the Phase-1 transcript, and write a companion file next to the transcript, in the same `--out-dir`: `<channel> - <title> [<id>].fact-check.md` (the transcript's base name with a `.fact-check.md` suffix).
+
+Before judging a claim, rule out a transcription error: a wrong name, date or number may be the captioner's, not the speaker's. Say which one it is in the fact-check.
 
 For the shape of the finished artifact (method note, verdict-at-a-glance table, corrections with primary sources), see the worked example in [docs/example/](docs/example/).
 

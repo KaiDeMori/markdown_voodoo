@@ -50,9 +50,10 @@ A network-free report split into **core** (needed always) and **optional_escalat
 ```bash
 .venv/Scripts/python -m pip install -r requirements-dev.txt
 .venv/Scripts/python -m pytest
+.venv/Scripts/python -m pytest -m relay_bat   # the relay batch tests: slower; Windows, 7-Zip on PATH
 ```
 
-No test touches the network — see [AGENTS.md](AGENTS.md#tests).
+No test touches the network, and no test writes outside this folder — see [AGENTS.md](AGENTS.md#tests).
 
 ## Staying unblocked (before reaching for escalation)
 

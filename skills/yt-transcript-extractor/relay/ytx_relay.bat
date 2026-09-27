@@ -8,23 +8,39 @@ rem Lives next to yt-dlp.exe and needs 7-Zip (7z) on PATH. See docs/Relay_fetch.
 rem
 rem   Round 1:  ytx_relay.bat "URL"
 rem   Round 2:  ytx_relay.bat VIDEO_ID TRACK [TRACK ...]    e.g. en.manual fr-orig.auto
+rem
+rem The script works from its own folder with relative paths only: yt-dlp echoes paths
+rem as it gets them, so the console output carries no absolute path and can be pasted
+rem as is. Inside :main, %0 names the label, so the script's own path is taken here.
 
 set "MAX_TRACKS=8"
 set "READING_LANGS=en.*,de.*"
+set "SCRIPT_DIR=%~dp0"
+set "SCRIPT_NAME=%~nx0"
 set "YTDLP=%~dp0yt-dlp.exe"
-set "RELAY_DIR=%~dp0ytx_relay"
+set "RELAY_DIR=ytx_relay"
 
 rem Every call carries these. The local yt-dlp.conf keeps applying (JS runtime etc.);
 rem these switches override whatever could cause extra YouTube contact or break the
 rem bundle. --ignore-errors matters most: without it a failed caption download makes
 rem --load-info-json silently re-extract the video - a full extra hit.
+rem yt-dlp joins the temp path onto the home path, so each call passes an empty
+rem "temp:" - files stay in the home folder, whatever temp path a config sets.
 set SHARED=--no-playlist --skip-download --ignore-errors --ignore-no-formats-error ^
  --no-download-archive --no-write-comments --no-mark-watched --no-write-thumbnail ^
  --no-write-description --no-write-playlist-metafiles --no-exec --no-embed-subs ^
  --convert-subs none --no-wait-for-video --no-live-from-start
 
+pushd "%SCRIPT_DIR%" || exit /b 1
+call :main %*
+set "RESULT=%ERRORLEVEL%"
+popd
+exit /b %RESULT%
+
+
+:main
 if not exist "%YTDLP%" (
-    echo [relay] yt-dlp.exe not found next to this script: "%YTDLP%"
+    echo [relay] yt-dlp.exe not found next to this script.
     exit /b 1
 )
 where 7z >nul 2>nul || (
@@ -44,7 +60,7 @@ mkdir "%INCOMING%" || exit /b 1
 
 echo [relay] round 1: listing !URL!
 "%YTDLP%" %SHARED% --no-simulate --sleep-requests 2 --write-info-json --no-write-subs --no-write-auto-subs ^
- -P "home:%INCOMING%" -P "temp:%INCOMING%" -o "%%(id)s.%%(ext)s" -o "infojson:%%(id)s" "%URL%"
+ -P "home:%INCOMING%" -P "temp:" -o "%%(id)s.%%(ext)s" -o "infojson:%%(id)s" "%URL%"
 
 set "VID="
 for %%F in ("%INCOMING%\*.info.json") do set "VID=%%~nF"
@@ -62,6 +78,8 @@ move "%INCOMING%" "%WORK%" >nul || exit /b 1
 rem Count before fetching anything: yt-dlp prints the languages it would select
 rem (--print implies no download), and the cap is checked against that. The output
 rem goes through a file because a for /f command line cannot hold these quotes.
+rem Manual tracks are matched on the base language of each ASR track (fr-FR-orig
+rem gives fr.*), so a manual track tagged fr or fr-CA is found as well.
 set "AUTO_LANGS="
 set "MANUAL_LANGS="
 set "MANUAL_PATTERNS=%READING_LANGS%"
@@ -74,8 +92,7 @@ for /f "usebackq delims=" %%L in ("%SELECTION%") do (
     if not "%%L"=="NA" (
         set /a AUTO_COUNT+=1
         if defined AUTO_LANGS (set "AUTO_LANGS=!AUTO_LANGS!,%%L") else (set "AUTO_LANGS=%%L")
-        set "ORIG=%%L"
-        set "MANUAL_PATTERNS=!MANUAL_PATTERNS!,!ORIG:-orig=!.*"
+        for /f "delims=-" %%B in ("%%L") do set "MANUAL_PATTERNS=!MANUAL_PATTERNS!,%%B.*"
     )
 )
 
@@ -150,7 +167,7 @@ if "%KIND%"=="manual" (set "SUB_FLAGS=--write-subs --no-write-auto-subs") else (
 echo [relay] fetching %KIND% captions: %LANGS%
 "%YTDLP%" %SHARED% --no-simulate --no-write-info-json --load-info-json "%INFO%" %SUB_FLAGS% ^
  --sub-langs "%LANGS%" --sub-format "json3/best" --sleep-subtitles 2 ^
- -P "home:%WORK%" -P "temp:%WORK%" -o "%KIND%/%%(id)s.%%(ext)s" -o "subtitle:%KIND%/%%(id)s.%%(ext)s"
+ -P "home:%WORK%" -P "temp:" -o "%KIND%/%%(id)s.%%(ext)s" -o "subtitle:%KIND%/%%(id)s.%%(ext)s"
 exit /b 0
 
 
@@ -173,12 +190,14 @@ exit /b 0
 
 
 :bundle
+rem 7-Zip runs inside the work folder so the bundle holds the documented layout;
+rem from there the bundle sits one level up.
 set "BUNDLE=%RELAY_DIR%\%VID%.ytx.zip"
 mkdir "%WORK%\auto" 2>nul
 mkdir "%WORK%\manual" 2>nul
 if exist "%BUNDLE%" del /q "%BUNDLE%"
 pushd "%WORK%"
-7z a -tzip "%BUNDLE%" "%VID%.info.json" auto manual >nul
+7z a -tzip "..\%VID%.ytx.zip" "%VID%.info.json" auto manual >nul
 popd
 if not exist "%BUNDLE%" (
     echo [relay] 7-Zip did not create the bundle.
@@ -189,12 +208,12 @@ echo [relay] Bundle: %BUNDLE%
 echo [relay] Caption files inside:
 dir /b "%WORK%\auto" "%WORK%\manual" 2>nul
 echo [relay] Hand the bundle over to Claude.
-explorer /select,"%BUNDLE%"
+explorer /select,"%SCRIPT_DIR%%BUNDLE%"
 exit /b 0
 
 
 :usage
 echo Usage:
-echo   %~nx0 "URL"                        round 1: listing + source tracks, up to %MAX_TRACKS%
-echo   %~nx0 VIDEO_ID TRACK [TRACK ...]    round 2: named tracks, e.g. en.manual fr-orig.auto
+echo   %SCRIPT_NAME% "URL"                        round 1: listing + source tracks, up to %MAX_TRACKS%
+echo   %SCRIPT_NAME% VIDEO_ID TRACK [TRACK ...]    round 2: named tracks, e.g. en.manual fr-orig.auto
 exit /b 2

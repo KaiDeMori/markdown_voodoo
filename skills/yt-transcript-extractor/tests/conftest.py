@@ -1,8 +1,9 @@
-"""Shared test setup: no network, no writes outside tmp_path, seeded caches.
+"""Shared test setup: no network, no writes outside the project, seeded caches.
 
 Every test runs with all socket operations refused, so no test can reach
 YouTube - or resolve its name - even by mistake. Every test also points the
-output base at its own tmp_path, so nothing lands in the repo.
+output base at its own tmp_path, and every tmp_path lives inside the project
+(pytest.ini sets --basetemp), never in the system temp folder.
 """
 from __future__ import annotations
 
@@ -15,10 +16,15 @@ import pytest
 
 from ytx import config
 
+PROJECT_DIR = Path(__file__).resolve().parent.parent
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 FIXTURE_VIDEO_ID = "iyJj9RxSsBY"
 FIXTURE_LISTING = FIXTURES_DIR / f"{FIXTURE_VIDEO_ID}.info.json"
 FIXTURE_CAPTION = FIXTURES_DIR / f"{FIXTURE_VIDEO_ID}.en.manual.json3"
+# An auto-dubbed video from a relay fetch: eight ASR tracks, one per dub, and the
+# audio track YouTube flags as original.
+FIXTURE_DUBBED_VIDEO_ID = "hBB__YXYpOc"
+FIXTURE_DUBBED_LISTING = FIXTURES_DIR / f"{FIXTURE_DUBBED_VIDEO_ID}.info.json"
 
 
 class Network_blocked(RuntimeError):
@@ -27,6 +33,16 @@ class Network_blocked(RuntimeError):
 
 def refuse_network(*args, **kwargs):
     raise Network_blocked("tests never touch the network")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def temp_stays_in_project(request):
+    """Stop before the first tmp_path is created if it would land outside the project -
+    e.g. when pytest runs from another folder and the relative --basetemp moves along."""
+    basetemp = request.config.option.basetemp
+    if not basetemp or PROJECT_DIR not in Path(basetemp).resolve().parents:
+        pytest.exit(f"tmp_path would leave the project ({basetemp!r}); "
+                    f"run pytest from {PROJECT_DIR}", returncode=4)
 
 
 @pytest.fixture(autouse=True)
@@ -58,6 +74,12 @@ def seeded_out_dir(isolated_output) -> Path:
 def fixture_listing() -> dict:
     """The real listing, shared read-only across tests."""
     return json.loads(FIXTURE_LISTING.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="session")
+def dubbed_listing() -> dict:
+    """The real auto-dubbed listing, shared read-only: derive variants with {**listing, ...}."""
+    return json.loads(FIXTURE_DUBBED_LISTING.read_text(encoding="utf-8"))
 
 
 @pytest.fixture

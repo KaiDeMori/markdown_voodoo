@@ -22,7 +22,7 @@ ytx_relay.bat "https://www.youtube.com/watch?v=VIDEO_ID"
 Always quote the URL: an unquoted `&` cuts it off.
 
 1. **Listing** — the one heavy request to YouTube.
-2. **Counting** — without downloading, the script lets yt-dlp select the source tracks: the ASR `-orig` tracks, plus the manual tracks in English, German and each ASR language.
+2. **Counting** — without downloading, the script lets yt-dlp select the source tracks: the ASR `-orig` tracks, plus the manual tracks in English, German and the base language of each ASR track (`fr-FR-orig` also finds a manual `fr` or `fr-CA`).
 3. **Fetching** — at most 8 tracks, 2 seconds apart. With more than 8, the bundle holds the listing only, and Claude names the tracks for round 2.
 4. **Bundle** — `ytx_relay\<id>.ytx.zip` next to the script. Explorer opens with the bundle selected; hand it over to Claude.
 
@@ -53,6 +53,8 @@ ytx_relay.bat VIDEO_ID fr-orig.auto en.manual
 ```
 
 Both can be deleted any time after Claude has imported the bundle.
+
+The script works from its own folder with relative paths, and yt-dlp echoes paths as it gets them. So the console output shows only `ytx_relay\…` and can be pasted as is. One exception it cannot prevent: a message about a path from your own config, e.g. a cookies file, shows that path as configured.
 
 ## Troubleshooting
 

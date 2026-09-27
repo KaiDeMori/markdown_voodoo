@@ -164,17 +164,23 @@ All stages take `--out-dir DIR` and **must share the same one** so they find eac
 
 ## Tests
 
-A pytest suite covers the Python side. Install the test dependencies once, then run it from the project root:
+A pytest suite covers the Python side and the relay batch. Install the test dependencies once, then run it from the project root:
 
 ```bash
 "$PY" -m pip install -r requirements-dev.txt
-"$PY" -m pytest
+"$PY" -m pytest                  # the Python side, a few seconds
+"$PY" -m pytest -m relay_bat     # the relay batch, about half a minute; Windows, 7-Zip on PATH
 ```
 
-- **No test touches the network.** `tests/conftest.py` refuses every socket connection and name lookup; `test_network_guard.py` proves it, down to yt-dlp's own request path.
-- **No test writes into the repo.** Every test points the output base at its own temporary folder.
+The batch tests are excluded from the plain run (`pytest.ini`); run them whenever `relay/ytx_relay.bat` changes.
+
+- **No test touches the network.**
+  - Python side: `tests/conftest.py` refuses every socket connection and name lookup; `test_network_guard.py` proves it, down to yt-dlp's own request path.
+  - Batch tests: yt-dlp runs as its own process, out of the socket guard's reach. Every run gets `HTTP(S)_PROXY` pointing at a closed local port, and its config, home and temp folders point into the test folder, so no config on the machine can bring its own proxy. Each session starts with a canary request that must be refused; otherwise no batch test runs.
+- **No test writes outside the project.** `pytest.ini` puts every temporary folder into `.pytest_tmp/` (emptied at the start of each run), and a guard stops the session if that folder would land elsewhere — e.g. when pytest is started from another folder.
 - **Rule tests use synthetic listings** (`tests/synthetic_listings.py`): small, readable listings shaped like yt-dlp's, e.g. an auto-dubbed video with its ASR tracks in a chosen order.
-- **Real data lives in `tests/fixtures/`, verbatim:** a listing and its caption file, seeded into a test's out-dir by the `seeded_out_dir` fixture.
+- **Real data lives in `tests/fixtures/`, verbatim:** a listing with its caption file (`iyJj9RxSsBY`), and an auto-dubbed video's listing from a relay fetch (`hBB__YXYpOc`: eight ASR tracks and the original-audio flag).
+- **Batch tests run the production script.** A test copy differs in two spots only: round 1 copies a fixture listing where the script would ask yt-dlp for one, and Explorer stays closed. Both spots are matched literally, so a change to them in the script fails the tests instead of silently testing less.
 
 **Turning a misbehaving video into a regression test:** copy its `meta/<id>.info.json` (and the `raw/` files the test needs) into `tests/fixtures/` unchanged, then write a test that asserts the expected pick or output. Keep fixtures verbatim — trimming could delete the very quirk the test is meant to catch.
 
