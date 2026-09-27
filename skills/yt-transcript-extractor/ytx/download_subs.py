@@ -16,7 +16,7 @@ import time
 import yt_dlp
 
 from . import config
-from .list_subs import _take_opt, video_id
+from .list_subs import _take_opt, url_query, video_id
 
 DEFAULT_LANGS = ("en-orig",)
 DEFAULT_FORMATS = ("json3", "vtt")  # the two worth comparing (clean vs rolling)
@@ -48,6 +48,16 @@ def find_entry(info: dict, lang: str, fmt: str, kind: str | None = None):
     return None, None
 
 
+def url_expired(entry: dict) -> bool:
+    """True when the entry's signed URL is past its `expire` timestamp.
+
+    Caption URLs from a listing stay valid only for some hours. Checking first
+    avoids spending a request - and bot-wall goodwill - on a certain failure.
+    """
+    expire = url_query(entry).get("expire", "")
+    return expire.isdigit() and int(expire) < time.time()
+
+
 def download_pairs(vid, pairs, cookies_file=None, force=False,
                    player_clients=config.DEFAULT_PLAYER_CLIENTS) -> list:
     """Download explicit (lang, kind|None, fmt) tuples into raw/.
@@ -70,6 +80,10 @@ def download_pairs(vid, pairs, cookies_file=None, force=False,
                 print(f"  [have ] {out.name} (already downloaded)", file=sys.stderr)
                 saved.append(out)
                 continue
+            if url_expired(entry):
+                raise SystemExit(
+                    f"The cached caption URLs for {vid} have expired. Refresh the listing "
+                    "(`ytx --refresh ...` or `ytx.list_subs ...`), then retry.")
             if hits:
                 time.sleep(config.SLEEP_REQUESTS)  # be polite between real hits
             hits += 1

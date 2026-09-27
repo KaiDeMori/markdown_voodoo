@@ -1,20 +1,26 @@
-"""One-shot transcript extraction: give a URL, get a clean transcript.
+"""Transcript extraction: give a URL, get a clean transcript.
 
-Runs the whole pipeline and DECIDES which tracks to use itself:
-  Stage 1 list -> auto-select best track(s) -> Stage 2 download json3 -> Stage 3 clean.
+Runs the whole pipeline: Stage 1 list -> pick track(s) -> Stage 2 download json3
+-> Stage 3 clean. With --track the primary track is the one named; without it,
+the pick is list_subs.recommend_track (the one-shot shortcut). Listing and raw
+files are reused from the cache, so after list + probe this run is local.
 
-NETWORK: stages 1 and 2 contact YouTube. Per this project's hard rule, an agent
-MUST ask the user's permission (AskUserQuestion) BEFORE running this. See README.
+NETWORK: stages 1 and 2 contact YouTube unless cached. Per this project's hard
+rule, an agent MUST ask the user's permission in chat BEFORE running this. See
+SKILL.md.
 
-Track-selection rules (best first):
+Track-selection rules of the recommendation (best first):
   1. manual subtitles beat auto-captions      (human > ASR)
-  2. original language beats translations      ('-orig' marker or detected language)
+  2. the spoken language beats others         (--prefer, original audio track, the only ASR track)
   3. json3 beats other formats                 (cleanest; falls back to srv3/vtt/ttml/srt)
 
-    python -m ytx.extract <url> [--prefer en,de] [--also-translation]
+    python -m ytx.extract <url> [--track <lang>.<kind>] [--prefer en,de] [--also-translation]
                                 [--flow sentences|paragraphs|wrapped|oneline|lines]
                                 [--client web,mweb,tv] [--cookies FILE] [--use-cookies]
                                 [--refresh] [--verbose]
+
+--track   the primary track by id, e.g. en-orig.auto or en.manual (see the list report)
+--prefer  the language(s) the video is spoken in, when the recommendation gets it wrong
 """
 from __future__ import annotations
 
@@ -23,7 +29,18 @@ import sys
 
 from . import clean as clean_mod
 from . import config, download_subs
-from .list_subs import _take_opt, fetch_and_cache, video_id
+from .list_subs import (
+    _take_opt,
+    base_lang,
+    fetch_and_cache,
+    parse_track_id,
+    recommend_track,
+    source_lang_of,
+    source_tracks,
+    track_id,
+    translated_to_of,
+    video_id,
+)
 
 FORMAT_PREFERENCE = ("json3", "srv3", "vtt", "ttml", "srt")
 
@@ -38,58 +55,65 @@ def _best_format(available):
                 available[0] if available else None)
 
 
-def _first_present(mapping, candidates):
-    return next((c for c in candidates if c and c in mapping), None)
+def primary_pick(info, track=None, spoken_langs=None):
+    """(lang, kind, reason, selection) of the primary transcript, or None.
+
+    `selection` records how the track was chosen. For an explicit --track it
+    also records whether the recommendation agreed - the running evidence for
+    whether the one-shot shortcut can be trusted.
+    """
+    recommended = recommend_track(info, spoken_langs=spoken_langs)
+    if track:
+        lang, kind = parse_track_id(track)
+        if not _formats_for(info, lang, kind):
+            available = ", ".join(t["track"] for t in source_tracks(info)) or "none"
+            raise SystemExit(f"Track {track} is not offered by this video. Source tracks: {available}.")
+        recommended_track = recommended["track"] if recommended else "none"
+        match = "yes" if recommended_track == track else "no"
+        return (lang, kind, "explicit --track",
+                f"explicit · recommended={recommended_track} · match={match}")
+    if not recommended:
+        return None
+    lang, kind = parse_track_id(recommended["track"])
+    selection = "recommended (ambiguous)" if recommended["ambiguous"] else "recommended"
+    return lang, kind, recommended["reason"], selection
 
 
-def choose_tracks(info, prefer_langs=("en", "de"), also_translation=False):
+def choose_tracks(info, track=None, spoken_langs=None, also_translation=False):
     """Decide which subtitle tracks to download.
 
-    Returns a list of {lang, kind, fmt, reason}; the first item is the primary
-    (most faithful) transcript.
+    Returns a list of {lang, kind, fmt, reason, selection}; the first item is
+    the primary (most faithful) transcript.
     """
     manual = info.get("subtitles") or {}
     auto = info.get("automatic_captions") or {}
 
-    # Identify the original language: prefer the '-orig' ASR marker, else yt-dlp's
-    # detected video language (only if a track for it actually exists).
-    orig_lang = None
-    orig_auto = sorted(l for l in auto if l.endswith("-orig"))
-    if orig_auto:
-        orig_lang = orig_auto[0]
-    elif info.get("language") and (info["language"] in manual or info["language"] in auto):
-        orig_lang = info["language"]
+    primary = primary_pick(info, track=track, spoken_langs=spoken_langs)
+    picks: list[tuple[str, str, str, str]] = [primary] if primary else []
 
-    picks: list[tuple[str, str, str]] = []  # (lang, kind, reason)
-
-    # Primary: the most faithful transcript available.
-    if manual:
-        lang = _first_present(manual, [orig_lang, *prefer_langs]) or sorted(manual)[0]
-        picks.append((lang, "manual", "human-made subtitles (highest quality)"))
-    elif orig_lang:
-        picks.append((orig_lang, "auto", "original-language auto-captions (best fidelity)"))
-    elif auto:
-        lang = _first_present(auto, prefer_langs) or sorted(auto)[0]
-        picks.append((lang, "auto", "auto-captions (no original marker; preferred/first language)"))
-
-    # Optional: also fetch a translation into a preferred reading language.
+    # Optional: also fetch a translation into a reading language.
     if also_translation and picks:
-        primary_base = picks[0][0].replace("-orig", "")
-        for pl in prefer_langs:
-            if pl == primary_base:
+        primary_base = base_lang(picks[0][0])
+        for reading_lang in config.DEFAULT_READING_LANGS:
+            if base_lang(reading_lang) == primary_base:
                 continue
-            if pl in manual:
-                picks.append((pl, "manual", f"human translation into preferred '{pl}'"))
+            if reading_lang in manual:
+                picks.append((reading_lang, "manual",
+                              f"human translation into reading language '{reading_lang}'",
+                              "translation"))
                 break
-            if pl in auto:
-                picks.append((pl, "auto", f"auto-translation into preferred '{pl}'"))
+            if reading_lang in auto:
+                picks.append((reading_lang, "auto",
+                              f"auto-translation into reading language '{reading_lang}'",
+                              "translation"))
                 break
 
     chosen = []
-    for lang, kind, reason in picks:
+    for lang, kind, reason, selection in picks:
         fmt = _best_format(_formats_for(info, lang, kind))
         if fmt:
-            chosen.append({"lang": lang, "kind": kind, "fmt": fmt, "reason": reason})
+            chosen.append({"lang": lang, "kind": kind, "fmt": fmt,
+                           "reason": reason, "selection": selection})
     return chosen
 
 
@@ -107,7 +131,18 @@ def _load_or_fetch(url, cookies, verbose, refresh, player_clients=config.DEFAULT
     return vid, info
 
 
-def _write_transcript_md(info, vid, lang, kind, fmt, lines, flow):
+def track_provenance(info, lang, kind, fmt) -> dict:
+    """What YouTube says about the downloaded entry: its name, source and translation target."""
+    _kind, entry = download_subs.find_entry(info, lang, fmt, kind=kind)
+    entry = entry or {}
+    return {
+        "name": entry.get("name"),
+        "source_lang": source_lang_of(entry),
+        "translated_to": translated_to_of(entry),
+    }
+
+
+def _write_transcript_md(info, vid, lang, kind, fmt, lines, flow, provenance, selection):
     words = sum(len(l.split()) for l in lines)
     out = config.CLEAN_DIR / config.safe_filename(info, suffix=f".{lang}.md", max_len=200)
     header = (
@@ -115,6 +150,10 @@ def _write_transcript_md(info, vid, lang, kind, fmt, lines, flow):
         f"- **Channel:** {info.get('channel') or info.get('uploader') or ''}\n"
         f"- **URL:** https://www.youtube.com/watch?v={vid}\n"
         f"- **Track:** {lang} · {kind} · {fmt} · flow={flow}\n"
+        f"- **Source:** \"{provenance['name'] or ''}\" · "
+        f"source_lang={provenance['source_lang'] or 'unknown'} · "
+        f"translated_to={provenance['translated_to'] or 'none'}\n"
+        f"- **Selection:** {selection}\n"
         f"- **Words:** {words}\n\n"
         "---\n\n"
     )
@@ -122,7 +161,7 @@ def _write_transcript_md(info, vid, lang, kind, fmt, lines, flow):
     return out, words
 
 
-def extract(url, prefer_langs=("en", "de"), also_translation=False,
+def extract(url, track=None, spoken_langs=None, also_translation=False,
             cookies_file=None, verbose=False, refresh=False, flow=None,
             player_clients=config.DEFAULT_PLAYER_CLIENTS, use_cookies=None):
     flow = flow or config.DEFAULT_FLOW
@@ -140,12 +179,14 @@ def extract(url, prefer_langs=("en", "de"), also_translation=False,
           f"{(info.get('channel') or info.get('uploader'))!r}", file=sys.stderr)
 
     # Decide
-    picks = choose_tracks(info, prefer_langs=prefer_langs, also_translation=also_translation)
+    picks = choose_tracks(info, track=track, spoken_langs=spoken_langs,
+                          also_translation=also_translation)
     if not picks:
         raise SystemExit("No subtitle tracks available for this video.")
     print("[decision] chosen track(s):", file=sys.stderr)
     for p in picks:
-        print(f"      - {p['lang']} ({p['kind']}, {p['fmt']}) : {p['reason']}", file=sys.stderr)
+        print(f"      - {track_id(p['lang'], p['kind'])} ({p['fmt']}) : {p['reason']} "
+              f"[{p['selection']}]", file=sys.stderr)
 
     # Stage 2 - download (network; reuses already-downloaded raw files)
     print(f"[2/3] downloading {len(picks)} track(s) -> {config.RAW_DIR} ...", file=sys.stderr)
@@ -160,10 +201,15 @@ def extract(url, prefer_langs=("en", "de"), also_translation=False,
     for i, p in enumerate(picks):
         raw = config.RAW_DIR / f"{vid}.{p['lang']}.{p['kind']}.{p['fmt']}"
         lines = clean_mod.clean_file(raw) or []
-        md, words = _write_transcript_md(info, vid, p["lang"], p["kind"], p["fmt"], lines, flow)
+        provenance = track_provenance(info, p["lang"], p["kind"], p["fmt"])
+        md, words = _write_transcript_md(info, vid, p["lang"], p["kind"], p["fmt"], lines, flow,
+                                         provenance, p["selection"])
         transcripts.append({
             "primary": i == 0,
+            "track": track_id(p["lang"], p["kind"]),
             "lang": p["lang"], "kind": p["kind"], "format": p["fmt"],
+            **provenance,
+            "selection": p["selection"],
             "lines": len(lines), "words": words, "path": str(md),
         })
         print(f"      [md] {md.name}", file=sys.stderr)
@@ -197,7 +243,8 @@ def main(argv: list[str] | None = None) -> int:
     use_cookies_flag = "--use-cookies" in argv   # opt in to cookies for this run
     if use_cookies_flag:
         argv.remove("--use-cookies")
-    prefer = _take_opt(argv, "--prefer")
+    prefer = _take_opt(argv, "--prefer")   # the spoken language(s), overriding detection
+    track = _take_opt(argv, "--track")     # explicit primary track; wins over --prefer
     cookies_file = _take_opt(argv, "--cookies")
     flow = _take_opt(argv, "--flow")       # sentences|paragraphs|wrapped|oneline|lines
     # --client web,mweb,tv  (comma-separated; "default"/omitted = let yt-dlp pick)
@@ -206,13 +253,15 @@ def main(argv: list[str] | None = None) -> int:
         player_clients = config.DEFAULT_PLAYER_CLIENTS
     else:
         player_clients = tuple(c.strip() for c in client_arg.split(",") if c.strip())
-    prefer_langs = tuple(prefer.split(",")) if prefer else ("en", "de")
+    spoken_langs = tuple(prefer.split(",")) if prefer else None
+    if track:
+        parse_track_id(track)  # reject a malformed id before any network contact
 
     if not argv:
         print(__doc__)
         return 2
     for url in argv:
-        extract(url, prefer_langs=prefer_langs, also_translation=also_translation,
+        extract(url, track=track, spoken_langs=spoken_langs, also_translation=also_translation,
                 cookies_file=cookies_file, verbose=verbose, refresh=refresh, flow=flow,
                 player_clients=player_clients,
                 use_cookies=True if use_cookies_flag else None)

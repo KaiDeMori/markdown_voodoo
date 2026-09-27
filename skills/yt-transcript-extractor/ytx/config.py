@@ -153,6 +153,11 @@ RETRIES = 3
 #   sentences | paragraphs | wrapped | oneline | lines
 DEFAULT_FLOW = "sentences"
 
+# The user's reading languages, best first. They break ties between manual tracks
+# and pick the target of --also-translation. They say nothing about which language
+# a video is spoken in - that is what --prefer is for.
+DEFAULT_READING_LANGS = ("en", "de")
+
 
 # Let yt-dlp choose the player client. Its maintainers track YouTube's changes
 # and pick a working, least-gated client better than any fixed list could - a
