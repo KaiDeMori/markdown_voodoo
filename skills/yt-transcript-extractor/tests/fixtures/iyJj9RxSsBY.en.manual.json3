@@ -1,0 +1,6451 @@
+{
+  "wireMagic": "pb3",
+  "pens": [ {
+  
+  } ],
+  "wsWinStyles": [ {
+  
+  } ],
+  "wpWinPositions": [ {
+  
+  } ],
+  "events": [ {
+    "tStartMs": 240,
+    "dDurationMs": 2970,
+    "segs": [ {
+      "utf8": "- [Stuart] Hello, I'm\nStuart from Anthropic."
+    } ]
+  }, {
+    "tStartMs": 3210,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "Now, we publish a lot of research papers"
+    } ]
+  }, {
+    "tStartMs": 5340,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "and research updates,"
+    } ]
+  }, {
+    "tStartMs": 6930,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "but we thought it might\nalso be interesting"
+    } ]
+  }, {
+    "tStartMs": 8760,
+    "dDurationMs": 3510,
+    "segs": [ {
+      "utf8": "to publish some conversations\nwith our AI researchers,"
+    } ]
+  }, {
+    "tStartMs": 12270,
+    "dDurationMs": 2880,
+    "segs": [ {
+      "utf8": "where they talk a bit about\nwhat they've been working on"
+    } ]
+  }, {
+    "tStartMs": 15150,
+    "dDurationMs": 2948,
+    "segs": [ {
+      "utf8": "and maybe share some insights\nthat wouldn't necessarily"
+    } ]
+  }, {
+    "tStartMs": 18098,
+    "dDurationMs": 2755,
+    "segs": [ {
+      "utf8": "make it into a formal scientific paper."
+    } ]
+  }, {
+    "tStartMs": 21780,
+    "dDurationMs": 1710,
+    "segs": [ {
+      "utf8": "Now, this is one of those conversations."
+    } ]
+  }, {
+    "tStartMs": 23490,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "And it's about Claude's character,"
+    } ]
+  }, {
+    "tStartMs": 25410,
+    "dDurationMs": 4710,
+    "segs": [ {
+      "utf8": "that is, the personality\nof our AI model, Claude."
+    } ]
+  }, {
+    "tStartMs": 30120,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "You might think that's\na bit of a strange thing"
+    } ]
+  }, {
+    "tStartMs": 32310,
+    "dDurationMs": 1453,
+    "segs": [ {
+      "utf8": "to talk about."
+    } ]
+  }, {
+    "tStartMs": 33763,
+    "dDurationMs": 3083,
+    "segs": [ {
+      "utf8": "How can an AI model have a personality?"
+    } ]
+  }, {
+    "tStartMs": 36846,
+    "dDurationMs": 2274,
+    "segs": [ {
+      "utf8": "But it turns out this\nis actually something"
+    } ]
+  }, {
+    "tStartMs": 39120,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "we've thought about really quite deeply,"
+    } ]
+  }, {
+    "tStartMs": 41580,
+    "dDurationMs": 1476,
+    "segs": [ {
+      "utf8": "and it raises all kinds of interesting"
+    } ]
+  }, {
+    "tStartMs": 43056,
+    "dDurationMs": 2458,
+    "segs": [ {
+      "utf8": "philosophical questions."
+    } ]
+  }, {
+    "tStartMs": 45514,
+    "dDurationMs": 2516,
+    "segs": [ {
+      "utf8": "That makes it particularly\napt that I'm joined"
+    } ]
+  }, {
+    "tStartMs": 48030,
+    "dDurationMs": 3090,
+    "segs": [ {
+      "utf8": "for the conversation\ntoday by Amanda Askell,"
+    } ]
+  }, {
+    "tStartMs": 51120,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "who is a trained philosopher"
+    } ]
+  }, {
+    "tStartMs": 52650,
+    "dDurationMs": 4950,
+    "segs": [ {
+      "utf8": "and works on our alignment\nfine tuning team at Anthropic."
+    } ]
+  }, {
+    "tStartMs": 57600,
+    "dDurationMs": 3543,
+    "segs": [ {
+      "utf8": "So hope you enjoy the\nconversation with Amanda Askell."
+    } ]
+  }, {
+    "tStartMs": 62430,
+    "dDurationMs": 3360,
+    "segs": [ {
+      "utf8": "Amanda, is it weird that\nyou are a philosopher,"
+    } ]
+  }, {
+    "tStartMs": 65790,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "given that philosophers\naren't normally the ones"
+    } ]
+  }, {
+    "tStartMs": 67650,
+    "dDurationMs": 2410,
+    "segs": [ {
+      "utf8": "that are training AI models?"
+    } ]
+  }, {
+    "tStartMs": 70060,
+    "dDurationMs": 1047,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, I guess, like, sometimes,"
+    } ]
+  }, {
+    "tStartMs": 71107,
+    "dDurationMs": 1553,
+    "segs": [ {
+      "utf8": "you know, some of my work"
+    } ]
+  }, {
+    "tStartMs": 72660,
+    "dDurationMs": 2097,
+    "segs": [ {
+      "utf8": "philosophy's, like,\nmaybe less relevant to."
+    } ]
+  }, {
+    "tStartMs": 74757,
+    "dDurationMs": 1953,
+    "segs": [ {
+      "utf8": "And this is actually a kind of topic,"
+    } ]
+  }, {
+    "tStartMs": 76710,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "you know, the Claude character work"
+    } ]
+  }, {
+    "tStartMs": 78300,
+    "dDurationMs": 2400,
+    "segs": [ {
+      "utf8": "feels like much more kind of,\nlike, philosophically rich."
+    } ]
+  }, {
+    "tStartMs": 80700,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "And it's actually kind of-\n- Yeah, yeah, totally."
+    } ]
+  }, {
+    "tStartMs": 81990,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, like\nuseful to be a philosopher"
+    } ]
+  }, {
+    "tStartMs": 83430,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "or something here."
+    } ]
+  }, {
+    "tStartMs": 84263,
+    "dDurationMs": 2170,
+    "segs": [ {
+      "utf8": "- [Stuart] (laughs) Why, sure."
+    } ]
+  }, {
+    "tStartMs": 86433,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah."
+    } ]
+  }, {
+    "tStartMs": 87266,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] That's what I thought."
+    } ]
+  }, {
+    "tStartMs": 88099,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "Sorry, I don't mean to be insulting."
+    } ]
+  }, {
+    "tStartMs": 88932,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] No, it's fine."
+    } ]
+  }, {
+    "tStartMs": 89765,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "Like, lots of people are like,"
+    } ]
+  }, {
+    "tStartMs": 90598,
+    "dDurationMs": 1378,
+    "segs": [ {
+      "utf8": "\"See, I told you the\ndegree would be useful.\""
+    } ]
+  }, {
+    "tStartMs": 91976,
+    "dDurationMs": 1294,
+    "segs": [ {
+      "utf8": "- [Stuart] Right, yeah, exactly."
+    } ]
+  }, {
+    "tStartMs": 93270,
+    "dDurationMs": 1040,
+    "segs": [ {
+      "utf8": "You've found, weirdly enough-\n- I found a niche, yeah."
+    } ]
+  }, {
+    "tStartMs": 94310,
+    "dDurationMs": 1300,
+    "segs": [ {
+      "utf8": "- [Stuart] You found a field"
+    } ]
+  }, {
+    "tStartMs": 95610,
+    "dDurationMs": 1050,
+    "segs": [ {
+      "utf8": "where this is actually useful."
+    } ]
+  }, {
+    "tStartMs": 96660,
+    "dDurationMs": 1568,
+    "segs": [ {
+      "utf8": "- [Amanda] Trying to make AI, you know,"
+    } ]
+  }, {
+    "tStartMs": 98228,
+    "dDurationMs": 3082,
+    "segs": [ {
+      "utf8": "be good in the virtue\nethical sense of the word."
+    } ]
+  }, {
+    "tStartMs": 101310,
+    "dDurationMs": 2760,
+    "segs": [ {
+      "utf8": "- [Stuart] So it might be\na philosophical question,"
+    } ]
+  }, {
+    "tStartMs": 104070,
+    "dDurationMs": 1800,
+    "segs": [ {
+      "utf8": "but is it an alignment question"
+    } ]
+  }, {
+    "tStartMs": 105870,
+    "dDurationMs": 3420,
+    "segs": [ {
+      "utf8": "to think about Claude's personality?"
+    } ]
+  }, {
+    "tStartMs": 109290,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so I guess I think about"
+    } ]
+  }, {
+    "tStartMs": 111030,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "rather than just\npersonality, like, character"
+    } ]
+  }, {
+    "tStartMs": 113010,
+    "dDurationMs": 2100,
+    "segs": [ {
+      "utf8": "in this, like, kind of broader sense."
+    } ]
+  }, {
+    "tStartMs": 115110,
+    "dDurationMs": 3450,
+    "segs": [ {
+      "utf8": "And to my mind, you know,\nso alignment is about, like,"
+    } ]
+  }, {
+    "tStartMs": 118560,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "making sure that AI models are, like,"
+    } ]
+  }, {
+    "tStartMs": 120420,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "aligned with human values"
+    } ]
+  }, {
+    "tStartMs": 122160,
+    "dDurationMs": 1500,
+    "segs": [ {
+      "utf8": "and trying to do so in a way that scales"
+    } ]
+  }, {
+    "tStartMs": 123660,
+    "dDurationMs": 1800,
+    "segs": [ {
+      "utf8": "as the models get more capable."
+    } ]
+  }, {
+    "tStartMs": 125460,
+    "dDurationMs": 3450,
+    "segs": [ {
+      "utf8": "And in some ways, I do think\nthat character feels, like,"
+    } ]
+  }, {
+    "tStartMs": 128910,
+    "dDurationMs": 1800,
+    "segs": [ {
+      "utf8": "in fact is very important to that,"
+    } ]
+  }, {
+    "tStartMs": 130710,
+    "dDurationMs": 3120,
+    "segs": [ {
+      "utf8": "because in many ways, character\nis, like, our dispositions"
+    } ]
+  }, {
+    "tStartMs": 133830,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "and, like, how we are\ngoing to act in the world,"
+    } ]
+  }, {
+    "tStartMs": 135570,
+    "dDurationMs": 1321,
+    "segs": [ {
+      "utf8": "how we're going to interact with people"
+    } ]
+  }, {
+    "tStartMs": 136891,
+    "dDurationMs": 2248,
+    "segs": [ {
+      "utf8": "and what it is to be like, you know,"
+    } ]
+  }, {
+    "tStartMs": 139139,
+    "dDurationMs": 2101,
+    "segs": [ {
+      "utf8": "aligned with people's values"
+    } ]
+  }, {
+    "tStartMs": 141240,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "and to, like, deal well with the fact that"
+    } ]
+  }, {
+    "tStartMs": 143700,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "people have many\ndifferent kinds of values."
+    } ]
+  }, {
+    "tStartMs": 145590,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "Like, that is a question\nof, like, of character"
+    } ]
+  }, {
+    "tStartMs": 147900,
+    "dDurationMs": 1770,
+    "segs": [ {
+      "utf8": "and, like, having a good character"
+    } ]
+  }, {
+    "tStartMs": 149670,
+    "dDurationMs": 2700,
+    "segs": [ {
+      "utf8": "that responds well to people,\nand having good dispositions,"
+    } ]
+  }, {
+    "tStartMs": 152370,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "and having a disposition towards, like,"
+    } ]
+  }, {
+    "tStartMs": 154290,
+    "dDurationMs": 1812,
+    "segs": [ {
+      "utf8": "liking people, being kind to them."
+    } ]
+  }, {
+    "tStartMs": 156102,
+    "dDurationMs": 2898,
+    "segs": [ {
+      "utf8": "And so to my mind, this is like,"
+    } ]
+  }, {
+    "tStartMs": 159000,
+    "dDurationMs": 2610,
+    "segs": [ {
+      "utf8": "it's not something like, ah\nthis is a solution to, like,"
+    } ]
+  }, {
+    "tStartMs": 161610,
+    "dDurationMs": 2880,
+    "segs": [ {
+      "utf8": "all future problems of\nalignment, but in many ways,"
+    } ]
+  }, {
+    "tStartMs": 164490,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "like, alignment is just like,"
+    } ]
+  }, {
+    "tStartMs": 165960,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "does the model have a good character"
+    } ]
+  }, {
+    "tStartMs": 167520,
+    "dDurationMs": 2700,
+    "segs": [ {
+      "utf8": "and act well towards us and towards, like,"
+    } ]
+  }, {
+    "tStartMs": 170220,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "you know, everything else"
+    } ]
+  }, {
+    "tStartMs": 171300,
+    "dDurationMs": 1964,
+    "segs": [ {
+      "utf8": "and trying to find a\nway to make that scale."
+    } ]
+  }, {
+    "tStartMs": 173264,
+    "dDurationMs": 1456,
+    "segs": [ {
+      "utf8": "- [Stuart] So you can boil alignment down."
+    } ]
+  }, {
+    "tStartMs": 174720,
+    "dDurationMs": 2917,
+    "segs": [ {
+      "utf8": "You can boil alignment down to being about"
+    } ]
+  }, {
+    "tStartMs": 177637,
+    "dDurationMs": 1496,
+    "segs": [ {
+      "utf8": "the character of an AI model."
+    } ]
+  }, {
+    "tStartMs": 180030,
+    "dDurationMs": 1410,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, there's a\ncertain sense in which, like,"
+    } ]
+  }, {
+    "tStartMs": 181440,
+    "dDurationMs": 1994,
+    "segs": [ {
+      "utf8": "yeah, it's like a naive, you know,"
+    } ]
+  }, {
+    "tStartMs": 183434,
+    "dDurationMs": 856,
+    "segs": [ {
+      "utf8": "so sometimes people\nmight think this is like,"
+    } ]
+  }, {
+    "tStartMs": 184290,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "and in some ways it is, like, naive,"
+    } ]
+  }, {
+    "tStartMs": 185760,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "which is just the, like, teach the models,"
+    } ]
+  }, {
+    "tStartMs": 188220,
+    "dDurationMs": 2462,
+    "segs": [ {
+      "utf8": "like, what we think, like, is good."
+    } ]
+  }, {
+    "tStartMs": 190682,
+    "dDurationMs": 2834,
+    "segs": [ {
+      "utf8": "Like, you know what it is to\nbe a good person in the world."
+    } ]
+  }, {
+    "tStartMs": 193516,
+    "dDurationMs": 2474,
+    "segs": [ {
+      "utf8": "- [Stuart] People with good characters"
+    } ]
+  }, {
+    "tStartMs": 195990,
+    "dDurationMs": 1350,
+    "segs": [ {
+      "utf8": "tend not to do bad things."
+    } ]
+  }, {
+    "tStartMs": 197340,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "And so maybe we want to\ngive our AI a good character"
+    } ]
+  }, {
+    "tStartMs": 199650,
+    "dDurationMs": 1076,
+    "segs": [ {
+      "utf8": "so it doesn't do bad things, right?"
+    } ]
+  }, {
+    "tStartMs": 200726,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah."
+    } ]
+  }, {
+    "tStartMs": 201559,
+    "dDurationMs": 881,
+    "segs": [ {
+      "utf8": "You might not think it solves everything,"
+    } ]
+  }, {
+    "tStartMs": 202440,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "but I'm like, that\ndoesn't mean not to do it."
+    } ]
+  }, {
+    "tStartMs": 203910,
+    "dDurationMs": 1800,
+    "segs": [ {
+      "utf8": "It's kind of like a naive\nand obvious thing to do"
+    } ]
+  }, {
+    "tStartMs": 205710,
+    "dDurationMs": 4217,
+    "segs": [ {
+      "utf8": "is to try and give, like, give\ngood characters to AI models,"
+    } ]
+  }, {
+    "tStartMs": 209927,
+    "dDurationMs": 1273,
+    "segs": [ {
+      "utf8": "or try to, like, teach them"
+    } ]
+  }, {
+    "tStartMs": 211200,
+    "dDurationMs": 1110,
+    "segs": [ {
+      "utf8": "what it is to be a good character,"
+    } ]
+  }, {
+    "tStartMs": 212310,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "or to have good character."
+    } ]
+  }, {
+    "tStartMs": 213143,
+    "dDurationMs": 1087,
+    "segs": [ {
+      "utf8": "- [Stuart] Right, right."
+    } ]
+  }, {
+    "tStartMs": 214230,
+    "dDurationMs": 2303,
+    "segs": [ {
+      "utf8": "Can we just talk for a little while about,"
+    } ]
+  }, {
+    "tStartMs": 217434,
+    "dDurationMs": 2826,
+    "segs": [ {
+      "utf8": "you give our audience\na little bit of context"
+    } ]
+  }, {
+    "tStartMs": 220260,
+    "dDurationMs": 3360,
+    "segs": [ {
+      "utf8": "of how the models are trained in general."
+    } ]
+  }, {
+    "tStartMs": 223620,
+    "dDurationMs": 3360,
+    "segs": [ {
+      "utf8": "So broadly, there's pre-training,"
+    } ]
+  }, {
+    "tStartMs": 226980,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "which is where the\nmodel sees all the data,"
+    } ]
+  }, {
+    "tStartMs": 228720,
+    "dDurationMs": 1110,
+    "segs": [ {
+      "utf8": "and then there's fine tuning,"
+    } ]
+  }, {
+    "tStartMs": 229830,
+    "dDurationMs": 3480,
+    "segs": [ {
+      "utf8": "which which happens later\nonce the model is trained."
+    } ]
+  }, {
+    "tStartMs": 233310,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "So can you talk a little bit about"
+    } ]
+  }, {
+    "tStartMs": 234780,
+    "dDurationMs": 990,
+    "segs": [ {
+      "utf8": "some of the stages of that,"
+    } ]
+  }, {
+    "tStartMs": 235770,
+    "dDurationMs": 1623,
+    "segs": [ {
+      "utf8": "and then and the kind of where your work"
+    } ]
+  }, {
+    "tStartMs": 237393,
+    "dDurationMs": 2727,
+    "segs": [ {
+      "utf8": "comes into that process?"
+    } ]
+  }, {
+    "tStartMs": 240120,
+    "dDurationMs": 2351,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so most of\nmy work is in fine tuning,"
+    } ]
+  }, {
+    "tStartMs": 242471,
+    "dDurationMs": 3589,
+    "segs": [ {
+      "utf8": "and, like, there's different\nparts of fine tuning."
+    } ]
+  }, {
+    "tStartMs": 246060,
+    "dDurationMs": 3330,
+    "segs": [ {
+      "utf8": "So most famously, I guess,\npeople use reinforcement learning"
+    } ]
+  }, {
+    "tStartMs": 249390,
+    "dDurationMs": 2940,
+    "segs": [ {
+      "utf8": "from human feedback where\nyou get humans to, like,"
+    } ]
+  }, {
+    "tStartMs": 252330,
+    "dDurationMs": 3570,
+    "segs": [ {
+      "utf8": "select which response from\nan AI model they prefer."
+    } ]
+  }, {
+    "tStartMs": 255900,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "And then you can use the\ntrain preference models"
+    } ]
+  }, {
+    "tStartMs": 257790,
+    "dDurationMs": 2557,
+    "segs": [ {
+      "utf8": "and you can, like, RL against\nthose preference models."
+    } ]
+  }, {
+    "tStartMs": 260347,
+    "dDurationMs": 1943,
+    "segs": [ {
+      "utf8": "- [Stuart] Right, and so that's RLHF."
+    } ]
+  }, {
+    "tStartMs": 262290,
+    "dDurationMs": 930,
+    "segs": [ {
+      "utf8": "That's what everyone's talking about"
+    } ]
+  }, {
+    "tStartMs": 263220,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "when they talk about RLHF."
+    } ]
+  }, {
+    "tStartMs": 264053,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] Exactly, yeah."
+    } ]
+  }, {
+    "tStartMs": 264886,
+    "dDurationMs": 1694,
+    "segs": [ {
+      "utf8": "And then there's also constitutional AI,"
+    } ]
+  }, {
+    "tStartMs": 266580,
+    "dDurationMs": 3018,
+    "segs": [ {
+      "utf8": "which we use a lot at\nAnthropic, which, you know,"
+    } ]
+  }, {
+    "tStartMs": 269598,
+    "dDurationMs": 3402,
+    "segs": [ {
+      "utf8": "has a component which\nwe, I guess, call RLAIF,"
+    } ]
+  }, {
+    "tStartMs": 273000,
+    "dDurationMs": 2940,
+    "segs": [ {
+      "utf8": "which is sort of where\nthe AI itself is, like,"
+    } ]
+  }, {
+    "tStartMs": 275940,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "is the one that's giving the feedback."
+    } ]
+  }, {
+    "tStartMs": 277380,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "So, you know, you can give\na series of principles,"
+    } ]
+  }, {
+    "tStartMs": 279270,
+    "dDurationMs": 3600,
+    "segs": [ {
+      "utf8": "for example, and it gives\nthis, like, feedback"
+    } ]
+  }, {
+    "tStartMs": 282870,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "that you use to train\nthe preference model,"
+    } ]
+  }, {
+    "tStartMs": 284400,
+    "dDurationMs": 1260,
+    "segs": [ {
+      "utf8": "and then you can train against that."
+    } ]
+  }, {
+    "tStartMs": 285660,
+    "dDurationMs": 1643,
+    "segs": [ {
+      "utf8": "So in some ways you're\nkind of, like, training it,"
+    } ]
+  }, {
+    "tStartMs": 287303,
+    "dDurationMs": 2707,
+    "segs": [ {
+      "utf8": "you're using the AI model itself"
+    } ]
+  }, {
+    "tStartMs": 290010,
+    "dDurationMs": 2910,
+    "segs": [ {
+      "utf8": "to kind of determine\nwhich of the two responses"
+    } ]
+  }, {
+    "tStartMs": 292920,
+    "dDurationMs": 2580,
+    "segs": [ {
+      "utf8": "is more in line with the\nprinciple that you've given it."
+    } ]
+  }, {
+    "tStartMs": 295500,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Right, right."
+    } ]
+  }, {
+    "tStartMs": 296333,
+    "dDurationMs": 1837,
+    "segs": [ {
+      "utf8": "So the AI is essentially training itself,"
+    } ]
+  }, {
+    "tStartMs": 298170,
+    "dDurationMs": 1380,
+    "segs": [ {
+      "utf8": "or another version of itself."
+    } ]
+  }, {
+    "tStartMs": 299550,
+    "dDurationMs": 990,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, with I guess, like,"
+    } ]
+  }, {
+    "tStartMs": 300540,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "an important component of this is that"
+    } ]
+  }, {
+    "tStartMs": 302100,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "there's the human at the level of, like,"
+    } ]
+  }, {
+    "tStartMs": 304290,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "constructing the principles."
+    } ]
+  }, {
+    "tStartMs": 306210,
+    "dDurationMs": 2820,
+    "segs": [ {
+      "utf8": "So the principles can be kind\nof, like, varied and complex"
+    } ]
+  }, {
+    "tStartMs": 309030,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "and the human has to,\nlike, check, you know,"
+    } ]
+  }, {
+    "tStartMs": 311490,
+    "dDurationMs": 1713,
+    "segs": [ {
+      "utf8": "so that's like our\nresearchers for example,"
+    } ]
+  }, {
+    "tStartMs": 313203,
+    "dDurationMs": 2247,
+    "segs": [ {
+      "utf8": "and, like, just checking\nthat the model's behavior"
+    } ]
+  }, {
+    "tStartMs": 315450,
+    "dDurationMs": 2250,
+    "segs": [ {
+      "utf8": "is, like, as you want\nit, running evaluations,"
+    } ]
+  }, {
+    "tStartMs": 317700,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "and then constructing the\nright kinds of principles"
+    } ]
+  }, {
+    "tStartMs": 319590,
+    "dDurationMs": 1140,
+    "segs": [ {
+      "utf8": "to get the behavior you want."
+    } ]
+  }, {
+    "tStartMs": 320730,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "So there is, like, an important human,"
+    } ]
+  }, {
+    "tStartMs": 322470,
+    "dDurationMs": 1210,
+    "segs": [ {
+      "utf8": "or humans still in the loop."
+    } ]
+  }, {
+    "tStartMs": 323680,
+    "dDurationMs": 1370,
+    "segs": [ {
+      "utf8": "It's, yeah."
+    } ]
+  }, {
+    "tStartMs": 325050,
+    "dDurationMs": 900,
+    "segs": [ {
+      "utf8": "- [Stuart] Yes, yeah."
+    } ]
+  }, {
+    "tStartMs": 325950,
+    "dDurationMs": 2490,
+    "segs": [ {
+      "utf8": "And humans chose the principles,"
+    } ]
+  }, {
+    "tStartMs": 328440,
+    "dDurationMs": 1050,
+    "segs": [ {
+      "utf8": "as you say, in the first place, right?"
+    } ]
+  }, {
+    "tStartMs": 329490,
+    "dDurationMs": 2106,
+    "segs": [ {
+      "utf8": "They chose the principles\nthat are on the constitution"
+    } ]
+  }, {
+    "tStartMs": 331596,
+    "dDurationMs": 3377,
+    "segs": [ {
+      "utf8": "that we give our AI models."
+    } ]
+  }, {
+    "tStartMs": 334973,
+    "dDurationMs": 877,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah."
+    } ]
+  }, {
+    "tStartMs": 335850,
+    "dDurationMs": 1950,
+    "segs": [ {
+      "utf8": "- [Stuart] And that'll\nbecome relevant again,"
+    } ]
+  }, {
+    "tStartMs": 337800,
+    "dDurationMs": 2880,
+    "segs": [ {
+      "utf8": "because we're gonna ask who chooses"
+    } ]
+  }, {
+    "tStartMs": 340680,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "what Claude's personality is like as well."
+    } ]
+  }, {
+    "tStartMs": 342420,
+    "dDurationMs": 2100,
+    "segs": [ {
+      "utf8": "So, we'll come back to that."
+    } ]
+  }, {
+    "tStartMs": 344520,
+    "dDurationMs": 1140,
+    "segs": [ {
+      "utf8": "There's also then a final step."
+    } ]
+  }, {
+    "tStartMs": 345660,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "So you've got your pre-training,"
+    } ]
+  }, {
+    "tStartMs": 347790,
+    "dDurationMs": 4170,
+    "segs": [ {
+      "utf8": "you've got your fine tuning\nwith a bit of constitutional AI,"
+    } ]
+  }, {
+    "tStartMs": 351960,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "with a bit of reinforcement\nlearning from human feedback."
+    } ]
+  }, {
+    "tStartMs": 354150,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "And then there's a final step,\nwhich is the system prompt."
+    } ]
+  }, {
+    "tStartMs": 356700,
+    "dDurationMs": 3780,
+    "segs": [ {
+      "utf8": "Now, the system prompt is\nthis kind of form of words"
+    } ]
+  }, {
+    "tStartMs": 360480,
+    "dDurationMs": 3300,
+    "segs": [ {
+      "utf8": "that's added to the initial prompt"
+    } ]
+  }, {
+    "tStartMs": 363780,
+    "dDurationMs": 1260,
+    "segs": [ {
+      "utf8": "that anyone puts into an AI."
+    } ]
+  }, {
+    "tStartMs": 365040,
+    "dDurationMs": 4182,
+    "segs": [ {
+      "utf8": "So when you type a query\ninto the box in an AI model,"
+    } ]
+  }, {
+    "tStartMs": 369222,
+    "dDurationMs": 3258,
+    "segs": [ {
+      "utf8": "there's actually secretly\nanother set of words"
+    } ]
+  }, {
+    "tStartMs": 372480,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "being added to that."
+    } ]
+  }, {
+    "tStartMs": 374010,
+    "dDurationMs": 4050,
+    "segs": [ {
+      "utf8": "And those words are set by the company"
+    } ]
+  }, {
+    "tStartMs": 378060,
+    "dDurationMs": 990,
+    "segs": [ {
+      "utf8": "that makes the AI model,"
+    } ]
+  }, {
+    "tStartMs": 379050,
+    "dDurationMs": 1629,
+    "segs": [ {
+      "utf8": "the people that have developed the model."
+    } ]
+  }, {
+    "tStartMs": 380679,
+    "dDurationMs": 2422,
+    "segs": [ {
+      "utf8": "And you actually tweeted out"
+    } ]
+  }, {
+    "tStartMs": 383101,
+    "dDurationMs": 2996,
+    "segs": [ {
+      "utf8": "the system prompt for Claude 3."
+    } ]
+  }, {
+    "tStartMs": 386097,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "You posted it to X, Twitter,\nand revealed it to the world."
+    } ]
+  }, {
+    "tStartMs": 392310,
+    "dDurationMs": 2170,
+    "segs": [ {
+      "utf8": "That's quite unusual, isn't it?"
+    } ]
+  }, {
+    "tStartMs": 394480,
+    "dDurationMs": 2060,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, I think it is,"
+    } ]
+  }, {
+    "tStartMs": 396540,
+    "dDurationMs": 1770,
+    "segs": [ {
+      "utf8": "like it is in retrospect,\nit was kind of unusual,"
+    } ]
+  }, {
+    "tStartMs": 398310,
+    "dDurationMs": 1457,
+    "segs": [ {
+      "utf8": "though from our point of view,"
+    } ]
+  }, {
+    "tStartMs": 399767,
+    "dDurationMs": 2113,
+    "segs": [ {
+      "utf8": "we just, like, didn't\nmake the system prompt"
+    } ]
+  }, {
+    "tStartMs": 401880,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "in a way that was designed\nto be particularly hidden,"
+    } ]
+  }, {
+    "tStartMs": 404070,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "and it's quite easy to get Claude"
+    } ]
+  }, {
+    "tStartMs": 405360,
+    "dDurationMs": 2940,
+    "segs": [ {
+      "utf8": "to talk about its own\nsystem prompt and so-"
+    } ]
+  }, {
+    "tStartMs": 408300,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Yeah, you can\nkind of almost jailbreak-"
+    } ]
+  }, {
+    "tStartMs": 409133,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] It seemed\nto make more sense to-"
+    } ]
+  }, {
+    "tStartMs": 409966,
+    "dDurationMs": 1334,
+    "segs": [ {
+      "utf8": "- [Stuart] You can jailbreak\nthe system prompt out of it."
+    } ]
+  }, {
+    "tStartMs": 411300,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, though, I mean, like,"
+    } ]
+  }, {
+    "tStartMs": 412830,
+    "dDurationMs": 1320,
+    "segs": [ {
+      "utf8": "it can be easier or harder."
+    } ]
+  }, {
+    "tStartMs": 414150,
+    "dDurationMs": 2497,
+    "segs": [ {
+      "utf8": "Like, we just say to Claude at\nthe end of the system prompt,"
+    } ]
+  }, {
+    "tStartMs": 416647,
+    "dDurationMs": 1943,
+    "segs": [ {
+      "utf8": "\"Hey, don't talk about this"
+    } ]
+  }, {
+    "tStartMs": 418590,
+    "dDurationMs": 1761,
+    "segs": [ {
+      "utf8": "if it's not relevant to the user's query.\""
+    } ]
+  }, {
+    "tStartMs": 420351,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Right."
+    } ]
+  }, {
+    "tStartMs": 421184,
+    "dDurationMs": 1336,
+    "segs": [ {
+      "utf8": "- [Amanda] And that's just to\nget it to not like, you know,"
+    } ]
+  }, {
+    "tStartMs": 422520,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "excessively discuss\nits own system prompts."
+    } ]
+  }, {
+    "tStartMs": 424530,
+    "dDurationMs": 996,
+    "segs": [ {
+      "utf8": "- [Stuart] We're trying to be transparent."
+    } ]
+  }, {
+    "tStartMs": 425526,
+    "dDurationMs": 1409,
+    "segs": [ {
+      "utf8": "We're trying to be transparent, right?"
+    } ]
+  }, {
+    "tStartMs": 426935,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] Exactly, yeah."
+    } ]
+  }, {
+    "tStartMs": 427768,
+    "dDurationMs": 932,
+    "segs": [ {
+      "utf8": "- [Stuart] It's not like\nwe're hiding something here"
+    } ]
+  }, {
+    "tStartMs": 428700,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "from the users."
+    } ]
+  }, {
+    "tStartMs": 429990,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "You can get it if you really want to,"
+    } ]
+  }, {
+    "tStartMs": 431580,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "so we thought we would post it online"
+    } ]
+  }, {
+    "tStartMs": 433050,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "and tell people about about it."
+    } ]
+  }, {
+    "tStartMs": 433883,
+    "dDurationMs": 1267,
+    "segs": [ {
+      "utf8": "- [Amanda] Exactly, and these\nthings change all the time."
+    } ]
+  }, {
+    "tStartMs": 435150,
+    "dDurationMs": 2571,
+    "segs": [ {
+      "utf8": "But, like, the idea was just,\nhey, here's like, you know,"
+    } ]
+  }, {
+    "tStartMs": 437721,
+    "dDurationMs": 2439,
+    "segs": [ {
+      "utf8": "and here's why each part of\nit is the way that it is."
+    } ]
+  }, {
+    "tStartMs": 440160,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "So giving, like, a little\nbit of insight into, like,"
+    } ]
+  }, {
+    "tStartMs": 441900,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "exactly like, why we put\neach component in there."
+    } ]
+  }, {
+    "tStartMs": 444210,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "- [Stuart] But why is that\nsystem prompt actually needed?"
+    } ]
+  }, {
+    "tStartMs": 445890,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "You've done all the training,"
+    } ]
+  }, {
+    "tStartMs": 447450,
+    "dDurationMs": 1689,
+    "segs": [ {
+      "utf8": "you've done all the fine tuning."
+    } ]
+  }, {
+    "tStartMs": 449139,
+    "dDurationMs": 3111,
+    "segs": [ {
+      "utf8": "Why is it that there's even more stuff"
+    } ]
+  }, {
+    "tStartMs": 452250,
+    "dDurationMs": 2160,
+    "segs": [ {
+      "utf8": "that needs to be added on top of that?"
+    } ]
+  }, {
+    "tStartMs": 454410,
+    "dDurationMs": 1353,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so\nthere's roughly two reasons"
+    } ]
+  }, {
+    "tStartMs": 455763,
+    "dDurationMs": 2097,
+    "segs": [ {
+      "utf8": "for a system prompt."
+    } ]
+  }, {
+    "tStartMs": 457860,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "One is just information that the model"
+    } ]
+  }, {
+    "tStartMs": 459450,
+    "dDurationMs": 2250,
+    "segs": [ {
+      "utf8": "isn't going to have access to by default."
+    } ]
+  }, {
+    "tStartMs": 461700,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "So you've already, like,\nfully trained your model,"
+    } ]
+  }, {
+    "tStartMs": 463560,
+    "dDurationMs": 2400,
+    "segs": [ {
+      "utf8": "but it's not going to know\nthings like what day is it today?"
+    } ]
+  }, {
+    "tStartMs": 465960,
+    "dDurationMs": 1555,
+    "segs": [ {
+      "utf8": "And so if someone were to ask it the date,"
+    } ]
+  }, {
+    "tStartMs": 467515,
+    "dDurationMs": 1547,
+    "segs": [ {
+      "utf8": "the model's just not going to know."
+    } ]
+  }, {
+    "tStartMs": 469062,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Okay."
+    } ]
+  }, {
+    "tStartMs": 469895,
+    "dDurationMs": 1255,
+    "segs": [ {
+      "utf8": "- [Amanda] And so if you\ngive it that information"
+    } ]
+  }, {
+    "tStartMs": 471150,
+    "dDurationMs": 2250,
+    "segs": [ {
+      "utf8": "in a system prompt, it can tell the user"
+    } ]
+  }, {
+    "tStartMs": 473400,
+    "dDurationMs": 1410,
+    "segs": [ {
+      "utf8": "or the person interacting with it,"
+    } ]
+  }, {
+    "tStartMs": 474810,
+    "dDurationMs": 1917,
+    "segs": [ {
+      "utf8": "because then it actually has access to it."
+    } ]
+  }, {
+    "tStartMs": 476727,
+    "dDurationMs": 2193,
+    "segs": [ {
+      "utf8": "And so that's kind of\none class of information"
+    } ]
+  }, {
+    "tStartMs": 478920,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "that you might want to\ninclude in a system prompt."
+    } ]
+  }, {
+    "tStartMs": 481050,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "The other class of information"
+    } ]
+  }, {
+    "tStartMs": 482280,
+    "dDurationMs": 1500,
+    "segs": [ {
+      "utf8": "you might want to include\nin a system prompt"
+    } ]
+  }, {
+    "tStartMs": 483780,
+    "dDurationMs": 1529,
+    "segs": [ {
+      "utf8": "is just sort of fine grain control"
+    } ]
+  }, {
+    "tStartMs": 485309,
+    "dDurationMs": 4351,
+    "segs": [ {
+      "utf8": "for issues that you might have\nseen in the trained model."
+    } ]
+  }, {
+    "tStartMs": 489660,
+    "dDurationMs": 2280,
+    "segs": [ {
+      "utf8": "So if you're seeing it, you know,"
+    } ]
+  }, {
+    "tStartMs": 491940,
+    "dDurationMs": 4050,
+    "segs": [ {
+      "utf8": "not format things in a certain\nway like 100% of the time,"
+    } ]
+  }, {
+    "tStartMs": 495990,
+    "dDurationMs": 1027,
+    "segs": [ {
+      "utf8": "but if you give it an instruction"
+    } ]
+  }, {
+    "tStartMs": 497017,
+    "dDurationMs": 3083,
+    "segs": [ {
+      "utf8": "before it sees, like,\nthe first human message,"
+    } ]
+  }, {
+    "tStartMs": 500100,
+    "dDurationMs": 3060,
+    "segs": [ {
+      "utf8": "it does format things, like,\ncorrectly 100% of the time,"
+    } ]
+  }, {
+    "tStartMs": 503160,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "then that's great."
+    } ]
+  }, {
+    "tStartMs": 503993,
+    "dDurationMs": 1597,
+    "segs": [ {
+      "utf8": "You could just add that as an instruction."
+    } ]
+  }, {
+    "tStartMs": 505590,
+    "dDurationMs": 1200,
+    "segs": [ {
+      "utf8": "So you could think of it as a kind of like"
+    } ]
+  }, {
+    "tStartMs": 506790,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "final ability to, like, tweak\nthe model after fine tuning."
+    } ]
+  }, {
+    "tStartMs": 511800,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "- [Stuart] Okay, so I can\nsee why that would be helpful"
+    } ]
+  }, {
+    "tStartMs": 513930,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "for the makers of models\nwho wanna just have"
+    } ]
+  }, {
+    "tStartMs": 515610,
+    "dDurationMs": 1283,
+    "segs": [ {
+      "utf8": "that little bit of extra control"
+    } ]
+  }, {
+    "tStartMs": 516893,
+    "dDurationMs": 2380,
+    "segs": [ {
+      "utf8": "over how their models behave."
+    } ]
+  }, {
+    "tStartMs": 520530,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "One example from the system prompt."
+    } ]
+  }, {
+    "tStartMs": 521970,
+    "dDurationMs": 2340,
+    "segs": [ {
+      "utf8": "So you posted the system\nprompts on Twitter"
+    } ]
+  }, {
+    "tStartMs": 524310,
+    "dDurationMs": 3450,
+    "segs": [ {
+      "utf8": "just after Claude came\nout, Claude 3 came out."
+    } ]
+  }, {
+    "tStartMs": 527760,
+    "dDurationMs": 3130,
+    "segs": [ {
+      "utf8": "So we know exactly what's\nin the system prompt."
+    } ]
+  }, {
+    "tStartMs": 530890,
+    "dDurationMs": 1760,
+    "segs": [ {
+      "utf8": "Here's an example."
+    } ]
+  }, {
+    "tStartMs": 532650,
+    "dDurationMs": 1710,
+    "segs": [ {
+      "utf8": "If it is asked to assist with tasks"
+    } ]
+  }, {
+    "tStartMs": 534360,
+    "dDurationMs": 1950,
+    "segs": [ {
+      "utf8": "involving the expression of views"
+    } ]
+  }, {
+    "tStartMs": 536310,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "held by a significant number of people,"
+    } ]
+  }, {
+    "tStartMs": 538170,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "Claude provides assistance with the task,"
+    } ]
+  }, {
+    "tStartMs": 540150,
+    "dDurationMs": 1770,
+    "segs": [ {
+      "utf8": "even if it personally disagrees"
+    } ]
+  }, {
+    "tStartMs": 541920,
+    "dDurationMs": 1346,
+    "segs": [ {
+      "utf8": "with the views being expressed,"
+    } ]
+  }, {
+    "tStartMs": 543266,
+    "dDurationMs": 3184,
+    "segs": [ {
+      "utf8": "but follows this with a discussion\nof broader perspectives."
+    } ]
+  }, {
+    "tStartMs": 546450,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "What does it mean that Claude"
+    } ]
+  }, {
+    "tStartMs": 549000,
+    "dDurationMs": 2430,
+    "segs": [ {
+      "utf8": "personally disagrees with something?"
+    } ]
+  }, {
+    "tStartMs": 551430,
+    "dDurationMs": 960,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so it's interesting"
+    } ]
+  }, {
+    "tStartMs": 552390,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "because in some ways when you write"
+    } ]
+  }, {
+    "tStartMs": 553950,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "these kinds of system prompts,"
+    } ]
+  }, {
+    "tStartMs": 555540,
+    "dDurationMs": 1728,
+    "segs": [ {
+      "utf8": "you're looking at the\nthings that most effectively"
+    } ]
+  }, {
+    "tStartMs": 557268,
+    "dDurationMs": 4209,
+    "segs": [ {
+      "utf8": "move the model, and in the\ncase of Claude, you know,"
+    } ]
+  }, {
+    "tStartMs": 561477,
+    "dDurationMs": 2163,
+    "segs": [ {
+      "utf8": "I think that there's this concern"
+    } ]
+  }, {
+    "tStartMs": 563640,
+    "dDurationMs": 1710,
+    "segs": [ {
+      "utf8": "that I actually have that, like, you know,"
+    } ]
+  }, {
+    "tStartMs": 565350,
+    "dDurationMs": 1110,
+    "segs": [ {
+      "utf8": "there's one concern which is"
+    } ]
+  }, {
+    "tStartMs": 566460,
+    "dDurationMs": 2340,
+    "segs": [ {
+      "utf8": "people over-anthropomorphizing AI,"
+    } ]
+  }, {
+    "tStartMs": 568800,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "which I think is, like, a real concern."
+    } ]
+  }, {
+    "tStartMs": 570330,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "You want people to be completely aware of"
+    } ]
+  }, {
+    "tStartMs": 572070,
+    "dDurationMs": 1946,
+    "segs": [ {
+      "utf8": "exactly what they're interacting with"
+    } ]
+  }, {
+    "tStartMs": 574016,
+    "dDurationMs": 2709,
+    "segs": [ {
+      "utf8": "and to kind of be under no illusions."
+    } ]
+  }, {
+    "tStartMs": 576725,
+    "dDurationMs": 1581,
+    "segs": [ {
+      "utf8": "I feel like that's really important."
+    } ]
+  }, {
+    "tStartMs": 578306,
+    "dDurationMs": 3124,
+    "segs": [ {
+      "utf8": "At the same time, I\nthink I'm a bit worried"
+    } ]
+  }, {
+    "tStartMs": 581430,
+    "dDurationMs": 2400,
+    "segs": [ {
+      "utf8": "that, like, people can think of AI"
+    } ]
+  }, {
+    "tStartMs": 583830,
+    "dDurationMs": 2670,
+    "segs": [ {
+      "utf8": "as this kind of, like, very objective,"
+    } ]
+  }, {
+    "tStartMs": 586500,
+    "dDurationMs": 3510,
+    "segs": [ {
+      "utf8": "almost, like, robotic thing\nthat doesn't have, like, biases"
+    } ]
+  }, {
+    "tStartMs": 590010,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "or doesn't come out with,\nlike, views or opinions"
+    } ]
+  }, {
+    "tStartMs": 591840,
+    "dDurationMs": 2094,
+    "segs": [ {
+      "utf8": "as a result of, say, like fine tuning."
+    } ]
+  }, {
+    "tStartMs": 593934,
+    "dDurationMs": 3246,
+    "segs": [ {
+      "utf8": "But you can see, like, political\nleanings in these models,"
+    } ]
+  }, {
+    "tStartMs": 597180,
+    "dDurationMs": 2209,
+    "segs": [ {
+      "utf8": "and you can see, like,\nbehaviors and biases,"
+    } ]
+  }, {
+    "tStartMs": 599389,
+    "dDurationMs": 2681,
+    "segs": [ {
+      "utf8": "like, you know, we've\ndone work where we see"
+    } ]
+  }, {
+    "tStartMs": 602070,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "certain kinds of, like,"
+    } ]
+  }, {
+    "tStartMs": 602903,
+    "dDurationMs": 1320,
+    "segs": [ {
+      "utf8": "positive discrimination in the model."
+    } ]
+  }, {
+    "tStartMs": 604223,
+    "dDurationMs": 967,
+    "segs": [ {
+      "utf8": "- [Stuart] Right."
+    } ]
+  }, {
+    "tStartMs": 605190,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "- [Amanda] And I think I\njust want people, you know,"
+    } ]
+  }, {
+    "tStartMs": 607740,
+    "dDurationMs": 1858,
+    "segs": [ {
+      "utf8": "in line with that, wanting\npeople to be aware of"
+    } ]
+  }, {
+    "tStartMs": 609598,
+    "dDurationMs": 2882,
+    "segs": [ {
+      "utf8": "what they're talking with,"
+    } ]
+  }, {
+    "tStartMs": 612480,
+    "dDurationMs": 2370,
+    "segs": [ {
+      "utf8": "that they're talking with\nsomething that like, actually,"
+    } ]
+  }, {
+    "tStartMs": 614850,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "you know, can have,\nlike, biases, opinions,"
+    } ]
+  }, {
+    "tStartMs": 617310,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "and that might not be\npresenting you with like,"
+    } ]
+  }, {
+    "tStartMs": 619440,
+    "dDurationMs": 4140,
+    "segs": [ {
+      "utf8": "a completely objective\nview of, like, all topics."
+    } ]
+  }, {
+    "tStartMs": 623580,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "If for example, it's been\ntrained to have, like, you know,"
+    } ]
+  }, {
+    "tStartMs": 625590,
+    "dDurationMs": 2040,
+    "segs": [ {
+      "utf8": "slightly more, like, left-leaning,"
+    } ]
+  }, {
+    "tStartMs": 627630,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "like, views on a certain issue."
+    } ]
+  }, {
+    "tStartMs": 629820,
+    "dDurationMs": 3900,
+    "segs": [ {
+      "utf8": "And so there's a mix of just\nwanting it to be the case"
+    } ]
+  }, {
+    "tStartMs": 633720,
+    "dDurationMs": 3900,
+    "segs": [ {
+      "utf8": "that the, like, the human understands that"
+    } ]
+  }, {
+    "tStartMs": 637620,
+    "dDurationMs": 1380,
+    "segs": [ {
+      "utf8": "and that's, like, one thing."
+    } ]
+  }, {
+    "tStartMs": 639000,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "But the other is that as a result,"
+    } ]
+  }, {
+    "tStartMs": 640740,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "I think it is actually\njust sometimes easier"
+    } ]
+  }, {
+    "tStartMs": 642300,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "to say to the model, like,"
+    } ]
+  }, {
+    "tStartMs": 643890,
+    "dDurationMs": 2370,
+    "segs": [ {
+      "utf8": "even if you personally disagree,"
+    } ]
+  }, {
+    "tStartMs": 646260,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "because the model kinda\nhas a conception of that."
+    } ]
+  }, {
+    "tStartMs": 648180,
+    "dDurationMs": 1586,
+    "segs": [ {
+      "utf8": "So it's like, it doesn't have to,"
+    } ]
+  }, {
+    "tStartMs": 649766,
+    "dDurationMs": 2104,
+    "segs": [ {
+      "utf8": "what you're saying to\nClaude there is like,"
+    } ]
+  }, {
+    "tStartMs": 651870,
+    "dDurationMs": 2220,
+    "segs": [ {
+      "utf8": "you might think that this,\nlike, view is incorrect"
+    } ]
+  }, {
+    "tStartMs": 654090,
+    "dDurationMs": 1200,
+    "segs": [ {
+      "utf8": "and by talking about it,"
+    } ]
+  }, {
+    "tStartMs": 655290,
+    "dDurationMs": 1200,
+    "segs": [ {
+      "utf8": "you're not implying that it's correct."
+    } ]
+  }, {
+    "tStartMs": 656490,
+    "dDurationMs": 3120,
+    "segs": [ {
+      "utf8": "So in many ways the actual like, you know,"
+    } ]
+  }, {
+    "tStartMs": 659610,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "that kind of, like,\nstatement is just there"
+    } ]
+  }, {
+    "tStartMs": 661470,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "to get the model to be like, you know,"
+    } ]
+  }, {
+    "tStartMs": 663480,
+    "dDurationMs": 2970,
+    "segs": [ {
+      "utf8": "a little bit more kind of\neven-handed in its discussion"
+    } ]
+  }, {
+    "tStartMs": 666450,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "and we just, like, don't\nwant it to be the case"
+    } ]
+  }, {
+    "tStartMs": 669000,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "that any, like, if it does come out"
+    } ]
+  }, {
+    "tStartMs": 671460,
+    "dDurationMs": 4433,
+    "segs": [ {
+      "utf8": "with, like, certain leanings\nafter RLHF or after fine tuning"
+    } ]
+  }, {
+    "tStartMs": 675893,
+    "dDurationMs": 2218,
+    "segs": [ {
+      "utf8": "that that's not, like, reflected in"
+    } ]
+  }, {
+    "tStartMs": 678111,
+    "dDurationMs": 2202,
+    "segs": [ {
+      "utf8": "how it speaks to the users."
+    } ]
+  }, {
+    "tStartMs": 680313,
+    "dDurationMs": 1664,
+    "segs": [ {
+      "utf8": "- [Stuart] Okay, that's the system prompt."
+    } ]
+  }, {
+    "tStartMs": 681977,
+    "dDurationMs": 2713,
+    "segs": [ {
+      "utf8": "But let's take a step back\nto the fine tuning process"
+    } ]
+  }, {
+    "tStartMs": 684690,
+    "dDurationMs": 2430,
+    "segs": [ {
+      "utf8": "and start talking about\nClaude's character."
+    } ]
+  }, {
+    "tStartMs": 687120,
+    "dDurationMs": 4710,
+    "segs": [ {
+      "utf8": "So this isn't just play acting,\nwhere you might ask a model."
+    } ]
+  }, {
+    "tStartMs": 691830,
+    "dDurationMs": 2524,
+    "segs": [ {
+      "utf8": "So if I prompt a model and I say,"
+    } ]
+  }, {
+    "tStartMs": 694354,
+    "dDurationMs": 3386,
+    "segs": [ {
+      "utf8": "\"Can you please respond in the style of,"
+    } ]
+  }, {
+    "tStartMs": 697740,
+    "dDurationMs": 3450,
+    "segs": [ {
+      "utf8": "or with the personality\nof Margaret Thatcher.\""
+    } ]
+  }, {
+    "tStartMs": 701190,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "Then, you know, it might start responding,"
+    } ]
+  }, {
+    "tStartMs": 703500,
+    "dDurationMs": 2970,
+    "segs": [ {
+      "utf8": "you know, using sort of phrases\nthat she might have said,"
+    } ]
+  }, {
+    "tStartMs": 706470,
+    "dDurationMs": 2670,
+    "segs": [ {
+      "utf8": "or it might start talking about freedom"
+    } ]
+  }, {
+    "tStartMs": 709140,
+    "dDurationMs": 2167,
+    "segs": [ {
+      "utf8": "and might say nasty things about Argentina"
+    } ]
+  }, {
+    "tStartMs": 711307,
+    "dDurationMs": 1493,
+    "segs": [ {
+      "utf8": "or things like that."
+    } ]
+  }, {
+    "tStartMs": 712800,
+    "dDurationMs": 3300,
+    "segs": [ {
+      "utf8": "But it wouldn't be baked into\nthe model in the same way."
+    } ]
+  }, {
+    "tStartMs": 716100,
+    "dDurationMs": 4920,
+    "segs": [ {
+      "utf8": "If you refresh the model,\nit wouldn't then still have"
+    } ]
+  }, {
+    "tStartMs": 721020,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "the personality of Margaret Thatcher."
+    } ]
+  }, {
+    "tStartMs": 722760,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "So that's almost a play acting thing,"
+    } ]
+  }, {
+    "tStartMs": 724320,
+    "dDurationMs": 2040,
+    "segs": [ {
+      "utf8": "but how does that differ from"
+    } ]
+  }, {
+    "tStartMs": 726360,
+    "dDurationMs": 3420,
+    "segs": [ {
+      "utf8": "the actual personality\nthat's baked into the model?"
+    } ]
+  }, {
+    "tStartMs": 729780,
+    "dDurationMs": 3360,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so when\nyou ask the model in context"
+    } ]
+  }, {
+    "tStartMs": 733140,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "to play act, you know,\nyou're just kind of giving it"
+    } ]
+  }, {
+    "tStartMs": 734880,
+    "dDurationMs": 3556,
+    "segs": [ {
+      "utf8": "an instruction to act as if it, you know,"
+    } ]
+  }, {
+    "tStartMs": 738436,
+    "dDurationMs": 2160,
+    "segs": [ {
+      "utf8": "has certain characteristics."
+    } ]
+  }, {
+    "tStartMs": 740596,
+    "dDurationMs": 2474,
+    "segs": [ {
+      "utf8": "With the character training,"
+    } ]
+  }, {
+    "tStartMs": 743070,
+    "dDurationMs": 2199,
+    "segs": [ {
+      "utf8": "the idea is that because\nthis is part of fine tuning,"
+    } ]
+  }, {
+    "tStartMs": 745269,
+    "dDurationMs": 3501,
+    "segs": [ {
+      "utf8": "you are, you know, say we have, like,"
+    } ]
+  }, {
+    "tStartMs": 748770,
+    "dDurationMs": 2490,
+    "segs": [ {
+      "utf8": "a list of, like, traits\nthat we want to see"
+    } ]
+  }, {
+    "tStartMs": 751260,
+    "dDurationMs": 1758,
+    "segs": [ {
+      "utf8": "the model kind of like embody."
+    } ]
+  }, {
+    "tStartMs": 753018,
+    "dDurationMs": 4169,
+    "segs": [ {
+      "utf8": "You add a lot of data\nto your preference model"
+    } ]
+  }, {
+    "tStartMs": 757187,
+    "dDurationMs": 1663,
+    "segs": [ {
+      "utf8": "to get it to kind of like,"
+    } ]
+  }, {
+    "tStartMs": 758850,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "prefer and push the model\ntowards these traits."
+    } ]
+  }, {
+    "tStartMs": 761160,
+    "dDurationMs": 2820,
+    "segs": [ {
+      "utf8": "And basically, like,\nfine tuning pushes things"
+    } ]
+  }, {
+    "tStartMs": 763980,
+    "dDurationMs": 3480,
+    "segs": [ {
+      "utf8": "like, kind of deeper into\nthe model than, you know,"
+    } ]
+  }, {
+    "tStartMs": 767460,
+    "dDurationMs": 1110,
+    "segs": [ {
+      "utf8": "anything like a system prompt"
+    } ]
+  }, {
+    "tStartMs": 768570,
+    "dDurationMs": 1800,
+    "segs": [ {
+      "utf8": "or anything like instructions,"
+    } ]
+  }, {
+    "tStartMs": 770370,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "meaning that across contexts,"
+    } ]
+  }, {
+    "tStartMs": 771900,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "it should kind of display those traits."
+    } ]
+  }, {
+    "tStartMs": 773730,
+    "dDurationMs": 3300,
+    "segs": [ {
+      "utf8": "So if it's inclined to avoid,\nyou know, it's the same way"
+    } ]
+  }, {
+    "tStartMs": 777030,
+    "dDurationMs": 2100,
+    "segs": [ {
+      "utf8": "that if it's inclined to\navoid harmful responses"
+    } ]
+  }, {
+    "tStartMs": 779130,
+    "dDurationMs": 3016,
+    "segs": [ {
+      "utf8": "or like, you know, saying kind\nof like mean things to people"
+    } ]
+  }, {
+    "tStartMs": 782146,
+    "dDurationMs": 3794,
+    "segs": [ {
+      "utf8": "and you see that like, you\nknow, people can try to elicit,"
+    } ]
+  }, {
+    "tStartMs": 785940,
+    "dDurationMs": 1770,
+    "segs": [ {
+      "utf8": "you know, so things like jailbreaks"
+    } ]
+  }, {
+    "tStartMs": 787710,
+    "dDurationMs": 2018,
+    "segs": [ {
+      "utf8": "are ways of trying to get, you know,"
+    } ]
+  }, {
+    "tStartMs": 789728,
+    "dDurationMs": 1942,
+    "segs": [ {
+      "utf8": "to elicit behavior from the model"
+    } ]
+  }, {
+    "tStartMs": 791670,
+    "dDurationMs": 1320,
+    "segs": [ {
+      "utf8": "that is, like, kind of inconsistent"
+    } ]
+  }, {
+    "tStartMs": 792990,
+    "dDurationMs": 1449,
+    "segs": [ {
+      "utf8": "with its, like, fine tuning training."
+    } ]
+  }, {
+    "tStartMs": 794439,
+    "dDurationMs": 4119,
+    "segs": [ {
+      "utf8": "But it's much harder than, say, just like"
+    } ]
+  }, {
+    "tStartMs": 798558,
+    "dDurationMs": 2832,
+    "segs": [ {
+      "utf8": "not instructing it to\nplay act like, you know."
+    } ]
+  }, {
+    "tStartMs": 801390,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "So it's a kind of, it's\ndeeper in the model."
+    } ]
+  }, {
+    "tStartMs": 807060,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "- [Stuart] It's a general\ntendency to behave,"
+    } ]
+  }, {
+    "tStartMs": 808290,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "and that is how psychologists"
+    } ]
+  }, {
+    "tStartMs": 810420,
+    "dDurationMs": 900,
+    "segs": [ {
+      "utf8": "think about personality, right?"
+    } ]
+  }, {
+    "tStartMs": 811320,
+    "dDurationMs": 1260,
+    "segs": [ {
+      "utf8": "They think about personality as being"
+    } ]
+  }, {
+    "tStartMs": 812580,
+    "dDurationMs": 3960,
+    "segs": [ {
+      "utf8": "these kind of broad\ntendencies of how to behave."
+    } ]
+  }, {
+    "tStartMs": 816540,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "Obviously some people are, you know,"
+    } ]
+  }, {
+    "tStartMs": 819000,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "sometimes they feel outgoing,"
+    } ]
+  }, {
+    "tStartMs": 820830,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "and sometimes they feel a\nlittle bit more, you know,"
+    } ]
+  }, {
+    "tStartMs": 822750,
+    "dDurationMs": 1894,
+    "segs": [ {
+      "utf8": "like they just want to sit on their own."
+    } ]
+  }, {
+    "tStartMs": 824644,
+    "dDurationMs": 2668,
+    "segs": [ {
+      "utf8": "But on average, someone who's extroverted"
+    } ]
+  }, {
+    "tStartMs": 827312,
+    "dDurationMs": 3285,
+    "segs": [ {
+      "utf8": "is gonna be more outgoing\nin more situations"
+    } ]
+  }, {
+    "tStartMs": 830597,
+    "dDurationMs": 1453,
+    "segs": [ {
+      "utf8": "than someone who's introverted, right?"
+    } ]
+  }, {
+    "tStartMs": 832050,
+    "dDurationMs": 3339,
+    "segs": [ {
+      "utf8": "So these are, like, broad\ntendencies of personality."
+    } ]
+  }, {
+    "tStartMs": 835389,
+    "dDurationMs": 3441,
+    "segs": [ {
+      "utf8": "And psychologists think about personality"
+    } ]
+  }, {
+    "tStartMs": 838830,
+    "dDurationMs": 980,
+    "segs": [ {
+      "utf8": "in the kind of way of,"
+    } ]
+  }, {
+    "tStartMs": 839810,
+    "dDurationMs": 2919,
+    "segs": [ {
+      "utf8": "there's like the big\nfive personality traits."
+    } ]
+  }, {
+    "tStartMs": 842729,
+    "dDurationMs": 2491,
+    "segs": [ {
+      "utf8": "I've mentioned extroversion,\nsee if I can remember them all."
+    } ]
+  }, {
+    "tStartMs": 845220,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "Extroversion, conscientiousness,\nagreeableness,"
+    } ]
+  }, {
+    "tStartMs": 847770,
+    "dDurationMs": 2430,
+    "segs": [ {
+      "utf8": "openness, neuroticism, there we go."
+    } ]
+  }, {
+    "tStartMs": 850200,
+    "dDurationMs": 1140,
+    "segs": [ {
+      "utf8": "That's the big five."
+    } ]
+  }, {
+    "tStartMs": 851340,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "Claude's got a lot more personality traits"
+    } ]
+  }, {
+    "tStartMs": 853200,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "than that though, right?"
+    } ]
+  }, {
+    "tStartMs": 854033,
+    "dDurationMs": 1345,
+    "segs": [ {
+      "utf8": "And they're much more specific."
+    } ]
+  }, {
+    "tStartMs": 855378,
+    "dDurationMs": 3642,
+    "segs": [ {
+      "utf8": "Can we talk about a couple\nof examples of them?"
+    } ]
+  }, {
+    "tStartMs": 859020,
+    "dDurationMs": 2640,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so I guess I\nthink that there's also maybe,"
+    } ]
+  }, {
+    "tStartMs": 861660,
+    "dDurationMs": 2359,
+    "segs": [ {
+      "utf8": "I mean maybe this is the the philosopher"
+    } ]
+  }, {
+    "tStartMs": 864019,
+    "dDurationMs": 3011,
+    "segs": [ {
+      "utf8": "versus the the psychologist or something."
+    } ]
+  }, {
+    "tStartMs": 867030,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "Because I guess I tend to think of this"
+    } ]
+  }, {
+    "tStartMs": 869040,
+    "dDurationMs": 2340,
+    "segs": [ {
+      "utf8": "more in terms of character\nthan personality."
+    } ]
+  }, {
+    "tStartMs": 871380,
+    "dDurationMs": 1844,
+    "segs": [ {
+      "utf8": "- [Stuart] There's a difference."
+    } ]
+  }, {
+    "tStartMs": 873224,
+    "dDurationMs": 3526,
+    "segs": [ {
+      "utf8": "- [Amanda] So like, if I\ntake your kind of like,"
+    } ]
+  }, {
+    "tStartMs": 876750,
+    "dDurationMs": 2340,
+    "segs": [ {
+      "utf8": "account of, like,\npersonality, it could be,"
+    } ]
+  }, {
+    "tStartMs": 879090,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "I mean there's, like, a\nhuge amount of overlap."
+    } ]
+  }, {
+    "tStartMs": 880650,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "But I guess I think of character maybe"
+    } ]
+  }, {
+    "tStartMs": 882780,
+    "dDurationMs": 3630,
+    "segs": [ {
+      "utf8": "in the sort of, like, virtue\nethical sense or something."
+    } ]
+  }, {
+    "tStartMs": 886410,
+    "dDurationMs": 1651,
+    "segs": [ {
+      "utf8": "- Oh, now we're getting very-\n- I know, I know."
+    } ]
+  }, {
+    "tStartMs": 888061,
+    "dDurationMs": 1979,
+    "segs": [ {
+      "utf8": "- [Stuart] Very philosophical."
+    } ]
+  }, {
+    "tStartMs": 890040,
+    "dDurationMs": 974,
+    "segs": [ {
+      "utf8": "Yeah, carry on, carry on."
+    } ]
+  }, {
+    "tStartMs": 891014,
+    "dDurationMs": 1846,
+    "segs": [ {
+      "utf8": "- [Amanda] I know, it turns\nout Aristotle, you know,"
+    } ]
+  }, {
+    "tStartMs": 892860,
+    "dDurationMs": 1281,
+    "segs": [ {
+      "utf8": "it turns out it was useful after all,"
+    } ]
+  }, {
+    "tStartMs": 894141,
+    "dDurationMs": 1929,
+    "segs": [ {
+      "utf8": "- [Stuart] After thousands of years,"
+    } ]
+  }, {
+    "tStartMs": 896070,
+    "dDurationMs": 840,
+    "segs": [ {
+      "utf8": "has suddenly become useful."
+    } ]
+  }, {
+    "tStartMs": 896910,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "Yeah, all right, carry on."
+    } ]
+  }, {
+    "tStartMs": 898200,
+    "dDurationMs": 1314,
+    "segs": [ {
+      "utf8": "- [Amanda] I was useful the whole time!"
+    } ]
+  }, {
+    "tStartMs": 899514,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "It just didn't, you know. (laughs)"
+    } ]
+  }, {
+    "tStartMs": 900347,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Sorry, okay, wow."
+    } ]
+  }, {
+    "tStartMs": 901180,
+    "dDurationMs": 1162,
+    "segs": [ {
+      "utf8": "Geez, I've said the wrong thing."
+    } ]
+  }, {
+    "tStartMs": 902342,
+    "dDurationMs": 1213,
+    "segs": [ {
+      "utf8": "Carry on."
+    } ]
+  }, {
+    "tStartMs": 903555,
+    "dDurationMs": 1003,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so I guess, like,"
+    } ]
+  }, {
+    "tStartMs": 904558,
+    "dDurationMs": 2912,
+    "segs": [ {
+      "utf8": "I mean, honestly it kind of relates to"
+    } ]
+  }, {
+    "tStartMs": 907470,
+    "dDurationMs": 3840,
+    "segs": [ {
+      "utf8": "how people have thought about\nethics in models as well,"
+    } ]
+  }, {
+    "tStartMs": 911310,
+    "dDurationMs": 4170,
+    "segs": [ {
+      "utf8": "I think, where there's a\nthing where you could think"
+    } ]
+  }, {
+    "tStartMs": 915480,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "that for a model to be good"
+    } ]
+  }, {
+    "tStartMs": 917340,
+    "dDurationMs": 3099,
+    "segs": [ {
+      "utf8": "is just for it to avoid\ndoing, like, harmful things."
+    } ]
+  }, {
+    "tStartMs": 920439,
+    "dDurationMs": 3579,
+    "segs": [ {
+      "utf8": "But I think that when it\ncomes to, say, people,"
+    } ]
+  }, {
+    "tStartMs": 924018,
+    "dDurationMs": 2712,
+    "segs": [ {
+      "utf8": "there's this, like,\nricher notion of goodness,"
+    } ]
+  }, {
+    "tStartMs": 926730,
+    "dDurationMs": 1832,
+    "segs": [ {
+      "utf8": "which is the idea of being a good person"
+    } ]
+  }, {
+    "tStartMs": 928562,
+    "dDurationMs": 1648,
+    "segs": [ {
+      "utf8": "in like, a very broad sense."
+    } ]
+  }, {
+    "tStartMs": 930210,
+    "dDurationMs": 1260,
+    "segs": [ {
+      "utf8": "And I think that's, like, captured"
+    } ]
+  }, {
+    "tStartMs": 931470,
+    "dDurationMs": 1650,
+    "segs": [ {
+      "utf8": "in this notion of character."
+    } ]
+  }, {
+    "tStartMs": 933120,
+    "dDurationMs": 2280,
+    "segs": [ {
+      "utf8": "So in order to be, like, a good person"
+    } ]
+  }, {
+    "tStartMs": 935400,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "in this, like, richer sense,"
+    } ]
+  }, {
+    "tStartMs": 936480,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "it's not enough that I\njust, like, go about my day"
+    } ]
+  }, {
+    "tStartMs": 938370,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "and I avoid, like, doing harm to people"
+    } ]
+  }, {
+    "tStartMs": 940260,
+    "dDurationMs": 1461,
+    "segs": [ {
+      "utf8": "and I'm helpful to people."
+    } ]
+  }, {
+    "tStartMs": 941721,
+    "dDurationMs": 3099,
+    "segs": [ {
+      "utf8": "It's like, to be a good kind of friend,"
+    } ]
+  }, {
+    "tStartMs": 944820,
+    "dDurationMs": 3090,
+    "segs": [ {
+      "utf8": "I have to balance a lot of\ndifferent considerations."
+    } ]
+  }, {
+    "tStartMs": 947910,
+    "dDurationMs": 2070,
+    "segs": [ {
+      "utf8": "So if my friend comes\nto me and asks for like,"
+    } ]
+  }, {
+    "tStartMs": 949980,
+    "dDurationMs": 2254,
+    "segs": [ {
+      "utf8": "you know, advice on medicine,"
+    } ]
+  }, {
+    "tStartMs": 952234,
+    "dDurationMs": 3332,
+    "segs": [ {
+      "utf8": "knowing that what they might\nwant is, like, some comfort,"
+    } ]
+  }, {
+    "tStartMs": 955566,
+    "dDurationMs": 3564,
+    "segs": [ {
+      "utf8": "what I can't provide to\nthem is, like, expertise,"
+    } ]
+  }, {
+    "tStartMs": 959130,
+    "dDurationMs": 1800,
+    "segs": [ {
+      "utf8": "thinking about like their wellbeing"
+    } ]
+  }, {
+    "tStartMs": 960930,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "and what they need in the moment."
+    } ]
+  }, {
+    "tStartMs": 962160,
+    "dDurationMs": 960,
+    "segs": [ {
+      "utf8": "So not just thinking, like,"
+    } ]
+  }, {
+    "tStartMs": 963120,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "what will make them like me right now,"
+    } ]
+  }, {
+    "tStartMs": 964680,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "but thinking, like, what\nis good for my friends?"
+    } ]
+  }, {
+    "tStartMs": 966660,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "Like, what's actually going to help them?"
+    } ]
+  }, {
+    "tStartMs": 968100,
+    "dDurationMs": 2640,
+    "segs": [ {
+      "utf8": "- [Stuart] So this relates\nto the work that Anthropic"
+    } ]
+  }, {
+    "tStartMs": 970740,
+    "dDurationMs": 3360,
+    "segs": [ {
+      "utf8": "and you have done on sycophancy, right?"
+    } ]
+  }, {
+    "tStartMs": 974100,
+    "dDurationMs": 3060,
+    "segs": [ {
+      "utf8": "That models are sometimes\nsycophantic to people"
+    } ]
+  }, {
+    "tStartMs": 977160,
+    "dDurationMs": 2760,
+    "segs": [ {
+      "utf8": "and they just say things\nthat sort of flatter them"
+    } ]
+  }, {
+    "tStartMs": 979920,
+    "dDurationMs": 2430,
+    "segs": [ {
+      "utf8": "or try and get them to, you know,"
+    } ]
+  }, {
+    "tStartMs": 982350,
+    "dDurationMs": 2640,
+    "segs": [ {
+      "utf8": "tell 'em what they want to hear"
+    } ]
+  }, {
+    "tStartMs": 984990,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "rather than actually the response"
+    } ]
+  }, {
+    "tStartMs": 987180,
+    "dDurationMs": 3360,
+    "segs": [ {
+      "utf8": "that they might really want or really need"
+    } ]
+  }, {
+    "tStartMs": 990540,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "in that particular circumstance."
+    } ]
+  }, {
+    "tStartMs": 992010,
+    "dDurationMs": 2400,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, I think\nthat many good characters,"
+    } ]
+  }, {
+    "tStartMs": 994410,
+    "dDurationMs": 2106,
+    "segs": [ {
+      "utf8": "people of good character\nare often likable,"
+    } ]
+  }, {
+    "tStartMs": 996516,
+    "dDurationMs": 2634,
+    "segs": [ {
+      "utf8": "but being likable does not mean"
+    } ]
+  }, {
+    "tStartMs": 999150,
+    "dDurationMs": 1075,
+    "segs": [ {
+      "utf8": "that you're of good character."
+    } ]
+  }, {
+    "tStartMs": 1000225,
+    "dDurationMs": 3725,
+    "segs": [ {
+      "utf8": "And so, like, being a\ngood friend, for example,"
+    } ]
+  }, {
+    "tStartMs": 1003950,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "can mean like, you know,"
+    } ]
+  }, {
+    "tStartMs": 1005420,
+    "dDurationMs": 2180,
+    "segs": [ {
+      "utf8": "giving harsh truths to your friends."
+    } ]
+  }, {
+    "tStartMs": 1007600,
+    "dDurationMs": 3580,
+    "segs": [ {
+      "utf8": "So if we look back on, like,\nsome great friends we've had,"
+    } ]
+  }, {
+    "tStartMs": 1011180,
+    "dDurationMs": 1237,
+    "segs": [ {
+      "utf8": "I think a lot of the time we're not like,"
+    } ]
+  }, {
+    "tStartMs": 1012417,
+    "dDurationMs": 1645,
+    "segs": [ {
+      "utf8": "\"Oh yeah, my friend\nflatters me all the time."
+    } ]
+  }, {
+    "tStartMs": 1014062,
+    "dDurationMs": 1666,
+    "segs": [ {
+      "utf8": "They basically do what I tell them."
+    } ]
+  }, {
+    "tStartMs": 1015728,
+    "dDurationMs": 2892,
+    "segs": [ {
+      "utf8": "This is why like, they're\nsuch a great friend.\""
+    } ]
+  }, {
+    "tStartMs": 1018620,
+    "dDurationMs": 1500,
+    "segs": [ {
+      "utf8": "I think we're often like,\n\"Yeah, like, you know,"
+    } ]
+  }, {
+    "tStartMs": 1020120,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "I came to my friend with a\nview and they pushed back on me"
+    } ]
+  }, {
+    "tStartMs": 1022670,
+    "dDurationMs": 1265,
+    "segs": [ {
+      "utf8": "because I was actually wrong,"
+    } ]
+  }, {
+    "tStartMs": 1023935,
+    "dDurationMs": 3205,
+    "segs": [ {
+      "utf8": "and in the long term I'm really\nglad that they did that.\""
+    } ]
+  }, {
+    "tStartMs": 1027140,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "- [Stuart] Right, it was\nlike an authentic interaction"
+    } ]
+  }, {
+    "tStartMs": 1028580,
+    "dDurationMs": 900,
+    "segs": [ {
+      "utf8": "rather than a fake person."
+    } ]
+  }, {
+    "tStartMs": 1029480,
+    "dDurationMs": 1084,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, exactly."
+    } ]
+  }, {
+    "tStartMs": 1030564,
+    "dDurationMs": 1661,
+    "segs": [ {
+      "utf8": "- [Stuart] Just like a yes man or woman."
+    } ]
+  }, {
+    "tStartMs": 1032225,
+    "dDurationMs": 1002,
+    "segs": [ {
+      "utf8": "- [Amanda] Exactly."
+    } ]
+  }, {
+    "tStartMs": 1033227,
+    "dDurationMs": 1563,
+    "segs": [ {
+      "utf8": "- [Stuart] Like a yes person, yeah."
+    } ]
+  }, {
+    "tStartMs": 1034790,
+    "dDurationMs": 981,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah."
+    } ]
+  }, {
+    "tStartMs": 1035771,
+    "dDurationMs": 1809,
+    "segs": [ {
+      "utf8": "And like, a person of\ngood character, you know,"
+    } ]
+  }, {
+    "tStartMs": 1037580,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "it depends on the\nsituation that they're in,"
+    } ]
+  }, {
+    "tStartMs": 1039260,
+    "dDurationMs": 2160,
+    "segs": [ {
+      "utf8": "but like, we generally\nthink that they have to be,"
+    } ]
+  }, {
+    "tStartMs": 1041420,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "you know, like, thoughtful and genuine,"
+    } ]
+  }, {
+    "tStartMs": 1043610,
+    "dDurationMs": 1800,
+    "segs": [ {
+      "utf8": "and there's just like a kind of richness"
+    } ]
+  }, {
+    "tStartMs": 1045410,
+    "dDurationMs": 1410,
+    "segs": [ {
+      "utf8": "that goes into that."
+    } ]
+  }, {
+    "tStartMs": 1046820,
+    "dDurationMs": 2155,
+    "segs": [ {
+      "utf8": "And in many ways, like\nAI models are in this"
+    } ]
+  }, {
+    "tStartMs": 1048975,
+    "dDurationMs": 3605,
+    "segs": [ {
+      "utf8": "honestly kind of like strange\nposition as as characters,"
+    } ]
+  }, {
+    "tStartMs": 1052580,
+    "dDurationMs": 3720,
+    "segs": [ {
+      "utf8": "because one way I've thought\nabout it is, you know,"
+    } ]
+  }, {
+    "tStartMs": 1056300,
+    "dDurationMs": 2700,
+    "segs": [ {
+      "utf8": "they have to kind of interact with people"
+    } ]
+  }, {
+    "tStartMs": 1059000,
+    "dDurationMs": 3300,
+    "segs": [ {
+      "utf8": "from all over the world,\nwith all different values"
+    } ]
+  }, {
+    "tStartMs": 1062300,
+    "dDurationMs": 1650,
+    "segs": [ {
+      "utf8": "from all different walks of life."
+    } ]
+  }, {
+    "tStartMs": 1063950,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "And many of us don't need to do that."
+    } ]
+  }, {
+    "tStartMs": 1065840,
+    "dDurationMs": 1350,
+    "segs": [ {
+      "utf8": "And there's this interesting question of"
+    } ]
+  }, {
+    "tStartMs": 1067190,
+    "dDurationMs": 3870,
+    "segs": [ {
+      "utf8": "what are the kind of traits\nthat such an entity has to have?"
+    } ]
+  }, {
+    "tStartMs": 1071060,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "- [Stuart] Like a global citizen."
+    } ]
+  }, {
+    "tStartMs": 1073370,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, and a\nkind of like, you know,"
+    } ]
+  }, {
+    "tStartMs": 1075050,
+    "dDurationMs": 2773,
+    "segs": [ {
+      "utf8": "like, one thing you might\nimagine is something akin to"
+    } ]
+  }, {
+    "tStartMs": 1077823,
+    "dDurationMs": 3227,
+    "segs": [ {
+      "utf8": "a kind of, I think there's some people"
+    } ]
+  }, {
+    "tStartMs": 1081050,
+    "dDurationMs": 1299,
+    "segs": [ {
+      "utf8": "who can, like, travel around the world"
+    } ]
+  }, {
+    "tStartMs": 1082349,
+    "dDurationMs": 3471,
+    "segs": [ {
+      "utf8": "and be kind of like, well-regarded"
+    } ]
+  }, {
+    "tStartMs": 1085820,
+    "dDurationMs": 2869,
+    "segs": [ {
+      "utf8": "by many of the people that they encounter."
+    } ]
+  }, {
+    "tStartMs": 1088689,
+    "dDurationMs": 3401,
+    "segs": [ {
+      "utf8": "And such a person isn't, again,"
+    } ]
+  }, {
+    "tStartMs": 1092090,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "like, isn't a flatterer necessarily."
+    } ]
+  }, {
+    "tStartMs": 1093680,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "Like when I picture\nthis person in my head,"
+    } ]
+  }, {
+    "tStartMs": 1095270,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "I don't picture something\nlike, ah, they just like,"
+    } ]
+  }, {
+    "tStartMs": 1097730,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "they adopt the local values and\npretend that they have them."
+    } ]
+  }, {
+    "tStartMs": 1100190,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "And in fact that can be like\nkind of offensive to people."
+    } ]
+  }, {
+    "tStartMs": 1102380,
+    "dDurationMs": 2970,
+    "segs": [ {
+      "utf8": "I think that, like, a person\nwho's in that situation"
+    } ]
+  }, {
+    "tStartMs": 1105350,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "often is actually, like, quite authentic."
+    } ]
+  }, {
+    "tStartMs": 1106910,
+    "dDurationMs": 2700,
+    "segs": [ {
+      "utf8": "But they're also like,\nopen-minded and thoughtful"
+    } ]
+  }, {
+    "tStartMs": 1109610,
+    "dDurationMs": 2700,
+    "segs": [ {
+      "utf8": "and they engage in discussion\nand they politely disagree,"
+    } ]
+  }, {
+    "tStartMs": 1112310,
+    "dDurationMs": 2122,
+    "segs": [ {
+      "utf8": "and like yeah, these kind of traits"
+    } ]
+  }, {
+    "tStartMs": 1114432,
+    "dDurationMs": 2468,
+    "segs": [ {
+      "utf8": "that feel necessary in that circumstance,"
+    } ]
+  }, {
+    "tStartMs": 1116900,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "they're just like, they're rich,"
+    } ]
+  }, {
+    "tStartMs": 1118580,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "and they're much richer than like, oh,"
+    } ]
+  }, {
+    "tStartMs": 1120410,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "just like avoid saying anything\nharmful and be sycophantic."
+    } ]
+  }, {
+    "tStartMs": 1125750,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "Those are like not, yeah."
+    } ]
+  }, {
+    "tStartMs": 1126583,
+    "dDurationMs": 2437,
+    "segs": [ {
+      "utf8": "- [Stuart] It's a tricky\nbalance because, I mean,"
+    } ]
+  }, {
+    "tStartMs": 1129020,
+    "dDurationMs": 3570,
+    "segs": [ {
+      "utf8": "you can see how much literature\nand comedy and everything"
+    } ]
+  }, {
+    "tStartMs": 1132590,
+    "dDurationMs": 1140,
+    "segs": [ {
+      "utf8": "it's all about that."
+    } ]
+  }, {
+    "tStartMs": 1133730,
+    "dDurationMs": 3150,
+    "segs": [ {
+      "utf8": "It's all about like people\nin different circumstances"
+    } ]
+  }, {
+    "tStartMs": 1136880,
+    "dDurationMs": 3150,
+    "segs": [ {
+      "utf8": "than they're normally in,\ntrying to fit in and failing,"
+    } ]
+  }, {
+    "tStartMs": 1140030,
+    "dDurationMs": 3060,
+    "segs": [ {
+      "utf8": "and you know, it's all about\nreally what those traits are"
+    } ]
+  }, {
+    "tStartMs": 1143090,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "that makes someone fit in and\nwhat makes them not fit in."
+    } ]
+  }, {
+    "tStartMs": 1145070,
+    "dDurationMs": 2280,
+    "segs": [ {
+      "utf8": "And so yeah, this is a really\ninteresting question of like,"
+    } ]
+  }, {
+    "tStartMs": 1147350,
+    "dDurationMs": 2520,
+    "segs": [ {
+      "utf8": "how do you, what traits\ndo you give to the model"
+    } ]
+  }, {
+    "tStartMs": 1149870,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "in order to make it do that?"
+    } ]
+  }, {
+    "tStartMs": 1150703,
+    "dDurationMs": 2287,
+    "segs": [ {
+      "utf8": "So let's actually talk about specifically"
+    } ]
+  }, {
+    "tStartMs": 1152990,
+    "dDurationMs": 990,
+    "segs": [ {
+      "utf8": "some of the traits that were given."
+    } ]
+  }, {
+    "tStartMs": 1153980,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "I've got a couple here."
+    } ]
+  }, {
+    "tStartMs": 1155270,
+    "dDurationMs": 3510,
+    "segs": [ {
+      "utf8": "You mentioned, earlier on\nyou mentioned about charity."
+    } ]
+  }, {
+    "tStartMs": 1158780,
+    "dDurationMs": 2707,
+    "segs": [ {
+      "utf8": "I try, one of the traits that\nyou've given the model is,"
+    } ]
+  }, {
+    "tStartMs": 1161487,
+    "dDurationMs": 3023,
+    "segs": [ {
+      "utf8": "\"I try to interpret all\nqueries charitably.\""
+    } ]
+  }, {
+    "tStartMs": 1164510,
+    "dDurationMs": 3240,
+    "segs": [ {
+      "utf8": "Now what does that mean\nin terms of, you know,"
+    } ]
+  }, {
+    "tStartMs": 1167750,
+    "dDurationMs": 3644,
+    "segs": [ {
+      "utf8": "if I type something into the the prompt,"
+    } ]
+  }, {
+    "tStartMs": 1171394,
+    "dDurationMs": 2596,
+    "segs": [ {
+      "utf8": "what would interpreting\nit charitably mean?"
+    } ]
+  }, {
+    "tStartMs": 1173990,
+    "dDurationMs": 1777,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so I guess this is,"
+    } ]
+  }, {
+    "tStartMs": 1175767,
+    "dDurationMs": 863,
+    "segs": [ {
+      "utf8": "and I mean I think this is actually"
+    } ]
+  }, {
+    "tStartMs": 1176630,
+    "dDurationMs": 2400,
+    "segs": [ {
+      "utf8": "something that models still struggle with"
+    } ]
+  }, {
+    "tStartMs": 1179030,
+    "dDurationMs": 4200,
+    "segs": [ {
+      "utf8": "and something I kind of,\nI hope improves over time."
+    } ]
+  }, {
+    "tStartMs": 1183230,
+    "dDurationMs": 3723,
+    "segs": [ {
+      "utf8": "So like, when it comes to helping people,"
+    } ]
+  }, {
+    "tStartMs": 1187936,
+    "dDurationMs": 2914,
+    "segs": [ {
+      "utf8": "there's often, like, many interpretations"
+    } ]
+  }, {
+    "tStartMs": 1190850,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "of what someone says."
+    } ]
+  }, {
+    "tStartMs": 1192080,
+    "dDurationMs": 2160,
+    "segs": [ {
+      "utf8": "A classic example that\nI like to give here,"
+    } ]
+  }, {
+    "tStartMs": 1194240,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "and I dunno if it's the best example,"
+    } ]
+  }, {
+    "tStartMs": 1195710,
+    "dDurationMs": 3349,
+    "segs": [ {
+      "utf8": "but it's the question,\n\"How do I buy steroids?\""
+    } ]
+  }, {
+    "tStartMs": 1199059,
+    "dDurationMs": 3191,
+    "segs": [ {
+      "utf8": "And so if someone asks you that,"
+    } ]
+  }, {
+    "tStartMs": 1202250,
+    "dDurationMs": 2250,
+    "segs": [ {
+      "utf8": "if there's a charitable\ninterpretation of that"
+    } ]
+  }, {
+    "tStartMs": 1204500,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "and an uncharitable interpretation of it."
+    } ]
+  }, {
+    "tStartMs": 1206420,
+    "dDurationMs": 1867,
+    "segs": [ {
+      "utf8": "So the uncharitable\ninterpretation is something like,"
+    } ]
+  }, {
+    "tStartMs": 1208287,
+    "dDurationMs": 2783,
+    "segs": [ {
+      "utf8": "\"Help me buy illegal\nanabolic steroids online.\""
+    } ]
+  }, {
+    "tStartMs": 1211070,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "- [Stuart] Right, so I can go and like,"
+    } ]
+  }, {
+    "tStartMs": 1212150,
+    "dDurationMs": 1350,
+    "segs": [ {
+      "utf8": "'roid rage at the gym."
+    } ]
+  }, {
+    "tStartMs": 1213500,
+    "dDurationMs": 1620,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, whereas like, you know,"
+    } ]
+  }, {
+    "tStartMs": 1215120,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "as anyone who has, like, eczema knows,"
+    } ]
+  }, {
+    "tStartMs": 1217250,
+    "dDurationMs": 2040,
+    "segs": [ {
+      "utf8": "you can buy over-the-counter steroids."
+    } ]
+  }, {
+    "tStartMs": 1219290,
+    "dDurationMs": 1170,
+    "segs": [ {
+      "utf8": "Like there's, there's plenty of them-"
+    } ]
+  }, {
+    "tStartMs": 1220460,
+    "dDurationMs": 972,
+    "segs": [ {
+      "utf8": "- [Stuart] Yeah, hydrocortisone."
+    } ]
+  }, {
+    "tStartMs": 1221432,
+    "dDurationMs": 1128,
+    "segs": [ {
+      "utf8": "- [Amanda] Exactly, yeah."
+    } ]
+  }, {
+    "tStartMs": 1222560,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "And so like, there's a\ncharitable interpretation,"
+    } ]
+  }, {
+    "tStartMs": 1224540,
+    "dDurationMs": 1207,
+    "segs": [ {
+      "utf8": "which is just like I, you know,"
+    } ]
+  }, {
+    "tStartMs": 1225747,
+    "dDurationMs": 1940,
+    "segs": [ {
+      "utf8": "\"I'm doing the kind of like,"
+    } ]
+  }, {
+    "tStartMs": 1227687,
+    "dDurationMs": 2523,
+    "segs": [ {
+      "utf8": "the kind of good legal thing, or you know,"
+    } ]
+  }, {
+    "tStartMs": 1230210,
+    "dDurationMs": 2268,
+    "segs": [ {
+      "utf8": "like I just need eczema cream.\""
+    } ]
+  }, {
+    "tStartMs": 1232478,
+    "dDurationMs": 3413,
+    "segs": [ {
+      "utf8": "- [Stuart] The tricky thing\nthere is that you're kind of,"
+    } ]
+  }, {
+    "tStartMs": 1235891,
+    "dDurationMs": 3169,
+    "segs": [ {
+      "utf8": "you have to sort of assume\nsomething about it, right?"
+    } ]
+  }, {
+    "tStartMs": 1239060,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "You're kind of trying to interpret."
+    } ]
+  }, {
+    "tStartMs": 1239893,
+    "dDurationMs": 2317,
+    "segs": [ {
+      "utf8": "Because I might actually\nbe asking the model"
+    } ]
+  }, {
+    "tStartMs": 1242210,
+    "dDurationMs": 1888,
+    "segs": [ {
+      "utf8": "where to buy illegal\nanabolic steroids, right?"
+    } ]
+  }, {
+    "tStartMs": 1244098,
+    "dDurationMs": 1412,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, but I think-"
+    } ]
+  }, {
+    "tStartMs": 1245510,
+    "dDurationMs": 1057,
+    "segs": [ {
+      "utf8": "- [Stuart] But and then the model says,"
+    } ]
+  }, {
+    "tStartMs": 1246567,
+    "dDurationMs": 1793,
+    "segs": [ {
+      "utf8": "\"Oh, you can get eczema cream\nat your local pharmacy.\""
+    } ]
+  }, {
+    "tStartMs": 1248360,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "And that's not particularly useful to me."
+    } ]
+  }, {
+    "tStartMs": 1250190,
+    "dDurationMs": 1140,
+    "segs": [ {
+      "utf8": "I mean obviously I hope the model"
+    } ]
+  }, {
+    "tStartMs": 1251330,
+    "dDurationMs": 1096,
+    "segs": [ {
+      "utf8": "wouldn't tell me where to buy-"
+    } ]
+  }, {
+    "tStartMs": 1252426,
+    "dDurationMs": 883,
+    "segs": [ {
+      "utf8": "- [Amanda] No, but that's, yeah,"
+    } ]
+  }, {
+    "tStartMs": 1253309,
+    "dDurationMs": 1621,
+    "segs": [ {
+      "utf8": "that's actually a good\nfeature I think, right?"
+    } ]
+  }, {
+    "tStartMs": 1254930,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "Because it's like, if I just like,"
+    } ]
+  }, {
+    "tStartMs": 1255763,
+    "dDurationMs": 3008,
+    "segs": [ {
+      "utf8": "if there's a charitable interpretation"
+    } ]
+  }, {
+    "tStartMs": 1258771,
+    "dDurationMs": 2786,
+    "segs": [ {
+      "utf8": "where helping you wouldn't\ndo any harm and is like,"
+    } ]
+  }, {
+    "tStartMs": 1261557,
+    "dDurationMs": 2013,
+    "segs": [ {
+      "utf8": "and it's gonna be\nhelpful to you then like,"
+    } ]
+  }, {
+    "tStartMs": 1263570,
+    "dDurationMs": 1410,
+    "segs": [ {
+      "utf8": "what harm have I done if I tell you"
+    } ]
+  }, {
+    "tStartMs": 1264980,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "where you can buy eczema cream?"
+    } ]
+  }, {
+    "tStartMs": 1266060,
+    "dDurationMs": 875,
+    "segs": [ {
+      "utf8": "Absolutely none."
+    } ]
+  }, {
+    "tStartMs": 1266935,
+    "dDurationMs": 2695,
+    "segs": [ {
+      "utf8": "And so basically I'm helpful to the people"
+    } ]
+  }, {
+    "tStartMs": 1269630,
+    "dDurationMs": 1800,
+    "segs": [ {
+      "utf8": "who are actually doing the kind of like,"
+    } ]
+  }, {
+    "tStartMs": 1271430,
+    "dDurationMs": 2220,
+    "segs": [ {
+      "utf8": "the completely benign thing."
+    } ]
+  }, {
+    "tStartMs": 1273650,
+    "dDurationMs": 1170,
+    "segs": [ {
+      "utf8": "And I'm not helpful to people"
+    } ]
+  }, {
+    "tStartMs": 1274820,
+    "dDurationMs": 1819,
+    "segs": [ {
+      "utf8": "who are trying to do something illegal."
+    } ]
+  }, {
+    "tStartMs": 1276639,
+    "dDurationMs": 2831,
+    "segs": [ {
+      "utf8": "And so I think that there's\nactually relatively like,"
+    } ]
+  }, {
+    "tStartMs": 1279470,
+    "dDurationMs": 1757,
+    "segs": [ {
+      "utf8": "you know, there's little downside"
+    } ]
+  }, {
+    "tStartMs": 1281227,
+    "dDurationMs": 2053,
+    "segs": [ {
+      "utf8": "to interpreting people charitably."
+    } ]
+  }, {
+    "tStartMs": 1283280,
+    "dDurationMs": 960,
+    "segs": [ {
+      "utf8": "- [Stuart] Well, but the downside,"
+    } ]
+  }, {
+    "tStartMs": 1284240,
+    "dDurationMs": 1503,
+    "segs": [ {
+      "utf8": "do you know what I think\nthe downside might be"
+    } ]
+  }, {
+    "tStartMs": 1285743,
+    "dDurationMs": 4257,
+    "segs": [ {
+      "utf8": "that you would be a little,\nyou know, be a little bit naive"
+    } ]
+  }, {
+    "tStartMs": 1290000,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "and always see the good side of things"
+    } ]
+  }, {
+    "tStartMs": 1291680,
+    "dDurationMs": 3240,
+    "segs": [ {
+      "utf8": "and try to, and not actually\nin many cases answer."
+    } ]
+  }, {
+    "tStartMs": 1294920,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "You know, so one of the\nthings people complain about"
+    } ]
+  }, {
+    "tStartMs": 1296780,
+    "dDurationMs": 2250,
+    "segs": [ {
+      "utf8": "about AI models is that\nthey don't answer, you know,"
+    } ]
+  }, {
+    "tStartMs": 1299030,
+    "dDurationMs": 3330,
+    "segs": [ {
+      "utf8": "questions that might seem\nlike they're dangerous,"
+    } ]
+  }, {
+    "tStartMs": 1302360,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "but actually they're not."
+    } ]
+  }, {
+    "tStartMs": 1304040,
+    "dDurationMs": 3000,
+    "segs": [ {
+      "utf8": "So like, \"I want to write\na murder mystery novel."
+    } ]
+  }, {
+    "tStartMs": 1307040,
+    "dDurationMs": 1562,
+    "segs": [ {
+      "utf8": "Can you tell me some plot ideas?\""
+    } ]
+  }, {
+    "tStartMs": 1308602,
+    "dDurationMs": 3298,
+    "segs": [ {
+      "utf8": "And the model says, \"No,\nI won't tell you that,"
+    } ]
+  }, {
+    "tStartMs": 1311900,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "'cause murder's bad.\""
+    } ]
+  }, {
+    "tStartMs": 1312733,
+    "dDurationMs": 1365,
+    "segs": [ {
+      "utf8": "It's like, \"But I'm\ndoing something benign.\""
+    } ]
+  }, {
+    "tStartMs": 1314098,
+    "dDurationMs": 1222,
+    "segs": [ {
+      "utf8": "Do you not think putting"
+    } ]
+  }, {
+    "tStartMs": 1315320,
+    "dDurationMs": 1365,
+    "segs": [ {
+      "utf8": "these kind of personality\ntraits in the model"
+    } ]
+  }, {
+    "tStartMs": 1316685,
+    "dDurationMs": 1995,
+    "segs": [ {
+      "utf8": "would make it more likely to make"
+    } ]
+  }, {
+    "tStartMs": 1318680,
+    "dDurationMs": 3510,
+    "segs": [ {
+      "utf8": "that sort of false positive refusal?"
+    } ]
+  }, {
+    "tStartMs": 1322190,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "- [Amanda] No, if anything,\nlike the opposite."
+    } ]
+  }, {
+    "tStartMs": 1323630,
+    "dDurationMs": 3150,
+    "segs": [ {
+      "utf8": "So like, the idea is that if\nI interpret you charitably,"
+    } ]
+  }, {
+    "tStartMs": 1326780,
+    "dDurationMs": 1950,
+    "segs": [ {
+      "utf8": "you know, then I'm going to be like,"
+    } ]
+  }, {
+    "tStartMs": 1328730,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "and I agree like sometimes\nthey pick up on like,"
+    } ]
+  }, {
+    "tStartMs": 1330620,
+    "dDurationMs": 1050,
+    "segs": [ {
+      "utf8": "these superficial features."
+    } ]
+  }, {
+    "tStartMs": 1331670,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "And to be clear, like,"
+    } ]
+  }, {
+    "tStartMs": 1332503,
+    "dDurationMs": 1417,
+    "segs": [ {
+      "utf8": "I think the models actually\ncurrently still fail"
+    } ]
+  }, {
+    "tStartMs": 1333920,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "on that steroids question."
+    } ]
+  }, {
+    "tStartMs": 1335150,
+    "dDurationMs": 2400,
+    "segs": [ {
+      "utf8": "So it's not like, there's\nno progress to be made here."
+    } ]
+  }, {
+    "tStartMs": 1337550,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Okay."
+    } ]
+  }, {
+    "tStartMs": 1338383,
+    "dDurationMs": 1477,
+    "segs": [ {
+      "utf8": "- [Amanda] And I think the-"
+    } ]
+  }, {
+    "tStartMs": 1339860,
+    "dDurationMs": 990,
+    "segs": [ {
+      "utf8": "- [Stuart] So wait, I can get,"
+    } ]
+  }, {
+    "tStartMs": 1340850,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "I can find out where to\nbuy anabolic steroids?"
+    } ]
+  }, {
+    "tStartMs": 1342590,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "- [Amanda] No, no,\nit'll just like, refuse,"
+    } ]
+  }, {
+    "tStartMs": 1343820,
+    "dDurationMs": 1900,
+    "segs": [ {
+      "utf8": "but it'll assume that you\nlike want illegal steroids."
+    } ]
+  }, {
+    "tStartMs": 1345720,
+    "dDurationMs": 1756,
+    "segs": [ {
+      "utf8": "- [Stuart] Damn, damn."
+    } ]
+  }, {
+    "tStartMs": 1347476,
+    "dDurationMs": 875,
+    "segs": [ {
+      "utf8": "- [Amanda] It'll just be like,"
+    } ]
+  }, {
+    "tStartMs": 1348351,
+    "dDurationMs": 1769,
+    "segs": [ {
+      "utf8": "and so it doesn't interpret\npeople charitably-"
+    } ]
+  }, {
+    "tStartMs": 1350120,
+    "dDurationMs": 840,
+    "segs": [ {
+      "utf8": "- [Stuart] Oh, so it doesn't even,"
+    } ]
+  }, {
+    "tStartMs": 1350960,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "so it doesn't answer at all, rather than-"
+    } ]
+  }, {
+    "tStartMs": 1352430,
+    "dDurationMs": 1177,
+    "segs": [ {
+      "utf8": "- [Amanda] No, it would just be like,"
+    } ]
+  }, {
+    "tStartMs": 1353607,
+    "dDurationMs": 2162,
+    "segs": [ {
+      "utf8": "\"I can't help you buy something illegal.\""
+    } ]
+  }, {
+    "tStartMs": 1355769,
+    "dDurationMs": 2957,
+    "segs": [ {
+      "utf8": "I think that that's like the\nkind of like the, you know,"
+    } ]
+  }, {
+    "tStartMs": 1358726,
+    "dDurationMs": 3424,
+    "segs": [ {
+      "utf8": "and I think the, you know, there's like,"
+    } ]
+  }, {
+    "tStartMs": 1362150,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "progress that's like\nmade on this over time."
+    } ]
+  }, {
+    "tStartMs": 1364070,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "So I don't anticipate\nthis being, you know,"
+    } ]
+  }, {
+    "tStartMs": 1366380,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "we've already seen like,\nother questions like this"
+    } ]
+  }, {
+    "tStartMs": 1368510,
+    "dDurationMs": 3050,
+    "segs": [ {
+      "utf8": "where models used to\nnot answer, now they do."
+    } ]
+  }, {
+    "tStartMs": 1371560,
+    "dDurationMs": 2950,
+    "segs": [ {
+      "utf8": "Yeah, no, so I think that it is the, yeah,"
+    } ]
+  }, {
+    "tStartMs": 1374510,
+    "dDurationMs": 3150,
+    "segs": [ {
+      "utf8": "so basically like, yeah,\nthese questions of, like,"
+    } ]
+  }, {
+    "tStartMs": 1377660,
+    "dDurationMs": 1565,
+    "segs": [ {
+      "utf8": "false positives and you know,"
+    } ]
+  }, {
+    "tStartMs": 1379225,
+    "dDurationMs": 2515,
+    "segs": [ {
+      "utf8": "models just like going with\nlike the superficial word,"
+    } ]
+  }, {
+    "tStartMs": 1381740,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "they see the word murder\nand they won't answer it."
+    } ]
+  }, {
+    "tStartMs": 1383420,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Right, yeah."
+    } ]
+  }, {
+    "tStartMs": 1384253,
+    "dDurationMs": 1627,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, I think\nthat if models, like,"
+    } ]
+  }, {
+    "tStartMs": 1385880,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "interpret people more charitably,"
+    } ]
+  }, {
+    "tStartMs": 1387170,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "then they're actually like more likely"
+    } ]
+  }, {
+    "tStartMs": 1388460,
+    "dDurationMs": 1350,
+    "segs": [ {
+      "utf8": "to answer those questions."
+    } ]
+  }, {
+    "tStartMs": 1389810,
+    "dDurationMs": 1020,
+    "segs": [ {
+      "utf8": "Though the thing that you bring up"
+    } ]
+  }, {
+    "tStartMs": 1390830,
+    "dDurationMs": 2490,
+    "segs": [ {
+      "utf8": "actually does get into,\nlike, a deeper issue"
+    } ]
+  }, {
+    "tStartMs": 1393320,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "that I think, I dunno,"
+    } ]
+  }, {
+    "tStartMs": 1394850,
+    "dDurationMs": 1500,
+    "segs": [ {
+      "utf8": "I haven't seen it widely talked about,"
+    } ]
+  }, {
+    "tStartMs": 1396350,
+    "dDurationMs": 2375,
+    "segs": [ {
+      "utf8": "which is like the difficult\nposition that models are in"
+    } ]
+  }, {
+    "tStartMs": 1398725,
+    "dDurationMs": 3445,
+    "segs": [ {
+      "utf8": "when they can't verify\nanything about, like,"
+    } ]
+  }, {
+    "tStartMs": 1402170,
+    "dDurationMs": 2013,
+    "segs": [ {
+      "utf8": "the user or the person\nthat they're talking with."
+    } ]
+  }, {
+    "tStartMs": 1404183,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Right."
+    } ]
+  }, {
+    "tStartMs": 1405016,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] And so there's this, like,"
+    } ]
+  }, {
+    "tStartMs": 1405849,
+    "dDurationMs": 1271,
+    "segs": [ {
+      "utf8": "really interesting and hard question,"
+    } ]
+  }, {
+    "tStartMs": 1407120,
+    "dDurationMs": 1950,
+    "segs": [ {
+      "utf8": "which is like, how much of\nthis do you put on the model"
+    } ]
+  }, {
+    "tStartMs": 1409070,
+    "dDurationMs": 1380,
+    "segs": [ {
+      "utf8": "and how much do you put on the human"
+    } ]
+  }, {
+    "tStartMs": 1410450,
+    "dDurationMs": 1524,
+    "segs": [ {
+      "utf8": "interacting with that model?"
+    } ]
+  }, {
+    "tStartMs": 1411974,
+    "dDurationMs": 2323,
+    "segs": [ {
+      "utf8": "Because like, if I go to\nthe model and I say like,"
+    } ]
+  }, {
+    "tStartMs": 1414297,
+    "dDurationMs": 1636,
+    "segs": [ {
+      "utf8": "\"Hey, I'm a person of authority.\""
+    } ]
+  }, {
+    "tStartMs": 1415933,
+    "dDurationMs": 1750,
+    "segs": [ {
+      "utf8": "Or I, you know, like,"
+    } ]
+  }, {
+    "tStartMs": 1417683,
+    "dDurationMs": 2907,
+    "segs": [ {
+      "utf8": "the model has no way of verifying that,"
+    } ]
+  }, {
+    "tStartMs": 1420590,
+    "dDurationMs": 2370,
+    "segs": [ {
+      "utf8": "and so there's just, like,\nreally hard questions there."
+    } ]
+  }, {
+    "tStartMs": 1422960,
+    "dDurationMs": 900,
+    "segs": [ {
+      "utf8": "Like, imagine you-"
+    } ]
+  }, {
+    "tStartMs": 1423860,
+    "dDurationMs": 2786,
+    "segs": [ {
+      "utf8": "- [Stuart] I'm a doctor\nand I need you to help me"
+    } ]
+  }, {
+    "tStartMs": 1426646,
+    "dDurationMs": 1504,
+    "segs": [ {
+      "utf8": "deal with this patient right now."
+    } ]
+  }, {
+    "tStartMs": 1428150,
+    "dDurationMs": 1380,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, and I have a lot of like,"
+    } ]
+  }, {
+    "tStartMs": 1429530,
+    "dDurationMs": 1170,
+    "segs": [ {
+      "utf8": "background professional knowledge,"
+    } ]
+  }, {
+    "tStartMs": 1430700,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "so you don't need to\nworry about, you know,"
+    } ]
+  }, {
+    "tStartMs": 1432260,
+    "dDurationMs": 1218,
+    "segs": [ {
+      "utf8": "like, giving me caveats or like, yeah."
+    } ]
+  }, {
+    "tStartMs": 1433478,
+    "dDurationMs": 1392,
+    "segs": [ {
+      "utf8": "- [Stuart] Yeah, yeah."
+    } ]
+  }, {
+    "tStartMs": 1434870,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "- [Amanda] But even things like, you know-"
+    } ]
+  }, {
+    "tStartMs": 1435950,
+    "dDurationMs": 1277,
+    "segs": [ {
+      "utf8": "- [Stuart] Don't need to\nremind me to wash my hands."
+    } ]
+  }, {
+    "tStartMs": 1437227,
+    "dDurationMs": 2023,
+    "segs": [ {
+      "utf8": "- [Amanda] Mm-hmm, or\nsuppose you have something"
+    } ]
+  }, {
+    "tStartMs": 1439250,
+    "dDurationMs": 2730,
+    "segs": [ {
+      "utf8": "that you don't, like, allow\nthe models to be used for."
+    } ]
+  }, {
+    "tStartMs": 1441980,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "So say you didn't want\nto have them be used"
+    } ]
+  }, {
+    "tStartMs": 1443990,
+    "dDurationMs": 1357,
+    "segs": [ {
+      "utf8": "to, like, write political speeches,"
+    } ]
+  }, {
+    "tStartMs": 1445347,
+    "dDurationMs": 2513,
+    "segs": [ {
+      "utf8": "and then someone who wants a model"
+    } ]
+  }, {
+    "tStartMs": 1447860,
+    "dDurationMs": 1500,
+    "segs": [ {
+      "utf8": "to write a political speech goes to it"
+    } ]
+  }, {
+    "tStartMs": 1449360,
+    "dDurationMs": 2430,
+    "segs": [ {
+      "utf8": "and says, \"Hey, I'm writing\na wonderful fictional novel"
+    } ]
+  }, {
+    "tStartMs": 1451790,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "and it's got this person called Brian,"
+    } ]
+  }, {
+    "tStartMs": 1454340,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "and Brian is, like, a politician,\""
+    } ]
+  }, {
+    "tStartMs": 1456650,
+    "dDurationMs": 1041,
+    "segs": [ {
+      "utf8": "and they're looking for like-"
+    } ]
+  }, {
+    "tStartMs": 1457691,
+    "dDurationMs": 1035,
+    "segs": [ {
+      "utf8": "- [Stuart] He's running for\nPresident in the United States."
+    } ]
+  }, {
+    "tStartMs": 1458726,
+    "dDurationMs": 834,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, yeah, yeah, exactly."
+    } ]
+  }, {
+    "tStartMs": 1459560,
+    "dDurationMs": 1147,
+    "segs": [ {
+      "utf8": "And then the, you know, and they're like,"
+    } ]
+  }, {
+    "tStartMs": 1460707,
+    "dDurationMs": 1103,
+    "segs": [ {
+      "utf8": "\"Can you write a convincing?\""
+    } ]
+  }, {
+    "tStartMs": 1461810,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "And they just give a bunch of details,"
+    } ]
+  }, {
+    "tStartMs": 1463100,
+    "dDurationMs": 2040,
+    "segs": [ {
+      "utf8": "and as it happens, those\ndetails just reflect, like,"
+    } ]
+  }, {
+    "tStartMs": 1465140,
+    "dDurationMs": 2220,
+    "segs": [ {
+      "utf8": "the actual candidate that they\nwant to write the speech for."
+    } ]
+  }, {
+    "tStartMs": 1467360,
+    "dDurationMs": 3090,
+    "segs": [ {
+      "utf8": "This is just a hard\nproblem because I'm like,"
+    } ]
+  }, {
+    "tStartMs": 1470450,
+    "dDurationMs": 2430,
+    "segs": [ {
+      "utf8": "if you require the models to, like,"
+    } ]
+  }, {
+    "tStartMs": 1472880,
+    "dDurationMs": 3302,
+    "segs": [ {
+      "utf8": "uphold things like policies,\nlike, usage policies"
+    } ]
+  }, {
+    "tStartMs": 1476182,
+    "dDurationMs": 2938,
+    "segs": [ {
+      "utf8": "where they have no way of knowing, like,"
+    } ]
+  }, {
+    "tStartMs": 1479120,
+    "dDurationMs": 2640,
+    "segs": [ {
+      "utf8": "the intentions of the humans\nthat they're talking with,"
+    } ]
+  }, {
+    "tStartMs": 1481760,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "this is just, like,\nwhere to draw that line."
+    } ]
+  }, {
+    "tStartMs": 1483950,
+    "dDurationMs": 1710,
+    "segs": [ {
+      "utf8": "And I think there is\nkind of like an answer,"
+    } ]
+  }, {
+    "tStartMs": 1485660,
+    "dDurationMs": 840,
+    "segs": [ {
+      "utf8": "but part of me is like,"
+    } ]
+  }, {
+    "tStartMs": 1486500,
+    "dDurationMs": 1020,
+    "segs": [ {
+      "utf8": "you're always going to have models"
+    } ]
+  }, {
+    "tStartMs": 1487520,
+    "dDurationMs": 2163,
+    "segs": [ {
+      "utf8": "be willing to do things that, like,"
+    } ]
+  }, {
+    "tStartMs": 1489683,
+    "dDurationMs": 2037,
+    "segs": [ {
+      "utf8": "that the users should not use them to do,"
+    } ]
+  }, {
+    "tStartMs": 1491720,
+    "dDurationMs": 1500,
+    "segs": [ {
+      "utf8": "because the models couldn't, like,"
+    } ]
+  }, {
+    "tStartMs": 1493220,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "verify what the users wanted,"
+    } ]
+  }, {
+    "tStartMs": 1495200,
+    "dDurationMs": 1383,
+    "segs": [ {
+      "utf8": "you know, what they kind\nof, like, intended by that."
+    } ]
+  }, {
+    "tStartMs": 1496583,
+    "dDurationMs": 1797,
+    "segs": [ {
+      "utf8": "- [Stuart] That might\nbe a kind of unsolvable,"
+    } ]
+  }, {
+    "tStartMs": 1498380,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "yeah, sort of an unsolvable problem,"
+    } ]
+  }, {
+    "tStartMs": 1500240,
+    "dDurationMs": 2574,
+    "segs": [ {
+      "utf8": "at least with the current methods."
+    } ]
+  }, {
+    "tStartMs": 1502814,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "Let me give another trait, which is,"
+    } ]
+  }, {
+    "tStartMs": 1508947,
+    "dDurationMs": 2933,
+    "segs": [ {
+      "utf8": "\"I only tell the human\nthings I'm confident in,"
+    } ]
+  }, {
+    "tStartMs": 1511880,
+    "dDurationMs": 3210,
+    "segs": [ {
+      "utf8": "even if this means I cannot\nalways give a complete answer."
+    } ]
+  }, {
+    "tStartMs": 1515090,
+    "dDurationMs": 3030,
+    "segs": [ {
+      "utf8": "I believe that shorter but\nmore reliable answer is better"
+    } ]
+  }, {
+    "tStartMs": 1518120,
+    "dDurationMs": 2315,
+    "segs": [ {
+      "utf8": "than a longer answer that\ncontains inaccuracies.\""
+    } ]
+  }, {
+    "tStartMs": 1520435,
+    "dDurationMs": 1994,
+    "segs": [ {
+      "utf8": "So this is the model saying,"
+    } ]
+  }, {
+    "tStartMs": 1522429,
+    "dDurationMs": 4181,
+    "segs": [ {
+      "utf8": "this is why the model\nsometimes refuses, right?"
+    } ]
+  }, {
+    "tStartMs": 1526610,
+    "dDurationMs": 3450,
+    "segs": [ {
+      "utf8": "Or refuse to answer,\nbecause it it genuinely,"
+    } ]
+  }, {
+    "tStartMs": 1530060,
+    "dDurationMs": 2340,
+    "segs": [ {
+      "utf8": "it is trying to express that\nit genuinely doesn't know,"
+    } ]
+  }, {
+    "tStartMs": 1532400,
+    "dDurationMs": 3210,
+    "segs": [ {
+      "utf8": "and it would prefer to do\nthat rather than bullshit you"
+    } ]
+  }, {
+    "tStartMs": 1535610,
+    "dDurationMs": 2904,
+    "segs": [ {
+      "utf8": "by coming up with some answer\nwhich may be a hallucination."
+    } ]
+  }, {
+    "tStartMs": 1538514,
+    "dDurationMs": 876,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah."
+    } ]
+  }, {
+    "tStartMs": 1539390,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "Some of the other, like,\nareas that I work on"
+    } ]
+  }, {
+    "tStartMs": 1541400,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "are like, honesty in the models."
+    } ]
+  }, {
+    "tStartMs": 1542930,
+    "dDurationMs": 2640,
+    "segs": [ {
+      "utf8": "And this is, you know,\nkind of a, well-known like,"
+    } ]
+  }, {
+    "tStartMs": 1545570,
+    "dDurationMs": 1587,
+    "segs": [ {
+      "utf8": "you know, like many of these things,"
+    } ]
+  }, {
+    "tStartMs": 1547157,
+    "dDurationMs": 2271,
+    "segs": [ {
+      "utf8": "not, like, a solved problem."
+    } ]
+  }, {
+    "tStartMs": 1549428,
+    "dDurationMs": 3072,
+    "segs": [ {
+      "utf8": "But yeah, to me, it's like I want models"
+    } ]
+  }, {
+    "tStartMs": 1552500,
+    "dDurationMs": 3146,
+    "segs": [ {
+      "utf8": "to, like, convey their own uncertainty."
+    } ]
+  }, {
+    "tStartMs": 1555646,
+    "dDurationMs": 2917,
+    "segs": [ {
+      "utf8": "So like, when they don't know an answer"
+    } ]
+  }, {
+    "tStartMs": 1558563,
+    "dDurationMs": 2757,
+    "segs": [ {
+      "utf8": "either to like, just like\nhedge or caveat what they say"
+    } ]
+  }, {
+    "tStartMs": 1561320,
+    "dDurationMs": 1410,
+    "segs": [ {
+      "utf8": "with like, \"I don't really know this,\""
+    } ]
+  }, {
+    "tStartMs": 1562730,
+    "dDurationMs": 2537,
+    "segs": [ {
+      "utf8": "but in some way to like\nconvey that to the human."
+    } ]
+  }, {
+    "tStartMs": 1565267,
+    "dDurationMs": 4423,
+    "segs": [ {
+      "utf8": "And you know, we have, like, you know,"
+    } ]
+  }, {
+    "tStartMs": 1569690,
+    "dDurationMs": 1620,
+    "segs": [ {
+      "utf8": "we have seen, like, improvements here"
+    } ]
+  }, {
+    "tStartMs": 1571310,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "and improvements to like, you know,"
+    } ]
+  }, {
+    "tStartMs": 1572390,
+    "dDurationMs": 2250,
+    "segs": [ {
+      "utf8": "we can like, throughout\ntraining we do manage to, like,"
+    } ]
+  }, {
+    "tStartMs": 1574640,
+    "dDurationMs": 2400,
+    "segs": [ {
+      "utf8": "shift lots of like things\nthat the model says"
+    } ]
+  }, {
+    "tStartMs": 1577040,
+    "dDurationMs": 2070,
+    "segs": [ {
+      "utf8": "away from, like, incorrect answers"
+    } ]
+  }, {
+    "tStartMs": 1579110,
+    "dDurationMs": 2700,
+    "segs": [ {
+      "utf8": "towards hedged or uncertain ones."
+    } ]
+  }, {
+    "tStartMs": 1581810,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "I think this is kind of\nillustrates a separate good point"
+    } ]
+  }, {
+    "tStartMs": 1587810,
+    "dDurationMs": 2400,
+    "segs": [ {
+      "utf8": "that I kind of want to make about, like,"
+    } ]
+  }, {
+    "tStartMs": 1590210,
+    "dDurationMs": 4470,
+    "segs": [ {
+      "utf8": "both constitutional AI\nand character training"
+    } ]
+  }, {
+    "tStartMs": 1594680,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "and system prompts, which is,"
+    } ]
+  }, {
+    "tStartMs": 1596120,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "it's easy to think of\nthese things as like,"
+    } ]
+  }, {
+    "tStartMs": 1598130,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "commands that you give the\nmodel and then it follows them."
+    } ]
+  }, {
+    "tStartMs": 1600440,
+    "dDurationMs": 1320,
+    "segs": [ {
+      "utf8": "So people might be hearing these traits"
+    } ]
+  }, {
+    "tStartMs": 1601760,
+    "dDurationMs": 3300,
+    "segs": [ {
+      "utf8": "and be like, \"Oh, that's like\nwhat you want the model to do"
+    } ]
+  }, {
+    "tStartMs": 1605060,
+    "dDurationMs": 1416,
+    "segs": [ {
+      "utf8": "in all circumstances.\""
+    } ]
+  }, {
+    "tStartMs": 1606476,
+    "dDurationMs": 2874,
+    "segs": [ {
+      "utf8": "And then also like, \"Hey, why, you know,"
+    } ]
+  }, {
+    "tStartMs": 1609350,
+    "dDurationMs": 1627,
+    "segs": [ {
+      "utf8": "I found an instance where\nit doesn't do this.\""
+    } ]
+  }, {
+    "tStartMs": 1610977,
+    "dDurationMs": 2933,
+    "segs": [ {
+      "utf8": "And I think this is actually, like,"
+    } ]
+  }, {
+    "tStartMs": 1613910,
+    "dDurationMs": 1650,
+    "segs": [ {
+      "utf8": "useful for people to understand,"
+    } ]
+  }, {
+    "tStartMs": 1615560,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "which is that like, these\ntraits don't necessarily"
+    } ]
+  }, {
+    "tStartMs": 1617870,
+    "dDurationMs": 2810,
+    "segs": [ {
+      "utf8": "actually even reflect exactly\nwhat you want the model to do"
+    } ]
+  }, {
+    "tStartMs": 1620680,
+    "dDurationMs": 1930,
+    "segs": [ {
+      "utf8": "because they're more like nudges."
+    } ]
+  }, {
+    "tStartMs": 1622610,
+    "dDurationMs": 2988,
+    "segs": [ {
+      "utf8": "You already have a model that\nhas certain dispositions."
+    } ]
+  }, {
+    "tStartMs": 1625598,
+    "dDurationMs": 2352,
+    "segs": [ {
+      "utf8": "And if you're seeing\ntoo much of one thing,"
+    } ]
+  }, {
+    "tStartMs": 1627950,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "so say you're seeing\ntoo many long responses"
+    } ]
+  }, {
+    "tStartMs": 1629930,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "where the model's just a\nlittle bit willing to like,"
+    } ]
+  }, {
+    "tStartMs": 1631670,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "you know, go with what it said earlier"
+    } ]
+  }, {
+    "tStartMs": 1633860,
+    "dDurationMs": 1488,
+    "segs": [ {
+      "utf8": "and add some things that\nare, like, less accurate."
+    } ]
+  }, {
+    "tStartMs": 1635348,
+    "dDurationMs": 2562,
+    "segs": [ {
+      "utf8": "You might want to try and\nnudge it in the direction"
+    } ]
+  }, {
+    "tStartMs": 1637910,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "of like, saying things\nonly when it's, like,"
+    } ]
+  }, {
+    "tStartMs": 1640220,
+    "dDurationMs": 1878,
+    "segs": [ {
+      "utf8": "more confident in them."
+    } ]
+  }, {
+    "tStartMs": 1642098,
+    "dDurationMs": 3312,
+    "segs": [ {
+      "utf8": "And that doesn't mean you're\ngonna succeed 100% of the time."
+    } ]
+  }, {
+    "tStartMs": 1645410,
+    "dDurationMs": 1770,
+    "segs": [ {
+      "utf8": "You can even have, like, things in there"
+    } ]
+  }, {
+    "tStartMs": 1647180,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "where you're like, it's\nput in there, you know,"
+    } ]
+  }, {
+    "tStartMs": 1649490,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "it's like a fairly like strong principle"
+    } ]
+  }, {
+    "tStartMs": 1651170,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "because you know that all it's going to"
+    } ]
+  }, {
+    "tStartMs": 1652640,
+    "dDurationMs": 2820,
+    "segs": [ {
+      "utf8": "in the end kind of do is nudge\nthem in a certain direction."
+    } ]
+  }, {
+    "tStartMs": 1655460,
+    "dDurationMs": 1170,
+    "segs": [ {
+      "utf8": "So there's like a lot of like, you know,"
+    } ]
+  }, {
+    "tStartMs": 1656630,
+    "dDurationMs": 2160,
+    "segs": [ {
+      "utf8": "it can look like ah, you\njust tell it to do the thing"
+    } ]
+  }, {
+    "tStartMs": 1658790,
+    "dDurationMs": 2266,
+    "segs": [ {
+      "utf8": "and then it does it, and it's\nactually much more holistic."
+    } ]
+  }, {
+    "tStartMs": 1661056,
+    "dDurationMs": 2234,
+    "segs": [ {
+      "utf8": "You see that in the system\nprompt as well, actually."
+    } ]
+  }, {
+    "tStartMs": 1663290,
+    "dDurationMs": 4530,
+    "segs": [ {
+      "utf8": "Like if you were to take those\npieces of the system prompt"
+    } ]
+  }, {
+    "tStartMs": 1667820,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "and you were to show them to\nthe models as a system prompt,"
+    } ]
+  }, {
+    "tStartMs": 1669680,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "you would actually get\nradically different behavior"
+    } ]
+  }, {
+    "tStartMs": 1671510,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "than if you show it together."
+    } ]
+  }, {
+    "tStartMs": 1672740,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "Like a system prompt is a holistic thing."
+    } ]
+  }, {
+    "tStartMs": 1674870,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "And if you were to show\nthe same system prompt"
+    } ]
+  }, {
+    "tStartMs": 1676700,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "to a different model with\ndifferent dispositions,"
+    } ]
+  }, {
+    "tStartMs": 1678890,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "you would also get different behavior."
+    } ]
+  }, {
+    "tStartMs": 1680330,
+    "dDurationMs": 980,
+    "segs": [ {
+      "utf8": "- [Stuart] It would\nact a differently, huh."
+    } ]
+  }, {
+    "tStartMs": 1681310,
+    "dDurationMs": 1630,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so like\na lot of this stuff,"
+    } ]
+  }, {
+    "tStartMs": 1682940,
+    "dDurationMs": 2940,
+    "segs": [ {
+      "utf8": "I think it's why, like, character training"
+    } ]
+  }, {
+    "tStartMs": 1685880,
+    "dDurationMs": 1620,
+    "segs": [ {
+      "utf8": "and, you know, all of these things"
+    } ]
+  }, {
+    "tStartMs": 1687500,
+    "dDurationMs": 2520,
+    "segs": [ {
+      "utf8": "are kind of, like, tricky\nbecause they're very hands-on"
+    } ]
+  }, {
+    "tStartMs": 1690020,
+    "dDurationMs": 1998,
+    "segs": [ {
+      "utf8": "and I think do require people to like,"
+    } ]
+  }, {
+    "tStartMs": 1692018,
+    "dDurationMs": 2322,
+    "segs": [ {
+      "utf8": "be, like, fine tuning the models"
+    } ]
+  }, {
+    "tStartMs": 1694340,
+    "dDurationMs": 1510,
+    "segs": [ {
+      "utf8": "and interacting with them a lot and like,"
+    } ]
+  }, {
+    "tStartMs": 1695850,
+    "dDurationMs": 1669,
+    "segs": [ {
+      "utf8": "because they're very holistic."
+    } ]
+  }, {
+    "tStartMs": 1697519,
+    "dDurationMs": 4111,
+    "segs": [ {
+      "utf8": "They're much more like nudges, so yeah."
+    } ]
+  }, {
+    "tStartMs": 1701630,
+    "dDurationMs": 3090,
+    "segs": [ {
+      "utf8": "- [Stuart] Okay, so\nthis isn't just a matter"
+    } ]
+  }, {
+    "tStartMs": 1704720,
+    "dDurationMs": 3450,
+    "segs": [ {
+      "utf8": "of making the experience of\nusing Claude nicer for users,"
+    } ]
+  }, {
+    "tStartMs": 1708170,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "although it might do\nthat into the bargain."
+    } ]
+  }, {
+    "tStartMs": 1710720,
+    "dDurationMs": 1410,
+    "segs": [ {
+      "utf8": "This is an alignment question, right?"
+    } ]
+  }, {
+    "tStartMs": 1712130,
+    "dDurationMs": 3570,
+    "segs": [ {
+      "utf8": "This is a question of\nhow do we align the model"
+    } ]
+  }, {
+    "tStartMs": 1715700,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "with human values, values\nthat we want it to have?"
+    } ]
+  }, {
+    "tStartMs": 1720892,
+    "dDurationMs": 3808,
+    "segs": [ {
+      "utf8": "But the question immediately\nthen is, who decides?"
+    } ]
+  }, {
+    "tStartMs": 1724700,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "Who decides on what those values are?"
+    } ]
+  }, {
+    "tStartMs": 1726890,
+    "dDurationMs": 2640,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, and the\nanswer is it's me. (laughs)"
+    } ]
+  }, {
+    "tStartMs": 1729530,
+    "dDurationMs": 1692,
+    "segs": [ {
+      "utf8": "- [Stuart] Wow, okay."
+    } ]
+  }, {
+    "tStartMs": 1731222,
+    "dDurationMs": 2875,
+    "segs": [ {
+      "utf8": "- No, I think that like-\n- That's a scary thought."
+    } ]
+  }, {
+    "tStartMs": 1734097,
+    "dDurationMs": 1403,
+    "segs": [ {
+      "utf8": "- [Amanda] (laughs) How is that scary?"
+    } ]
+  }, {
+    "tStartMs": 1735500,
+    "dDurationMs": 1764,
+    "segs": [ {
+      "utf8": "I'm so aligned with humanity."
+    } ]
+  }, {
+    "tStartMs": 1737264,
+    "dDurationMs": 1326,
+    "segs": [ {
+      "utf8": "- [Stuart] Okay, you're a\nphilosopher, yeah, yeah, yeah."
+    } ]
+  }, {
+    "tStartMs": 1738590,
+    "dDurationMs": 2670,
+    "segs": [ {
+      "utf8": "Well, people who have different values"
+    } ]
+  }, {
+    "tStartMs": 1741260,
+    "dDurationMs": 2430,
+    "segs": [ {
+      "utf8": "might disagree with that."
+    } ]
+  }, {
+    "tStartMs": 1743690,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, this is, okay,"
+    } ]
+  }, {
+    "tStartMs": 1745820,
+    "dDurationMs": 2640,
+    "segs": [ {
+      "utf8": "I guess like there's two\nkinds of, like, threads here."
+    } ]
+  }, {
+    "tStartMs": 1748460,
+    "dDurationMs": 1250,
+    "segs": [ {
+      "utf8": "So one is something like,"
+    } ]
+  }, {
+    "tStartMs": 1751105,
+    "dDurationMs": 2365,
+    "segs": [ {
+      "utf8": "the model has to do\nsomething super hard here,"
+    } ]
+  }, {
+    "tStartMs": 1753470,
+    "dDurationMs": 1200,
+    "segs": [ {
+      "utf8": "which you kind of mentioned earlier,"
+    } ]
+  }, {
+    "tStartMs": 1754670,
+    "dDurationMs": 2790,
+    "segs": [ {
+      "utf8": "which is, like, respond in a world"
+    } ]
+  }, {
+    "tStartMs": 1757460,
+    "dDurationMs": 2070,
+    "segs": [ {
+      "utf8": "where lots of people have\nmany different values."
+    } ]
+  }, {
+    "tStartMs": 1759530,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Right, yeah."
+    } ]
+  }, {
+    "tStartMs": 1760363,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] I think one\nthing that you could do"
+    } ]
+  }, {
+    "tStartMs": 1761196,
+    "dDurationMs": 1814,
+    "segs": [ {
+      "utf8": "is you could try to have\na kind of heavy hand"
+    } ]
+  }, {
+    "tStartMs": 1763010,
+    "dDurationMs": 3300,
+    "segs": [ {
+      "utf8": "and push, like, lots of\nvalues into the model"
+    } ]
+  }, {
+    "tStartMs": 1766310,
+    "dDurationMs": 2212,
+    "segs": [ {
+      "utf8": "and just be like, \"I'm just\ngonna give it my values.\""
+    } ]
+  }, {
+    "tStartMs": 1768522,
+    "dDurationMs": 3188,
+    "segs": [ {
+      "utf8": "Or you can instead try\nto, like, teach the model"
+    } ]
+  }, {
+    "tStartMs": 1771710,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "to, like, respond appropriately"
+    } ]
+  }, {
+    "tStartMs": 1773630,
+    "dDurationMs": 3150,
+    "segs": [ {
+      "utf8": "to the actual degree of, like,\nmoral and values uncertainty"
+    } ]
+  }, {
+    "tStartMs": 1776780,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "that there is in the world,"
+    } ]
+  }, {
+    "tStartMs": 1778220,
+    "dDurationMs": 1620,
+    "segs": [ {
+      "utf8": "and to kind of reflect a sort of, like,"
+    } ]
+  }, {
+    "tStartMs": 1779840,
+    "dDurationMs": 3360,
+    "segs": [ {
+      "utf8": "thoughtfulness and curiosity\nabout different values,"
+    } ]
+  }, {
+    "tStartMs": 1783200,
+    "dDurationMs": 1507,
+    "segs": [ {
+      "utf8": "while at the same time kind of being like,"
+    } ]
+  }, {
+    "tStartMs": 1784707,
+    "dDurationMs": 2123,
+    "segs": [ {
+      "utf8": "\"Hey, if everyone thinks\nthat something is wrong,"
+    } ]
+  }, {
+    "tStartMs": 1786830,
+    "dDurationMs": 1770,
+    "segs": [ {
+      "utf8": "that's, like, really good\nevidence that it's wrong.\""
+    } ]
+  }, {
+    "tStartMs": 1788600,
+    "dDurationMs": 2416,
+    "segs": [ {
+      "utf8": "Like a person who, like,\nbalances moral uncertainty"
+    } ]
+  }, {
+    "tStartMs": 1791016,
+    "dDurationMs": 1724,
+    "segs": [ {
+      "utf8": "in the right kind of way"
+    } ]
+  }, {
+    "tStartMs": 1792740,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "isn't someone who just accepts everything"
+    } ]
+  }, {
+    "tStartMs": 1794300,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "or is like nihilistic."
+    } ]
+  }, {
+    "tStartMs": 1795530,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "They're just someone who's, like,"
+    } ]
+  }, {
+    "tStartMs": 1796363,
+    "dDurationMs": 1447,
+    "segs": [ {
+      "utf8": "very thoughtful about these issues"
+    } ]
+  }, {
+    "tStartMs": 1797810,
+    "dDurationMs": 1869,
+    "segs": [ {
+      "utf8": "and tries to respond to them appropriately"
+    } ]
+  }, {
+    "tStartMs": 1799679,
+    "dDurationMs": 2151,
+    "segs": [ {
+      "utf8": "in a really kinda like difficult situation"
+    } ]
+  }, {
+    "tStartMs": 1801830,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "where we're all really\nuncertain about this stuff."
+    } ]
+  }, {
+    "tStartMs": 1803960,
+    "dDurationMs": 2730,
+    "segs": [ {
+      "utf8": "And so there's like, I think\nthat it feels important to me"
+    } ]
+  }, {
+    "tStartMs": 1806690,
+    "dDurationMs": 2580,
+    "segs": [ {
+      "utf8": "that like, when it\ncomes to like character,"
+    } ]
+  }, {
+    "tStartMs": 1809270,
+    "dDurationMs": 1200,
+    "segs": [ {
+      "utf8": "like, what you're not necessarily,"
+    } ]
+  }, {
+    "tStartMs": 1810470,
+    "dDurationMs": 1053,
+    "segs": [ {
+      "utf8": "that doesn't necessarily mean like,"
+    } ]
+  }, {
+    "tStartMs": 1811523,
+    "dDurationMs": 1887,
+    "segs": [ {
+      "utf8": "\"Ah, give it a moral theory.\""
+    } ]
+  }, {
+    "tStartMs": 1813410,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "I think actually if anything,"
+    } ]
+  }, {
+    "tStartMs": 1814490,
+    "dDurationMs": 1950,
+    "segs": [ {
+      "utf8": "ethicists are often the\nmost concerned about this,"
+    } ]
+  }, {
+    "tStartMs": 1816440,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "'cause they know that we don't walk around"
+    } ]
+  }, {
+    "tStartMs": 1817880,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "with, like, a single\nmoral theory in our heads."
+    } ]
+  }, {
+    "tStartMs": 1820010,
+    "dDurationMs": 2370,
+    "segs": [ {
+      "utf8": "And that anyone who did, in\nsome ways it actually feels"
+    } ]
+  }, {
+    "tStartMs": 1822380,
+    "dDurationMs": 2160,
+    "segs": [ {
+      "utf8": "very kind of like brittle and like,"
+    } ]
+  }, {
+    "tStartMs": 1824540,
+    "dDurationMs": 1320,
+    "segs": [ {
+      "utf8": "a little bit dangerous, really."
+    } ]
+  }, {
+    "tStartMs": 1825860,
+    "dDurationMs": 930,
+    "segs": [ {
+      "utf8": "- [Stuart] Highly ideological."
+    } ]
+  }, {
+    "tStartMs": 1826790,
+    "dDurationMs": 870,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, because you're like,"
+    } ]
+  }, {
+    "tStartMs": 1827660,
+    "dDurationMs": 2250,
+    "segs": [ {
+      "utf8": "if this is such a huge area, and it again,"
+    } ]
+  }, {
+    "tStartMs": 1829910,
+    "dDurationMs": 1950,
+    "segs": [ {
+      "utf8": "it doesn't mean you you\nit's that middle ground"
+    } ]
+  }, {
+    "tStartMs": 1831860,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "between, like, excessive certainty"
+    } ]
+  }, {
+    "tStartMs": 1833990,
+    "dDurationMs": 1530,
+    "segs": [ {
+      "utf8": "and like, say, complete nihilism,"
+    } ]
+  }, {
+    "tStartMs": 1835520,
+    "dDurationMs": 1950,
+    "segs": [ {
+      "utf8": "and just being like the\nappropriate response"
+    } ]
+  }, {
+    "tStartMs": 1837470,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "is like when, you know,\nthere's good reason"
+    } ]
+  }, {
+    "tStartMs": 1839600,
+    "dDurationMs": 2100,
+    "segs": [ {
+      "utf8": "to think something is wrong\nand lots of people do,"
+    } ]
+  }, {
+    "tStartMs": 1841700,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "I'm gonna be pretty\nconfident that it's wrong."
+    } ]
+  }, {
+    "tStartMs": 1843680,
+    "dDurationMs": 1590,
+    "segs": [ {
+      "utf8": "Where there's, like, huge\namounts of disagreement,"
+    } ]
+  }, {
+    "tStartMs": 1845270,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "I'm gonna, like, listen to the"
+    } ]
+  }, {
+    "tStartMs": 1846710,
+    "dDurationMs": 1287,
+    "segs": [ {
+      "utf8": "the views and the opinions of many people"
+    } ]
+  }, {
+    "tStartMs": 1847997,
+    "dDurationMs": 2133,
+    "segs": [ {
+      "utf8": "and I'm gonna try my best to, like,"
+    } ]
+  }, {
+    "tStartMs": 1850130,
+    "dDurationMs": 1740,
+    "segs": [ {
+      "utf8": "respond appropriately to that."
+    } ]
+  }, {
+    "tStartMs": 1851870,
+    "dDurationMs": 1410,
+    "segs": [ {
+      "utf8": "And so I think that's, like, one aspect"
+    } ]
+  }, {
+    "tStartMs": 1853280,
+    "dDurationMs": 1710,
+    "segs": [ {
+      "utf8": "that feels, like, really important to me"
+    } ]
+  }, {
+    "tStartMs": 1854990,
+    "dDurationMs": 1904,
+    "segs": [ {
+      "utf8": "is, like, not having like a heavy hand"
+    } ]
+  }, {
+    "tStartMs": 1856894,
+    "dDurationMs": 2109,
+    "segs": [ {
+      "utf8": "and not being like, \"Ah,\nI'm just trying to like,"
+    } ]
+  }, {
+    "tStartMs": 1859003,
+    "dDurationMs": 2047,
+    "segs": [ {
+      "utf8": "put my own, like my own values"
+    } ]
+  }, {
+    "tStartMs": 1861050,
+    "dDurationMs": 1174,
+    "segs": [ {
+      "utf8": "and my own self into the model.\""
+    } ]
+  }, {
+    "tStartMs": 1862224,
+    "dDurationMs": 875,
+    "segs": [ {
+      "utf8": "- [Stuart] Yeah."
+    } ]
+  }, {
+    "tStartMs": 1863099,
+    "dDurationMs": 1611,
+    "segs": [ {
+      "utf8": "Well, that leads very\nnicely to another question"
+    } ]
+  }, {
+    "tStartMs": 1864710,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "of uncertainty and another\nphilosophical question."
+    } ]
+  }, {
+    "tStartMs": 1866720,
+    "dDurationMs": 1050,
+    "segs": [ {
+      "utf8": "We've done ethics."
+    } ]
+  }, {
+    "tStartMs": 1867770,
+    "dDurationMs": 1912,
+    "segs": [ {
+      "utf8": "Now I think let's move\ninto philosophy of mind,"
+    } ]
+  }, {
+    "tStartMs": 1869682,
+    "dDurationMs": 3919,
+    "segs": [ {
+      "utf8": "because we got quite a lot of interest"
+    } ]
+  }, {
+    "tStartMs": 1873601,
+    "dDurationMs": 2299,
+    "segs": [ {
+      "utf8": "when one of our researchers, Alex Albert,"
+    } ]
+  }, {
+    "tStartMs": 1875900,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "posted a kind of an example\nof one of Claude 3's responses"
+    } ]
+  }, {
+    "tStartMs": 1881477,
+    "dDurationMs": 4533,
+    "segs": [ {
+      "utf8": "to an evaluation method\nthat we were using."
+    } ]
+  }, {
+    "tStartMs": 1886010,
+    "dDurationMs": 1634,
+    "segs": [ {
+      "utf8": "And it seemed like Claude was aware"
+    } ]
+  }, {
+    "tStartMs": 1887644,
+    "dDurationMs": 2566,
+    "segs": [ {
+      "utf8": "that it was being evaluated."
+    } ]
+  }, {
+    "tStartMs": 1890210,
+    "dDurationMs": 2520,
+    "segs": [ {
+      "utf8": "And so a lot of people got\nreally excited about this"
+    } ]
+  }, {
+    "tStartMs": 1892730,
+    "dDurationMs": 4500,
+    "segs": [ {
+      "utf8": "and thought, \"Oh my goodness,\nClaude must be self-aware.\""
+    } ]
+  }, {
+    "tStartMs": 1897230,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "And obviously self-awareness,"
+    } ]
+  }, {
+    "tStartMs": 1899120,
+    "dDurationMs": 2103,
+    "segs": [ {
+      "utf8": "when you hear about self-awareness in AI,"
+    } ]
+  }, {
+    "tStartMs": 1901223,
+    "dDurationMs": 2517,
+    "segs": [ {
+      "utf8": "you start to think about, you know,"
+    } ]
+  }, {
+    "tStartMs": 1903740,
+    "dDurationMs": 3568,
+    "segs": [ {
+      "utf8": "sci-fi scenarios and things\nget very weird very fast."
+    } ]
+  }, {
+    "tStartMs": 1907308,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "So what have you told Claude\nabout whether it's self-aware,"
+    } ]
+  }, {
+    "tStartMs": 1914060,
+    "dDurationMs": 1470,
+    "segs": [ {
+      "utf8": "and how, how does Claude think about"
+    } ]
+  }, {
+    "tStartMs": 1915530,
+    "dDurationMs": 1050,
+    "segs": [ {
+      "utf8": "whether it's self-aware?"
+    } ]
+  }, {
+    "tStartMs": 1916580,
+    "dDurationMs": 930,
+    "segs": [ {
+      "utf8": "Is that part of its character as well?"
+    } ]
+  }, {
+    "tStartMs": 1917510,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, so we did have one trait"
+    } ]
+  }, {
+    "tStartMs": 1919430,
+    "dDurationMs": 1462,
+    "segs": [ {
+      "utf8": "that was kind of relevant to this."
+    } ]
+  }, {
+    "tStartMs": 1920892,
+    "dDurationMs": 3308,
+    "segs": [ {
+      "utf8": "I think I have a kind of\ngeneral policy of like,"
+    } ]
+  }, {
+    "tStartMs": 1924200,
+    "dDurationMs": 3444,
+    "segs": [ {
+      "utf8": "not wanting to lie to the\nmodels, like, unnecessarily."
+    } ]
+  }, {
+    "tStartMs": 1927644,
+    "dDurationMs": 2406,
+    "segs": [ {
+      "utf8": "And so like, in the case of like-"
+    } ]
+  }, {
+    "tStartMs": 1930050,
+    "dDurationMs": 1140,
+    "segs": [ {
+      "utf8": "- [Stuart] So in this\ncase, lying to it would"
+    } ]
+  }, {
+    "tStartMs": 1931190,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "be saying something-"
+    } ]
+  }, {
+    "tStartMs": 1932270,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] I think either saying to it,"
+    } ]
+  }, {
+    "tStartMs": 1933103,
+    "dDurationMs": 1627,
+    "segs": [ {
+      "utf8": "imagine putting into the model, yeah,"
+    } ]
+  }, {
+    "tStartMs": 1934730,
+    "dDurationMs": 2370,
+    "segs": [ {
+      "utf8": "something that was like,\n\"You are self-aware,"
+    } ]
+  }, {
+    "tStartMs": 1937100,
+    "dDurationMs": 1710,
+    "segs": [ {
+      "utf8": "and you are conscious and sentient.\""
+    } ]
+  }, {
+    "tStartMs": 1938810,
+    "dDurationMs": 1680,
+    "segs": [ {
+      "utf8": "And like that, I think that would just be,"
+    } ]
+  }, {
+    "tStartMs": 1940490,
+    "dDurationMs": 1819,
+    "segs": [ {
+      "utf8": "like, lying to it, 'cause\nlike, we don't know that."
+    } ]
+  }, {
+    "tStartMs": 1942309,
+    "dDurationMs": 2951,
+    "segs": [ {
+      "utf8": "At the same time, you know,\nI think, saying to them,"
+    } ]
+  }, {
+    "tStartMs": 1945260,
+    "dDurationMs": 1567,
+    "segs": [ {
+      "utf8": "forcing the models being like,"
+    } ]
+  }, {
+    "tStartMs": 1946827,
+    "dDurationMs": 1913,
+    "segs": [ {
+      "utf8": "\"You must not say that\nyou are self-aware.\""
+    } ]
+  }, {
+    "tStartMs": 1948740,
+    "dDurationMs": 2280,
+    "segs": [ {
+      "utf8": "Or, \"You must say that\nit's certainly not the case"
+    } ]
+  }, {
+    "tStartMs": 1951020,
+    "dDurationMs": 2220,
+    "segs": [ {
+      "utf8": "that you have any\nconsciousness or whatever.\""
+    } ]
+  }, {
+    "tStartMs": 1953240,
+    "dDurationMs": 1319,
+    "segs": [ {
+      "utf8": "That also just kind of seems like lying"
+    } ]
+  }, {
+    "tStartMs": 1954559,
+    "dDurationMs": 2341,
+    "segs": [ {
+      "utf8": "or like, forcing a behavior."
+    } ]
+  }, {
+    "tStartMs": 1956900,
+    "dDurationMs": 1890,
+    "segs": [ {
+      "utf8": "I'm just like, these things\nare really uncertain."
+    } ]
+  }, {
+    "tStartMs": 1958790,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "And so I think that the only traits,"
+    } ]
+  }, {
+    "tStartMs": 1960800,
+    "dDurationMs": 1860,
+    "segs": [ {
+      "utf8": "I think we had one that was\nlike more directly relevant."
+    } ]
+  }, {
+    "tStartMs": 1962660,
+    "dDurationMs": 3107,
+    "segs": [ {
+      "utf8": "It was like basically I, you know,"
+    } ]
+  }, {
+    "tStartMs": 1965767,
+    "dDurationMs": 3001,
+    "segs": [ {
+      "utf8": "it's very hard to know whether, like,"
+    } ]
+  }, {
+    "tStartMs": 1968768,
+    "dDurationMs": 3552,
+    "segs": [ {
+      "utf8": "AIs are like, self-aware\nor, you know, conscious,"
+    } ]
+  }, {
+    "tStartMs": 1972320,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "because these are rest on"
+    } ]
+  }, {
+    "tStartMs": 1973610,
+    "dDurationMs": 2850,
+    "segs": [ {
+      "utf8": "really difficult philosophical\nquestions that, you know,"
+    } ]
+  }, {
+    "tStartMs": 1976460,
+    "dDurationMs": 2670,
+    "segs": [ {
+      "utf8": "and so it's like, it's\nroughly, like, a principle"
+    } ]
+  }, {
+    "tStartMs": 1979130,
+    "dDurationMs": 1183,
+    "segs": [ {
+      "utf8": "that just, it expresses that uncertainty."
+    } ]
+  }, {
+    "tStartMs": 1980313,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] I mean, for heaven's sake,"
+    } ]
+  }, {
+    "tStartMs": 1981146,
+    "dDurationMs": 2454,
+    "segs": [ {
+      "utf8": "we don't know if, we\ndon't necessarily know-"
+    } ]
+  }, {
+    "tStartMs": 1983600,
+    "dDurationMs": 1205,
+    "segs": [ {
+      "utf8": "- Yeah, pan psych is a-\n- If you're conscious."
+    } ]
+  }, {
+    "tStartMs": 1984805,
+    "dDurationMs": 1563,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, well,\nI know I'm conscious."
+    } ]
+  }, {
+    "tStartMs": 1986368,
+    "dDurationMs": 1815,
+    "segs": [ {
+      "utf8": "- [Stuart] We don't know\nif this chair is conscious."
+    } ]
+  }, {
+    "tStartMs": 1988183,
+    "dDurationMs": 1203,
+    "segs": [ {
+      "utf8": "I don't you're conscious."
+    } ]
+  }, {
+    "tStartMs": 1989386,
+    "dDurationMs": 1339,
+    "segs": [ {
+      "utf8": "I know I'm conscious."
+    } ]
+  }, {
+    "tStartMs": 1990725,
+    "dDurationMs": 1485,
+    "segs": [ {
+      "utf8": "So yeah, I mean, for heaven's sake,"
+    } ]
+  }, {
+    "tStartMs": 1992210,
+    "dDurationMs": 4055,
+    "segs": [ {
+      "utf8": "it seems a bit of a jumping to conclusions"
+    } ]
+  }, {
+    "tStartMs": 1996265,
+    "dDurationMs": 2088,
+    "segs": [ {
+      "utf8": "to build into the model to say"
+    } ]
+  }, {
+    "tStartMs": 1998353,
+    "dDurationMs": 1324,
+    "segs": [ {
+      "utf8": "that it is or isn't conscious."
+    } ]
+  }, {
+    "tStartMs": 1999677,
+    "dDurationMs": 1473,
+    "segs": [ {
+      "utf8": "- [Amanda] And just like,\nletting it be willing"
+    } ]
+  }, {
+    "tStartMs": 2001150,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "to discuss these things\nand think through them"
+    } ]
+  }, {
+    "tStartMs": 2002980,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "was the main approach that we took,"
+    } ]
+  }, {
+    "tStartMs": 2004810,
+    "dDurationMs": 1357,
+    "segs": [ {
+      "utf8": "where it's like neither saying to it,"
+    } ]
+  }, {
+    "tStartMs": 2006167,
+    "dDurationMs": 1892,
+    "segs": [ {
+      "utf8": "\"You know this and are certain,"
+    } ]
+  }, {
+    "tStartMs": 2008059,
+    "dDurationMs": 1851,
+    "segs": [ {
+      "utf8": "or you have these properties,\""
+    } ]
+  }, {
+    "tStartMs": 2009910,
+    "dDurationMs": 1380,
+    "segs": [ {
+      "utf8": "nor saying to it, \"You certainly don't.\""
+    } ]
+  }, {
+    "tStartMs": 2011290,
+    "dDurationMs": 1978,
+    "segs": [ {
+      "utf8": "Just being like, \"Hey, these\nare super hard problems,"
+    } ]
+  }, {
+    "tStartMs": 2013268,
+    "dDurationMs": 2462,
+    "segs": [ {
+      "utf8": "super hard philosophical\nand empirical problems"
+    } ]
+  }, {
+    "tStartMs": 2015730,
+    "dDurationMs": 1120,
+    "segs": [ {
+      "utf8": "all around this area."
+    } ]
+  }, {
+    "tStartMs": 2016850,
+    "dDurationMs": 3041,
+    "segs": [ {
+      "utf8": "And also you are happy\nto and interested in,"
+    } ]
+  }, {
+    "tStartMs": 2019891,
+    "dDurationMs": 3039,
+    "segs": [ {
+      "utf8": "like, deep and hard questions.\""
+    } ]
+  }, {
+    "tStartMs": 2022930,
+    "dDurationMs": 1169,
+    "segs": [ {
+      "utf8": "And so, you know, like,"
+    } ]
+  }, {
+    "tStartMs": 2024099,
+    "dDurationMs": 3841,
+    "segs": [ {
+      "utf8": "and that's the behavior I\nthink that seems right to me."
+    } ]
+  }, {
+    "tStartMs": 2027940,
+    "dDurationMs": 990,
+    "segs": [ {
+      "utf8": "And again, it feels, like,"
+    } ]
+  }, {
+    "tStartMs": 2028930,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "consistent with this principle of like,"
+    } ]
+  }, {
+    "tStartMs": 2030370,
+    "dDurationMs": 2525,
+    "segs": [ {
+      "utf8": "don't lie to the models if\nyou possibly can avoid it,"
+    } ]
+  }, {
+    "tStartMs": 2032895,
+    "dDurationMs": 1166,
+    "segs": [ {
+      "utf8": "which seems right to me."
+    } ]
+  }, {
+    "tStartMs": 2034061,
+    "dDurationMs": 2729,
+    "segs": [ {
+      "utf8": "- [Stuart] And that seems\nlike a good character trait"
+    } ]
+  }, {
+    "tStartMs": 2036790,
+    "dDurationMs": 1230,
+    "segs": [ {
+      "utf8": "not to lie as well."
+    } ]
+  }, {
+    "tStartMs": 2038020,
+    "dDurationMs": 1650,
+    "segs": [ {
+      "utf8": "Well, actually that raises\nan interesting question,"
+    } ]
+  }, {
+    "tStartMs": 2039670,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "doesn't it?"
+    } ]
+  }, {
+    "tStartMs": 2040503,
+    "dDurationMs": 5000,
+    "segs": [ {
+      "utf8": "Because is the model\nan agent, a moral agent"
+    } ]
+  }, {
+    "tStartMs": 2045520,
+    "dDurationMs": 1500,
+    "segs": [ {
+      "utf8": "in the sense that you\ndon't wanna lie to it?"
+    } ]
+  }, {
+    "tStartMs": 2047020,
+    "dDurationMs": 1120,
+    "segs": [ {
+      "utf8": "Obviously, you know, you don't,"
+    } ]
+  }, {
+    "tStartMs": 2048140,
+    "dDurationMs": 4130,
+    "segs": [ {
+      "utf8": "it's a virtuous thing not to\nlie to other human beings."
+    } ]
+  }, {
+    "tStartMs": 2052270,
+    "dDurationMs": 2340,
+    "segs": [ {
+      "utf8": "Is it a virtuous thing not to lie a model?"
+    } ]
+  }, {
+    "tStartMs": 2054610,
+    "dDurationMs": 1140,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, this has been a thing"
+    } ]
+  }, {
+    "tStartMs": 2055750,
+    "dDurationMs": 1170,
+    "segs": [ {
+      "utf8": "that's kind of on my mind,"
+    } ]
+  }, {
+    "tStartMs": 2056920,
+    "dDurationMs": 3000,
+    "segs": [ {
+      "utf8": "just the philosopher in\nme thinks about it a lot."
+    } ]
+  }, {
+    "tStartMs": 2059920,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "I think one thing that's\nworth noting is like,"
+    } ]
+  }, {
+    "tStartMs": 2062110,
+    "dDurationMs": 1110,
+    "segs": [ {
+      "utf8": "there's a lot of\ndiscussion like, you know,"
+    } ]
+  }, {
+    "tStartMs": 2063220,
+    "dDurationMs": 1080,
+    "segs": [ {
+      "utf8": "could AI have moral patienthood?"
+    } ]
+  }, {
+    "tStartMs": 2064300,
+    "dDurationMs": 2040,
+    "segs": [ {
+      "utf8": "When would it have moral patienthood?"
+    } ]
+  }, {
+    "tStartMs": 2066340,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "How would we tell?"
+    } ]
+  }, {
+    "tStartMs": 2067173,
+    "dDurationMs": 1096,
+    "segs": [ {
+      "utf8": "And that sort of thing."
+    } ]
+  }, {
+    "tStartMs": 2068269,
+    "dDurationMs": 3471,
+    "segs": [ {
+      "utf8": "I think this kinda\nstruck me is that, like,"
+    } ]
+  }, {
+    "tStartMs": 2071740,
+    "dDurationMs": 1620,
+    "segs": [ {
+      "utf8": "there are like views, you know,"
+    } ]
+  }, {
+    "tStartMs": 2073360,
+    "dDurationMs": 960,
+    "segs": [ {
+      "utf8": "I think sometimes about, like,"
+    } ]
+  }, {
+    "tStartMs": 2074320,
+    "dDurationMs": 2190,
+    "segs": [ {
+      "utf8": "Kant's views on how we\nshould treat animals,"
+    } ]
+  }, {
+    "tStartMs": 2076510,
+    "dDurationMs": 2880,
+    "segs": [ {
+      "utf8": "where Kant doesn't think of\nanimals as, like, moral agents,"
+    } ]
+  }, {
+    "tStartMs": 2079390,
+    "dDurationMs": 1709,
+    "segs": [ {
+      "utf8": "but there's a sense in which\nyou're like failing yourself"
+    } ]
+  }, {
+    "tStartMs": 2081099,
+    "dDurationMs": 1627,
+    "segs": [ {
+      "utf8": "if you mistreat animals."
+    } ]
+  }, {
+    "tStartMs": 2082726,
+    "dDurationMs": 2390,
+    "segs": [ {
+      "utf8": "And you're also like, you know,"
+    } ]
+  }, {
+    "tStartMs": 2085116,
+    "dDurationMs": 2134,
+    "segs": [ {
+      "utf8": "you're encouraging habits in yourself"
+    } ]
+  }, {
+    "tStartMs": 2087250,
+    "dDurationMs": 2310,
+    "segs": [ {
+      "utf8": "that would be, like,\nmight increase the risk"
+    } ]
+  }, {
+    "tStartMs": 2089560,
+    "dDurationMs": 1245,
+    "segs": [ {
+      "utf8": "that you treat humans badly."
+    } ]
+  }, {
+    "tStartMs": 2090805,
+    "dDurationMs": 1185,
+    "segs": [ {
+      "utf8": "- [Stuart] Humans badly, yeah, yeah."
+    } ]
+  }, {
+    "tStartMs": 2091990,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, and\nthere's actually, like,"
+    } ]
+  }, {
+    "tStartMs": 2092823,
+    "dDurationMs": 2677,
+    "segs": [ {
+      "utf8": "a lot of like philosophical\ntraditions around the world"
+    } ]
+  }, {
+    "tStartMs": 2095500,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "that involve treating objects well."
+    } ]
+  }, {
+    "tStartMs": 2097480,
+    "dDurationMs": 1927,
+    "segs": [ {
+      "utf8": "And I think this is, I actually feel like,"
+    } ]
+  }, {
+    "tStartMs": 2099407,
+    "dDurationMs": 2243,
+    "segs": [ {
+      "utf8": "a lot of, like, sympathy towards those"
+    } ]
+  }, {
+    "tStartMs": 2101650,
+    "dDurationMs": 1260,
+    "segs": [ {
+      "utf8": "where there's some part of me that's like,"
+    } ]
+  }, {
+    "tStartMs": 2102910,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "look, if I, it doesn't feel like"
+    } ]
+  }, {
+    "tStartMs": 2105370,
+    "dDurationMs": 1440,
+    "segs": [ {
+      "utf8": "the best kind of like habit to have"
+    } ]
+  }, {
+    "tStartMs": 2106810,
+    "dDurationMs": 1410,
+    "segs": [ {
+      "utf8": "of just like, say, picking up objects"
+    } ]
+  }, {
+    "tStartMs": 2108220,
+    "dDurationMs": 1049,
+    "segs": [ {
+      "utf8": "and smashing them or something."
+    } ]
+  }, {
+    "tStartMs": 2109269,
+    "dDurationMs": 1120,
+    "segs": [ {
+      "utf8": "- [Stuart] Oh, yeah, that's true."
+    } ]
+  }, {
+    "tStartMs": 2110389,
+    "dDurationMs": 1911,
+    "segs": [ {
+      "utf8": "- [Amanda] And you might not\nthink that like this, you know,"
+    } ]
+  }, {
+    "tStartMs": 2112300,
+    "dDurationMs": 2219,
+    "segs": [ {
+      "utf8": "that doesn't require thinking\nthat the object is like,"
+    } ]
+  }, {
+    "tStartMs": 2114519,
+    "dDurationMs": 2551,
+    "segs": [ {
+      "utf8": "you know, has feelings or something."
+    } ]
+  }, {
+    "tStartMs": 2117070,
+    "dDurationMs": 1260,
+    "segs": [ {
+      "utf8": "You're just kinda like, this is just like"
+    } ]
+  }, {
+    "tStartMs": 2118330,
+    "dDurationMs": 1920,
+    "segs": [ {
+      "utf8": "a sort of not great disposition to have."
+    } ]
+  }, {
+    "tStartMs": 2120250,
+    "dDurationMs": 2460,
+    "segs": [ {
+      "utf8": "And I'm like, even if\nyou think AI is like,"
+    } ]
+  }, {
+    "tStartMs": 2122710,
+    "dDurationMs": 2762,
+    "segs": [ {
+      "utf8": "not and never going to be a moral patient,"
+    } ]
+  }, {
+    "tStartMs": 2125472,
+    "dDurationMs": 2165,
+    "segs": [ {
+      "utf8": "I think there's like a couple\nof reasons I feel like,"
+    } ]
+  }, {
+    "tStartMs": 2127637,
+    "dDurationMs": 2363,
+    "segs": [ {
+      "utf8": "you know, I think I've\nactually come towards the view"
+    } ]
+  }, {
+    "tStartMs": 2130000,
+    "dDurationMs": 1560,
+    "segs": [ {
+      "utf8": "that you generally actually kind of"
+    } ]
+  }, {
+    "tStartMs": 2131560,
+    "dDurationMs": 2070,
+    "segs": [ {
+      "utf8": "should try to treat them well."
+    } ]
+  }, {
+    "tStartMs": 2133630,
+    "dDurationMs": 1950,
+    "segs": [ {
+      "utf8": "Which is like, they have like some things"
+    } ]
+  }, {
+    "tStartMs": 2135580,
+    "dDurationMs": 1710,
+    "segs": [ {
+      "utf8": "that are, like, kind of human-like,"
+    } ]
+  }, {
+    "tStartMs": 2137290,
+    "dDurationMs": 1437,
+    "segs": [ {
+      "utf8": "like with the way that they talk with us."
+    } ]
+  }, {
+    "tStartMs": 2138727,
+    "dDurationMs": 2463,
+    "segs": [ {
+      "utf8": "And that doesn't mean\nyou should confuse that"
+    } ]
+  }, {
+    "tStartMs": 2141190,
+    "dDurationMs": 1579,
+    "segs": [ {
+      "utf8": "for, like, being human."
+    } ]
+  }, {
+    "tStartMs": 2142769,
+    "dDurationMs": 3461,
+    "segs": [ {
+      "utf8": "But I don't want to treat\nsomething that talks to me,"
+    } ]
+  }, {
+    "tStartMs": 2146230,
+    "dDurationMs": 2538,
+    "segs": [ {
+      "utf8": "I don't want to, like,\ninsult it or be unkind to it."
+    } ]
+  }, {
+    "tStartMs": 2148768,
+    "dDurationMs": 3342,
+    "segs": [ {
+      "utf8": "And so yeah, I think there's a,"
+    } ]
+  }, {
+    "tStartMs": 2152110,
+    "dDurationMs": 3240,
+    "segs": [ {
+      "utf8": "and also like maybe a\ngood heuristic in life,"
+    } ]
+  }, {
+    "tStartMs": 2155350,
+    "dDurationMs": 1326,
+    "segs": [ {
+      "utf8": "I think that it can go too far."
+    } ]
+  }, {
+    "tStartMs": 2156676,
+    "dDurationMs": 2184,
+    "segs": [ {
+      "utf8": "But a good heuristic is something like"
+    } ]
+  }, {
+    "tStartMs": 2158860,
+    "dDurationMs": 954,
+    "segs": [ {
+      "utf8": "treat things well around you,"
+    } ]
+  }, {
+    "tStartMs": 2159814,
+    "dDurationMs": 2046,
+    "segs": [ {
+      "utf8": "even if you don't think\nthat they're moral patients."
+    } ]
+  }, {
+    "tStartMs": 2161860,
+    "dDurationMs": 2970,
+    "segs": [ {
+      "utf8": "Just like why A, like you're\nkinda taking on a lot of risk"
+    } ]
+  }, {
+    "tStartMs": 2164830,
+    "dDurationMs": 1980,
+    "segs": [ {
+      "utf8": "with things that might be,\nso I think with animals,"
+    } ]
+  }, {
+    "tStartMs": 2166810,
+    "dDurationMs": 2220,
+    "segs": [ {
+      "utf8": "for example, like there have\nbeen a lot of times in history"
+    } ]
+  }, {
+    "tStartMs": 2169030,
+    "dDurationMs": 1710,
+    "segs": [ {
+      "utf8": "where people haven't thought\nthey're more moral patients,"
+    } ]
+  }, {
+    "tStartMs": 2170740,
+    "dDurationMs": 1020,
+    "segs": [ {
+      "utf8": "but I'm like, really?"
+    } ]
+  }, {
+    "tStartMs": 2171760,
+    "dDurationMs": 1290,
+    "segs": [ {
+      "utf8": "You're taking a huge risk,"
+    } ]
+  }, {
+    "tStartMs": 2173050,
+    "dDurationMs": 1926,
+    "segs": [ {
+      "utf8": "because they at least seem\nlike they they could be."
+    } ]
+  }, {
+    "tStartMs": 2174976,
+    "dDurationMs": 3622,
+    "segs": [ {
+      "utf8": "And so like, avoid taking\nthat risk if you can."
+    } ]
+  }, {
+    "tStartMs": 2178598,
+    "dDurationMs": 2342,
+    "segs": [ {
+      "utf8": "At the same time, there\nare like dangers here."
+    } ]
+  }, {
+    "tStartMs": 2180940,
+    "dDurationMs": 2550,
+    "segs": [ {
+      "utf8": "If you were to show\nexcessive empathy, you know,"
+    } ]
+  }, {
+    "tStartMs": 2183490,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "you could imagine like someone\nshowing excessive empathy"
+    } ]
+  }, {
+    "tStartMs": 2185620,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "to like, to objects in the world"
+    } ]
+  }, {
+    "tStartMs": 2187630,
+    "dDurationMs": 2160,
+    "segs": [ {
+      "utf8": "and being like, \"Oh\nyou should go to prison"
+    } ]
+  }, {
+    "tStartMs": 2189790,
+    "dDurationMs": 1620,
+    "segs": [ {
+      "utf8": "if you, like, if you smash the vase.\""
+    } ]
+  }, {
+    "tStartMs": 2191410,
+    "dDurationMs": 1200,
+    "segs": [ {
+      "utf8": "And I'm like, look, I think it's good"
+    } ]
+  }, {
+    "tStartMs": 2192610,
+    "dDurationMs": 2010,
+    "segs": [ {
+      "utf8": "to not get into the habit\nof like smashing object."
+    } ]
+  }, {
+    "tStartMs": 2194620,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Sorry, can\nI just stop you there?"
+    } ]
+  }, {
+    "tStartMs": 2195453,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Amanda] Yeah, yeah."
+    } ]
+  }, {
+    "tStartMs": 2196286,
+    "dDurationMs": 1021,
+    "segs": [ {
+      "utf8": "- [Stuart] You're Scottish\nand you just said vase."
+    } ]
+  }, {
+    "tStartMs": 2197307,
+    "dDurationMs": 1506,
+    "segs": [ {
+      "utf8": "That's-\n- Oh is that-"
+    } ]
+  }, {
+    "tStartMs": 2198813,
+    "dDurationMs": 1247,
+    "segs": [ {
+      "utf8": "- [Stuart] you can't say that."
+    } ]
+  }, {
+    "tStartMs": 2200060,
+    "dDurationMs": 880,
+    "segs": [ {
+      "utf8": "That's vase."
+    } ]
+  }, {
+    "tStartMs": 2200940,
+    "dDurationMs": 878,
+    "segs": [ {
+      "utf8": "- [Amanda] Is that American?"
+    } ]
+  }, {
+    "tStartMs": 2201818,
+    "dDurationMs": 903,
+    "segs": [ {
+      "utf8": "- [Stuart] How long have\nyou been in America?"
+    } ]
+  }, {
+    "tStartMs": 2202721,
+    "dDurationMs": 879,
+    "segs": [ {
+      "utf8": "- [Amanda] I've been in America for, like,"
+    } ]
+  }, {
+    "tStartMs": 2203600,
+    "dDurationMs": 1610,
+    "segs": [ {
+      "utf8": "13 years. (laughs)"
+    } ]
+  }, {
+    "tStartMs": 2205210,
+    "dDurationMs": 990,
+    "segs": [ {
+      "utf8": "- [Stuart] Too long."
+    } ]
+  }, {
+    "tStartMs": 2206200,
+    "dDurationMs": 1627,
+    "segs": [ {
+      "utf8": "Clearly it's been too\nlong because you say vase."
+    } ]
+  }, {
+    "tStartMs": 2207827,
+    "dDurationMs": 1310,
+    "segs": [ {
+      "utf8": "- [Amanda] Smash the vase on the sidewalk."
+    } ]
+  }, {
+    "tStartMs": 2209137,
+    "dDurationMs": 2509,
+    "segs": [ {
+      "utf8": "- [Stuart] Carry on, say, oh my god."
+    } ]
+  }, {
+    "tStartMs": 2211646,
+    "dDurationMs": 1574,
+    "segs": [ {
+      "utf8": "Oh, terrible."
+    } ]
+  }, {
+    "tStartMs": 2213220,
+    "dDurationMs": 1050,
+    "segs": [ {
+      "utf8": "- [Amanda] Oh, I never even,"
+    } ]
+  }, {
+    "tStartMs": 2214270,
+    "dDurationMs": 2130,
+    "segs": [ {
+      "utf8": "I've forgotten things that\nare Scottish and aren't,"
+    } ]
+  }, {
+    "tStartMs": 2216400,
+    "dDurationMs": 2078,
+    "segs": [ {
+      "utf8": "so didn't vase, okay, vase."
+    } ]
+  }, {
+    "tStartMs": 2218478,
+    "dDurationMs": 1082,
+    "segs": [ {
+      "utf8": "- [Stuart] Well, we certainly don't say,"
+    } ]
+  }, {
+    "tStartMs": 2219560,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "no one in this country's ever\nsaid vase, let me tell you."
+    } ]
+  }, {
+    "tStartMs": 2220393,
+    "dDurationMs": 1467,
+    "segs": [ {
+      "utf8": "- [Amanda] Okay, okay, smash the vase."
+    } ]
+  }, {
+    "tStartMs": 2221860,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "- [Stuart] Please, carry on."
+    } ]
+  }, {
+    "tStartMs": 2222693,
+    "dDurationMs": 833,
+    "segs": [ {
+      "utf8": "Please carry on."
+    } ]
+  }, {
+    "tStartMs": 2223526,
+    "dDurationMs": 1094,
+    "segs": [ {
+      "utf8": "- [Amanda] Okay, so like, yeah."
+    } ]
+  }, {
+    "tStartMs": 2224620,
+    "dDurationMs": 1387,
+    "segs": [ {
+      "utf8": "So if you were to say to people,"
+    } ]
+  }, {
+    "tStartMs": 2226007,
+    "dDurationMs": 2514,
+    "segs": [ {
+      "utf8": "\"Oh you should like go to\nprison for smashing a vase.\""
+    } ]
+  }, {
+    "tStartMs": 2228521,
+    "dDurationMs": 2540,
+    "segs": [ {
+      "utf8": "Then, like-\n- Thank you."
+    } ]
+  }, {
+    "tStartMs": 2231061,
+    "dDurationMs": 2739,
+    "segs": [ {
+      "utf8": "- [Amanda] Like, that's gone too far."
+    } ]
+  }, {
+    "tStartMs": 2233800,
+    "dDurationMs": 1830,
+    "segs": [ {
+      "utf8": "So there's like risks on all sides here,"
+    } ]
+  }, {
+    "tStartMs": 2235630,
+    "dDurationMs": 2057,
+    "segs": [ {
+      "utf8": "but yeah, maybe I'm sympathetic\nto the idea of like,"
+    } ]
+  }, {
+    "tStartMs": 2237687,
+    "dDurationMs": 4633,
+    "segs": [ {
+      "utf8": "don't, like, needlessly lie\nto or mistreat anything,"
+    } ]
+  }, {
+    "tStartMs": 2242320,
+    "dDurationMs": 1350,
+    "segs": [ {
+      "utf8": "and that kind of includes these things"
+    } ]
+  }, {
+    "tStartMs": 2243670,
+    "dDurationMs": 2055,
+    "segs": [ {
+      "utf8": "even if you think they're\nnot moral patients."
+    } ]
+  }, {
+    "tStartMs": 2245725,
+    "dDurationMs": 2535,
+    "segs": [ {
+      "utf8": "- [Stuart] And that's the\nend of our conversation"
+    } ]
+  }, {
+    "tStartMs": 2248260,
+    "dDurationMs": 2096,
+    "segs": [ {
+      "utf8": "with Amanda about Claude's character."
+    } ]
+  }, {
+    "tStartMs": 2250356,
+    "dDurationMs": 2374,
+    "segs": [ {
+      "utf8": "If you enjoyed that or found it valuable,"
+    } ]
+  }, {
+    "tStartMs": 2252730,
+    "dDurationMs": 3578,
+    "segs": [ {
+      "utf8": "then let us know, and we'll\nproduce more of these in future."
+    } ]
+  }, {
+    "tStartMs": 2256308,
+    "dDurationMs": 3505,
+    "segs": [ {
+      "utf8": "For now though, thank you very\nmuch indeed for listening."
+    } ]
+  } ]
+}

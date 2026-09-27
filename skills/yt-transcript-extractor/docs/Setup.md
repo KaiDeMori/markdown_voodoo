@@ -45,6 +45,15 @@ Install deno user-scoped so it lands at `~/.deno/bin` (where `ytx.config` looks)
 
 A network-free report split into **core** (needed always) and **optional_escalation** (only when a video is walled). Green on `core` means you're ready for ordinary videos; then see [AGENTS.md](AGENTS.md).
 
+### 4. Test suite (only for changing the code)
+
+```bash
+.venv/Scripts/python -m pip install -r requirements-dev.txt
+.venv/Scripts/python -m pytest
+```
+
+No test touches the network — see [AGENTS.md](AGENTS.md#tests).
+
 ## Staying unblocked (before reaching for escalation)
 
 Most "it stopped working" cases are environment, not missing credentials:
@@ -52,6 +61,7 @@ Most "it stopped working" cases are environment, not missing credentials:
 - **Keep yt-dlp current** (`pip install -U yt-dlp`) — YouTube changes and yt-dlp catches up within days.
 - **Run from a residential connection** — datacenter/VPN addresses get flagged fast.
 - **Don't hammer it** — the tool already throttles between requests; avoid running many pulls in parallel. Excessive rate can get the whole IP temporarily blocked.
+- **Keep an irreplaceable IP off YouTube entirely** — when this machine's IP cannot be changed, let another machine fetch: the relay fetch ([Relay_fetch.md](Relay_fetch.md)).
 
 ## Escalation — only when a specific video is walled
 

@@ -9,6 +9,7 @@ settings.local.json
 .venv/
 tools/bgutil-provider/
 __pycache__/
+.pytest_cache/
 
 # --- Defensive: outputs belong in the user's workspace (WS/YT-Transcripts), ---
 #     never here. This only catches an accidental local run from the skill dir.

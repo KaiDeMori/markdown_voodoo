@@ -1,0 +1,6 @@
+# Test-only dependencies on top of the runtime ones. Install into the project venv:
+#   .venv/Scripts/python -m pip install -r requirements-dev.txt
+# Run the suite from the project root: .venv/Scripts/python -m pytest
+
+-r requirements.txt
+pytest

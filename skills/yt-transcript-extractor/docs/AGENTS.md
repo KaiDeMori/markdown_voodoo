@@ -2,6 +2,8 @@
 
 Pull a clean transcript from a YouTube video. YouTube's track labels are unreliable, so the tool gathers evidence and the agent decides: **list → probe → extract**. The step-by-step flow lives in [SKILL.md](../SKILL.md); this guide is the reference.
 
+Two kinds of fetch (fetch = contacting YouTube): the **direct fetch**, where `ytx` on this machine fetches, and the **relay fetch**, where the user's machine fetches with `ytx_relay.bat` and hands over a **bundle**. Everything after a relay fetch runs **offline**.
+
 ## TL;DR
 
 Run from the project root with the project venv python, and tell every stage **where outputs go** via the same `--out-dir` (the user's workspace — never this skill folder):
@@ -12,6 +14,14 @@ DIR="/path/to/WORKSPACE/YT-Transcripts"
 "$PY" -m ytx.list_subs --out-dir "$DIR" "https://www.youtube.com/watch?v=VIDEO_ID"   # 1 extraction, report
 "$PY" -m ytx.probe     --out-dir "$DIR" VIDEO_ID --tracks en-orig.auto               # ≤2 caption GETs, samples
 "$PY" -m ytx           --out-dir "$DIR" --track en-orig.auto "https://www.youtube.com/watch?v=VIDEO_ID"   # local
+```
+
+After a relay fetch, the same three steps run offline from the bundle:
+
+```bash
+"$PY" -m ytx.import_bundle --out-dir "$DIR" path/to/VIDEO_ID.ytx.zip                # report + bundle facts
+"$PY" -m ytx.probe         --out-dir "$DIR" VIDEO_ID --tracks en-orig.auto --offline   # samples
+"$PY" -m ytx               --out-dir "$DIR" --offline --track en-orig.auto VIDEO_ID    # transcript
 ```
 
 **Output contract:** every stage prints a single machine-readable **JSON object on stdout**; all human progress goes to **stderr**. The clean transcript lands at the `--out-dir` root, named `<channel> - <title> [<id>].<lang>.md` (yt-dlp-sanitized for Windows, ≤200 chars), with a metadata header + the de-duplicated transcript.
@@ -41,14 +51,17 @@ Omitting `--out-dir` falls back to `$YTX_OUT`, then `<cwd>/YT-Transcripts` — s
 | Raw caption (download-once) | `<id>.<lang>.<kind>.<fmt>` | `ApSH0fCIjTY.en-orig.auto.json3` |
 | Listing metadata | `<id>.info.json` · `<id>.subs.json` | `ApSH0fCIjTY.subs.json` |
 | Standalone clean (debug only) | `<id>.<lang>.<kind>.<fmt>.txt` | `ApSH0fCIjTY.en-orig.auto.json3.txt` |
+| Relay bundle (from the user's machine) | `<id>.ytx.zip` | `ApSH0fCIjTY.ytx.zip` |
 
 `kind` ∈ {`manual`, `auto`}; `fmt` ∈ {`json3`, `vtt`, `srv3`, `ttml`, `srt`}; `lang` may carry the `-orig` ASR marker. The standalone-clean name (last row) deliberately differs from the deliverable — it's a debug artifact of running `ytx.clean` alone.
 
 A **track id** is `<lang>.<kind>` — the middle part of the raw file name, e.g. `en-orig.auto` or `en.manual`. `--track` and `--tracks` take track ids.
 
-## ⛔ HARD RULE — ask before any YouTube contact
+## ⛔ HARD RULE — ask before any direct fetch
 
-yt-dlp hitting YouTube gets rate-limited / bot-walled fast, and every request counts. **BEFORE** running anything that contacts YouTube — `ytx.list_subs`, `ytx.probe`, `ytx`, `ytx.extract`, `ytx.download_subs` — ask the user **in chat** (not via `AskUserQuestion`) and get a yes. One question covers the listing, the first probe call and the output destination; every further probe call needs a new OK. Local-only stages (`ytx.clean`, `ytx.config`) and the `ytx --track` run after a probe need no permission.
+This machine's IP cannot be changed: a YouTube block would end the skill here for good. yt-dlp hitting YouTube gets rate-limited / bot-walled fast, and every request counts. **BEFORE** any direct fetch — `ytx.list_subs`, `ytx.download_subs`, and `ytx.probe` / `ytx` / `ytx.extract` without `--offline` — ask the user **in chat** (not via `AskUserQuestion`) and get a yes. One question covers the listing, the first probe call and the output destination; every further probe call needs a new OK. The `ytx --track` run after a probe, everything with `--offline`, `ytx.import_bundle`, and the local stages `ytx.clean` and `ytx.config` need no permission.
+
+With only a URL from the user, ask which fetch to use; the relay fetch keeps this machine off YouTube entirely.
 
 Keep `<out-dir>/raw/` pristine (download once); the clean `.md` is derived non-destructively into the `--out-dir` root.
 
@@ -71,6 +84,32 @@ Keep `<out-dir>/raw/` pristine (download once); the clean `.md` is derived non-d
 
 `ytx.probe` downloads at most 2 tracks of one video per call from the cached listing into `raw/` and prints, per track: `track`, `format`, `path`, `lines`, `words`, `words_per_minute`, `sample_start` (the first 5 caption lines) and `sample_middle` (5 lines from the middle). Tracks already in `raw/` cost no request. The cached caption URLs expire after some hours; an expired URL stops the run before any request, with the hint to refresh the listing.
 
+## Relay fetch and bundles
+
+`ytx_relay.bat` (in `relay/`, installed next to the user's `yt-dlp.exe`; see [Relay_fetch.md](Relay_fetch.md)) fetches on the user's machine:
+
+- **Round 1** (`ytx_relay.bat "<url>"`): the listing, then — counted before any download — the ASR `-orig` tracks plus the manual tracks in the reading languages and in each ASR language. At most 8; with more, the bundle holds the listing only.
+- **Round 2** (`ytx_relay.bat <id> <track> …`): exactly the named tracks, at most 8, from the round-1 listing. Its caption URLs expire after some hours; then round 1 runs again.
+
+A bundle is a zip with exactly this layout; `ytx.import_bundle` rejects anything else and never extracts by member name:
+
+```
+<id>.info.json               the listing
+manual/<id>.<lang>.<fmt>     manual tracks
+auto/<id>.<lang>.<fmt>       ASR tracks
+```
+
+The import writes `meta/<id>.info.json`, `meta/<id>.subs.json` and `raw/<id>.<lang>.<kind>.<fmt>` (existing raw files are kept — download-once) and prints the list report plus `bundle`:
+
+| Field | Meaning |
+|---|---|
+| `tracks_in_raw` | Track ids now available offline. |
+| `source_tracks_missing` | Source tracks not in `raw/` — fetchable by round 2. |
+| `relay_command` | The round-2 command line; fill in the track ids. |
+| `yt_dlp_version` | The yt-dlp version on the user's machine. |
+
+`--offline` (on `ytx` / `ytx.extract` and `ytx.probe`) forbids any network: the listing must be cached, the tracks must be in `raw/`. A missing track stops the run with the relay command that fetches it.
+
 ## The recommendation rules
 
 `list_subs.recommend_track` feeds both the report's `recommended` field and the one-shot. Best first:
@@ -86,6 +125,7 @@ Keep `<out-dir>/raw/` pristine (download once); the clean `.md` is derived non-d
 - `--prefer en,de` — the language(s) the video is spoken in, overriding the detection in rule 1.
 - `--also-translation` — adds a translation into the first reading language (`config.DEFAULT_READING_LANGS`) that differs from the primary.
 - `--refresh` — ignore the cached listing and fetch a fresh one.
+- `--offline` — never contact YouTube: cached listing and `raw/` files only (after a relay fetch). Contradicts `--refresh`. The `<url>` may then be the bare video id.
 - `--flow` — transcript layout (default `sentences`). Auto-captions have no chapters or usable pauses, so reflow uses the ASR's sentence punctuation: `sentences` (one per line) · `paragraphs` (~4 sentences) · `wrapped` (continuous, ~88 cols) · `oneline` · `lines` (raw caption breaks).
 - `--cookies FILE` · `--use-cookies` · `--client` — escalation, see below.
 - `--verbose` — yt-dlp's own diagnostics on stderr.
@@ -114,12 +154,29 @@ All stages take `--out-dir DIR` and **must share the same one** so they find eac
 | Command | Stage | Network? |
 |---|---|---|
 | `"$PY" -m ytx.list_subs --out-dir DIR <url>` | 1: list tracks → report + `<out-dir>/meta/` | ✅ |
-| `"$PY" -m ytx.probe --out-dir DIR <id> --tracks en-orig.auto[,en.manual]` | 2b: download ≤2 tracks → `<out-dir>/raw/` + samples | ✅ (per track not yet in `raw/`) |
+| `"$PY" -m ytx.probe --out-dir DIR <id> --tracks en-orig.auto[,en.manual]` | 2b: download ≤2 tracks → `<out-dir>/raw/` + samples | ✅ (per track not yet in `raw/`); ❌ with `--offline` |
+| `"$PY" -m ytx.import_bundle --out-dir DIR <id>.ytx.zip` | relay: bundle → `<out-dir>/meta/` + `<out-dir>/raw/` + report | ❌ |
 | `"$PY" -m ytx.download_subs --out-dir DIR <id> --langs en-orig --formats json3` | 2: download lang × format → `<out-dir>/raw/` | ✅ |
 | `"$PY" -m ytx.clean --out-dir DIR <id>` | 3+4: clean + compare → `<out-dir>/` | ❌ |
-| `"$PY" -m ytx --out-dir DIR --track <track> <url>` | 1–3 with cache reuse → the clean `.md` | only for what isn't cached |
+| `"$PY" -m ytx --out-dir DIR --track <track> <url>` | 1–3 with cache reuse → the clean `.md` | only for what isn't cached; ❌ with `--offline` |
 
 **Note on `ytx.clean` output:** When run standalone, it produces a raw `<id>.<lang>.<kind>.<fmt>.txt` file in the `--out-dir` root — no metadata header, no proper channel/title filename. To get the properly named `<channel> - <title> [<id>].<lang>.md` output, run `"$PY" -m ytx --out-dir DIR --track <track> <url>` after stages 1+2 — it reuses the cache and any already-downloaded raw files.
+
+## Tests
+
+A pytest suite covers the Python side. Install the test dependencies once, then run it from the project root:
+
+```bash
+"$PY" -m pip install -r requirements-dev.txt
+"$PY" -m pytest
+```
+
+- **No test touches the network.** `tests/conftest.py` refuses every socket connection and name lookup; `test_network_guard.py` proves it, down to yt-dlp's own request path.
+- **No test writes into the repo.** Every test points the output base at its own temporary folder.
+- **Rule tests use synthetic listings** (`tests/synthetic_listings.py`): small, readable listings shaped like yt-dlp's, e.g. an auto-dubbed video with its ASR tracks in a chosen order.
+- **Real data lives in `tests/fixtures/`, verbatim:** a listing and its caption file, seeded into a test's out-dir by the `seeded_out_dir` fixture.
+
+**Turning a misbehaving video into a regression test:** copy its `meta/<id>.info.json` (and the `raw/` files the test needs) into `tests/fixtures/` unchanged, then write a test that asserts the expected pick or output. Keep fixtures verbatim — trimming could delete the very quirk the test is meant to catch.
 
 ## When a pull comes back empty — the escalation ladder
 

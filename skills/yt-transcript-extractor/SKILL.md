@@ -1,11 +1,11 @@
 ---
 name: yt-transcript-extractor
-description: Pull a clean, de-duplicated transcript from a YouTube video, then optionally fact-check its claims. Use when the user wants the transcript or captions of a YouTube video, wants a video turned into readable text/markdown, or wants to verify or fact-check the claims made in a video. Wraps the local `ytx` Python toolchain (yt-dlp, with optional PO-token and cookie escalation) that lists the source tracks, probes the candidates you pick, and cleans the chosen one into a markdown transcript saved in the user's current workspace.
+description: Pull a clean, de-duplicated transcript from a YouTube video, then optionally fact-check its claims. Use when the user wants the transcript or captions of a YouTube video, wants a video turned into readable text/markdown, or wants to verify or fact-check the claims made in a video, or hands over a `.ytx.zip` bundle. Wraps the local `ytx` Python toolchain (yt-dlp, with optional PO-token and cookie escalation) that lists the source tracks, probes the candidates you pick, and cleans the chosen one into a markdown transcript saved in the user's current workspace. A relay fetch keeps this machine off YouTube entirely.
 ---
 
 # YouTube Transcript Extractor (ytx)
 
-`ytx` turns a YouTube URL into a clean transcript. YouTube's track labels are unreliable, so `ytx` gathers the evidence and you decide: it lists the source tracks with their context, downloads the 1–2 candidates you name and shows a sample of each, then cleans the chosen track into a tidy markdown file at a destination you choose (the user's workspace). Every stage prints one JSON object on stdout; all progress goes to stderr.
+`ytx` turns a YouTube URL into a clean transcript. YouTube's track labels are unreliable, so `ytx` gathers the evidence and you decide: it lists the source tracks with their context, shows a sample of the 1–2 candidates you name, then cleans the chosen track into a tidy markdown file at a destination you choose (the user's workspace). Every stage prints one JSON object on stdout; all progress goes to stderr.
 
 ## Where it lives
 
@@ -30,19 +30,31 @@ If `.venv` isn't there yet (a fresh clone), set up the toolchain once via [docs/
 Outputs go to the **user's current workspace**, never this skill folder. Resolve the destination first:
 
 - **If you already know it** — the user named a folder, or it's clear from context — use that as `--out-dir`.
-- **Otherwise** default to `<WORKSPACE>/YT-Transcripts` (the convention). Glob for that folder first: if it already exists, you're on firm ground; if not, propose creating it. Either way **confirm with the user** — and fold that into the same question you already owe them before any YouTube contact (next section), so it's one question, not two.
+- **Otherwise** default to `<WORKSPACE>/YT-Transcripts` (the convention). Glob for that folder first: if it already exists, you're on firm ground; if not, propose creating it. Either way **confirm with the user** — and fold that into the same question you already owe them (next sections), so it's one question, not two.
 
 Pass the resolved absolute path as `--out-dir`, and the same one to every stage. The clean transcript lands at that root; the `raw/` and `meta/` caches sit in subfolders beside it.
 
-## ⛔ Hard rule — ask before any YouTube contact
+## Fetch — direct or relay
 
-yt-dlp hitting YouTube gets rate-limited / bot-walled fast, and every request counts. **Before** running anything that touches YouTube — `ytx.list_subs`, `ytx.probe`, `ytx`, `ytx.extract`, `ytx.download_subs` — ask the user **in chat** (not via `AskUserQuestion`) and get a yes. Local-only stages (`ytx.clean`, `ytx.config`) need no permission.
+| Term | Meaning |
+|---|---|
+| **fetch** | Contacting YouTube. |
+| **direct fetch** | `ytx` on this machine fetches: `ytx.list_subs`, `ytx.probe`, `ytx`. |
+| **relay fetch** | The user's machine fetches with `ytx_relay.bat` and hands over a **bundle** (`<id>.ytx.zip`). |
+| **offline** | No YouTube contact: `ytx.import_bundle`, and `ytx.probe` / `ytx` with `--offline`. |
+
+When the user gives only a URL, ask which fetch to use: "Direct fetch from here, or relay fetch (you run `ytx_relay.bat`)?" The relay fetch is the zero-risk option for this machine. When the user hands over a bundle, go straight to the relay flow.
+
+## ⛔ Hard rule — ask before any direct fetch
+
+This machine's IP cannot be changed: a YouTube block would end this skill here for good. yt-dlp hitting YouTube gets rate-limited / bot-walled fast, and every request counts. **Before** any direct fetch — `ytx.list_subs`, `ytx.download_subs`, and `ytx.probe` / `ytx` / `ytx.extract` without `--offline` — ask the user **in chat** (not via `AskUserQuestion`) and get a yes.
 
 - **One question covers the start:** the listing, the first probe call, and the output destination — e.g. "OK to fetch from YouTube and save to `<WORKSPACE>/YT-Transcripts`?".
 - **Every further probe call needs a new OK.**
 - **The `ytx --track` run after a probe is local** (cached listing, probed raw file) and needs no new OK.
+- **Offline runs never need permission:** `ytx.import_bundle`, anything with `--offline`, and the local stages `ytx.clean` and `ytx.config`.
 
-## Phase 1 — get the transcript
+## Phase 1a — direct fetch (the explicit flow)
 
 Use the explicit flow below. The one-shot `"$PY" -m ytx --out-dir DIR "<url>"` (list, take the recommended track, download, clean — all in one run) is a shortcut: use it only when the user asks for it.
 
@@ -82,11 +94,30 @@ Local after a probe. Prints JSON with `out_dir` and, per transcript, `path`, `tr
 
 Mention a `match=no` to the user: those mismatches are the evidence for whether the one-shot can be trusted.
 
-### Check the result
+## Phase 1b — relay fetch
+
+The user runs `ytx_relay.bat` on their own machine; this machine stays offline throughout. The user-side guide is [docs/Relay_fetch.md](docs/Relay_fetch.md).
+
+1. **Round 1 (user):** `ytx_relay.bat "<url>"` fetches the listing and up to 8 source tracks, and packs `<id>.ytx.zip`. The user hands it over — ask for its path, or Glob the workspace for `**/*.ytx.zip`.
+2. **Import:**
+   ```bash
+   "$PY" -m ytx.import_bundle --out-dir DIR <path/to/id.ytx.zip>
+   ```
+   Prints the list report (as in Step 1) plus `bundle`: `tracks_in_raw`, `source_tracks_missing`, `relay_command`, `yt_dlp_version`.
+3. **Pick and read, offline.** Choose as in the direct flow. Tracks in `tracks_in_raw` are local:
+   ```bash
+   "$PY" -m ytx.probe --out-dir DIR <id> --tracks <track>[,<track>] --offline
+   "$PY" -m ytx --out-dir DIR --offline --track <track> <id>
+   ```
+4. **Round 2 (user), only when needed.** A track you want is not in `tracks_in_raw`: give the user `relay_command` with the track ids filled in (at most 8), e.g. `ytx_relay.bat <id> fr-orig.auto`. Import the new bundle, then continue with step 3. Round 2 reuses the round-1 listing, whose caption URLs expire after some hours; if they have, round 1 runs again.
+
+Always pass `--offline` in this flow: it guarantees that nothing is fetched from here, and a missing track stops the run with the relay command instead.
+
+## Check the result
 
 Don't trust the labels — read the file and confirm:
 
-- **Language is what it should be.** The text reads as its `source_lang`, and that is the language the video is spoken in (title, channel, description). If not, see the failure modes below and re-run Step 3 with another `--track`.
+- **Language is what it should be.** The text reads as its `source_lang`, and that is the language the video is spoken in (title, channel, description). If not, see the failure modes below and extract another `--track`.
 - **"Manual" really is human-made.** A `manual` track should read like edited prose — punctuation, capitalization, no caption run-ons. If it reads like raw ASR, the label is wrong.
 - **Length is plausible.** Speech runs roughly 120–220 words per minute; lively conversations sit at the top of that range. Far fewer means an empty or partial track.
 - **It's coherent, not garbage.** Real sentences, not truncated, empty, or endlessly repeated lines.
@@ -108,7 +139,8 @@ For the shape of the finished artifact (method note, verdict-at-a-glance table, 
 
 ## Full reference
 
-- [docs/AGENTS.md](docs/AGENTS.md) — the complete operating guide: report fields, recommendation rules, every flag, individual stages, troubleshooting.
+- [docs/AGENTS.md](docs/AGENTS.md) — the complete operating guide: report fields, recommendation rules, relay bundles, every flag, individual stages, tests, troubleshooting.
+- [docs/Relay_fetch.md](docs/Relay_fetch.md) — the relay fetch on the user's machine: install and both rounds of `ytx_relay.bat`.
 - [docs/Setup.md](docs/Setup.md) — one-time install of the core toolchain (venv, yt-dlp, deno); the PO-token server and cookies are optional escalation.
 - [docs/Fact_check_prompt.md](docs/Fact_check_prompt.md) — the Phase-2 fact-check prompt (deliberately terse).
 - [docs/example/](docs/example/) — a finished transcript + its fact-check, as a reference for the output.
