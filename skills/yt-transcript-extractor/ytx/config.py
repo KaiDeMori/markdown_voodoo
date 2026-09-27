@@ -158,6 +158,11 @@ DEFAULT_FLOW = "sentences"
 # a video is spoken in - that is what --prefer is for.
 DEFAULT_READING_LANGS = ("en", "de")
 
+# The relay fetch: this script runs on the user's machine, next to their yt-dlp,
+# and hands over a bundle that ytx.import_bundle unpacks. See docs/Relay_fetch.md.
+RELAY_SCRIPT_NAME = "ytx_relay.bat"
+BUNDLE_SUFFIX = ".ytx.zip"
+
 
 # Let yt-dlp choose the player client. Its maintainers track YouTube's changes
 # and pick a working, least-gated client better than any fixed list could - a

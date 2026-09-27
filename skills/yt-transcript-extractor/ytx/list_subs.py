@@ -81,6 +81,11 @@ def track_id(lang: str, kind: str) -> str:
     return f"{lang}.{kind}"
 
 
+def relay_command(vid: str, tracks: list[str]) -> str:
+    """The round-2 command line of the relay fetch that fetches these tracks."""
+    return " ".join([config.RELAY_SCRIPT_NAME, vid, *tracks])
+
+
 def parse_track_id(track: str) -> tuple[str, str]:
     lang, separator, kind = track.rpartition(".")
     if not separator or not lang or kind not in TRACK_KINDS:

@@ -16,7 +16,7 @@ import time
 import yt_dlp
 
 from . import config
-from .list_subs import _take_opt, url_query, video_id
+from .list_subs import _take_opt, relay_command, track_id, url_query, video_id
 
 DEFAULT_LANGS = ("en-orig",)
 DEFAULT_FORMATS = ("json3", "vtt")  # the two worth comparing (clean vs rolling)
@@ -58,15 +58,40 @@ def url_expired(entry: dict) -> bool:
     return expire.isdigit() and int(expire) < time.time()
 
 
+def present_raw_files(vid, info, pairs) -> list:
+    """The raw files for (lang, kind, fmt) tuples, without any network.
+
+    A missing file stops the run with the relay command that fetches it.
+    """
+    saved, missing = [], []
+    for lang, kind, fmt in pairs:
+        found_kind, entry = find_entry(info, lang, fmt, kind=kind)
+        found_kind = found_kind or kind
+        out = config.RAW_DIR / f"{vid}.{lang}.{found_kind}.{fmt}"
+        if entry and out.exists():
+            print(f"  [have ] {out.name} (offline)", file=sys.stderr)
+            saved.append(out)
+        else:
+            missing.append(track_id(lang, found_kind))
+    if missing:
+        raise SystemExit(
+            f"Offline: {', '.join(missing)} not in {config.RAW_DIR}. "
+            f"Fetch by relay: {relay_command(vid, missing)}")
+    return saved
+
+
 def download_pairs(vid, pairs, cookies_file=None, force=False,
-                   player_clients=config.DEFAULT_PLAYER_CLIENTS) -> list:
+                   player_clients=config.DEFAULT_PLAYER_CLIENTS, offline=False) -> list:
     """Download explicit (lang, kind|None, fmt) tuples into raw/.
 
     Already-present raw files are reused (download-once) unless force=True.
+    offline=True never contacts YouTube: only already-present raw files count.
     Progress goes to stderr so callers' stdout stays clean.
     """
     info = load_info(vid)
     config.RAW_DIR.mkdir(parents=True, exist_ok=True)
+    if offline:
+        return present_raw_files(vid, info, pairs)
     opts = config.base_ydl_opts(cookies_file=cookies_file, player_clients=player_clients)
     saved, hits = [], 0
     with yt_dlp.YoutubeDL(opts) as ydl:  # carries the cookie jar for urlopen

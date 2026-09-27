@@ -7,9 +7,10 @@ before extracting. raw/ is download-once, so the probe is also the final
 download: the extract run afterwards is local.
 
 NETWORK: one caption request per track not yet in raw/. Every YouTube request
-counts toward the bot wall - hence the cap per call.
+counts toward the bot wall - hence the cap per call. With --offline nothing is
+fetched: the tracks must already be in raw/ (e.g. from an imported relay bundle).
 
-    python -m ytx.probe <id-or-url> --tracks en-orig.auto[,en.manual]
+    python -m ytx.probe <id-or-url> --tracks en-orig.auto[,en.manual] [--offline]
         [--client web,mweb,tv] [--cookies FILE] [--use-cookies]
 """
 from __future__ import annotations
@@ -31,7 +32,7 @@ def sample_from(lines: list[str], start: int) -> str:
 
 
 def probe(vid, tracks, cookies_file=None,
-          player_clients=config.DEFAULT_PLAYER_CLIENTS) -> dict:
+          player_clients=config.DEFAULT_PLAYER_CLIENTS, offline=False) -> dict:
     tracks = list(dict.fromkeys(tracks))
     if len(tracks) > MAX_PROBE_TRACKS:
         raise SystemExit(
@@ -50,7 +51,7 @@ def probe(vid, tracks, cookies_file=None,
 
     print(f"[probe] {vid} : {', '.join(tracks)}", file=sys.stderr)
     download_subs.download_pairs(vid, pairs, cookies_file=cookies_file,
-                                 player_clients=player_clients)
+                                 player_clients=player_clients, offline=offline)
 
     duration = info.get("duration")
     probes = []
@@ -83,6 +84,9 @@ def main(argv: list[str] | None = None) -> int:
     config.configure(_take_opt(argv, "--out-dir"))  # where the meta/ and raw/ caches live
 
     tracks_arg = _take_opt(argv, "--tracks")
+    offline = "--offline" in argv
+    if offline:
+        argv.remove("--offline")
     use_cookies_flag = "--use-cookies" in argv
     if use_cookies_flag:
         argv.remove("--use-cookies")
@@ -101,7 +105,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     tracks = [t.strip() for t in tracks_arg.split(",") if t.strip()]
     result = probe(video_id(argv[0]), tracks, cookies_file=cookies_file,
-                   player_clients=player_clients)
+                   player_clients=player_clients, offline=offline)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

@@ -7,7 +7,8 @@ files are reused from the cache, so after list + probe this run is local.
 
 NETWORK: stages 1 and 2 contact YouTube unless cached. Per this project's hard
 rule, an agent MUST ask the user's permission in chat BEFORE running this. See
-SKILL.md.
+SKILL.md. With --offline nothing is fetched: the cached listing and raw files
+(e.g. from an imported relay bundle) must already be there.
 
 Track-selection rules of the recommendation (best first):
   1. manual subtitles beat auto-captions      (human > ASR)
@@ -17,10 +18,11 @@ Track-selection rules of the recommendation (best first):
     python -m ytx.extract <url> [--track <lang>.<kind>] [--prefer en,de] [--also-translation]
                                 [--flow sentences|paragraphs|wrapped|oneline|lines]
                                 [--client web,mweb,tv] [--cookies FILE] [--use-cookies]
-                                [--refresh] [--verbose]
+                                [--refresh | --offline] [--verbose]
 
---track   the primary track by id, e.g. en-orig.auto or en.manual (see the list report)
---prefer  the language(s) the video is spoken in, when the recommendation gets it wrong
+--track    the primary track by id, e.g. en-orig.auto or en.manual (see the list report)
+--prefer   the language(s) the video is spoken in, when the recommendation gets it wrong
+--offline  never contact YouTube; <url> may then also be the bare video id
 """
 from __future__ import annotations
 
@@ -117,10 +119,15 @@ def choose_tracks(info, track=None, spoken_langs=None, also_translation=False):
     return chosen
 
 
-def _load_or_fetch(url, cookies, verbose, refresh, player_clients=config.DEFAULT_PLAYER_CLIENTS):
+def _load_or_fetch(url, cookies, verbose, refresh, player_clients=config.DEFAULT_PLAYER_CLIENTS,
+                   offline=False):
     """Stage 1, reusing the cached listing when present (no network re-extraction)."""
     vid = video_id(url)
     cached = config.META_DIR / f"{vid}.info.json"
+    if offline and not cached.is_file():
+        raise SystemExit(
+            f"Offline: no cached listing at {cached}. Import a bundle first "
+            f"(`ytx.import_bundle`), or fetch by relay: {config.RELAY_SCRIPT_NAME} \"<url>\".")
     if cached.is_file() and not refresh:
         print(f"[1/3] using cached listing meta/{vid}.info.json (no network)", file=sys.stderr)
         info = json.loads(cached.read_text(encoding="utf-8"))
@@ -163,10 +170,12 @@ def _write_transcript_md(info, vid, lang, kind, fmt, lines, flow, provenance, se
 
 def extract(url, track=None, spoken_langs=None, also_translation=False,
             cookies_file=None, verbose=False, refresh=False, flow=None,
-            player_clients=config.DEFAULT_PLAYER_CLIENTS, use_cookies=None):
+            player_clients=config.DEFAULT_PLAYER_CLIENTS, use_cookies=None, offline=False):
     flow = flow or config.DEFAULT_FLOW
     cookies = config.resolve_cookies(cookies_file, use_cookies=use_cookies)
-    if cookies:
+    if offline:
+        print("[offline] no YouTube contact: cached listing and raw files only", file=sys.stderr)
+    elif cookies:
         print(f"[cookies] using {cookies}", file=sys.stderr)
     else:
         print("[cookies] none (default). If this video returns LOGIN_REQUIRED / "
@@ -174,7 +183,7 @@ def extract(url, track=None, spoken_langs=None, also_translation=False,
               "(or settings.local.json) and a throwaway account.", file=sys.stderr)
 
     # Stage 1 - list (network, or cache)
-    vid, info = _load_or_fetch(url, cookies, verbose, refresh, player_clients)
+    vid, info = _load_or_fetch(url, cookies, verbose, refresh, player_clients, offline=offline)
     print(f"      title: {info.get('title')!r}  channel: "
           f"{(info.get('channel') or info.get('uploader'))!r}", file=sys.stderr)
 
@@ -189,11 +198,12 @@ def extract(url, track=None, spoken_langs=None, also_translation=False,
               f"[{p['selection']}]", file=sys.stderr)
 
     # Stage 2 - download (network; reuses already-downloaded raw files)
-    print(f"[2/3] downloading {len(picks)} track(s) -> {config.RAW_DIR} ...", file=sys.stderr)
+    action = "reading" if offline else "downloading"
+    print(f"[2/3] {action} {len(picks)} track(s) -> {config.RAW_DIR} ...", file=sys.stderr)
     config.CLEAN_DIR.mkdir(parents=True, exist_ok=True)
     download_subs.download_pairs(
         vid, [(p["lang"], p["kind"], p["fmt"]) for p in picks],
-        cookies_file=cookies, player_clients=player_clients)
+        cookies_file=cookies, player_clients=player_clients, offline=offline)
 
     # Stage 3 - clean (local) -> nicely-named .md deliverables
     print(f"[3/3] cleaning -> {config.OUTPUT_BASE} ...", file=sys.stderr)
@@ -240,6 +250,11 @@ def main(argv: list[str] | None = None) -> int:
     refresh = "--refresh" in argv          # force a fresh listing (ignore cache)
     if refresh:
         argv.remove("--refresh")
+    offline = "--offline" in argv          # never contact YouTube (after a relay fetch)
+    if offline:
+        argv.remove("--offline")
+    if offline and refresh:
+        raise SystemExit("--offline and --refresh contradict each other: a refresh contacts YouTube.")
     use_cookies_flag = "--use-cookies" in argv   # opt in to cookies for this run
     if use_cookies_flag:
         argv.remove("--use-cookies")
@@ -264,7 +279,7 @@ def main(argv: list[str] | None = None) -> int:
         extract(url, track=track, spoken_langs=spoken_langs, also_translation=also_translation,
                 cookies_file=cookies_file, verbose=verbose, refresh=refresh, flow=flow,
                 player_clients=player_clients,
-                use_cookies=True if use_cookies_flag else None)
+                use_cookies=True if use_cookies_flag else None, offline=offline)
     return 0
 
 
