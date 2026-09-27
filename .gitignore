@@ -4,3 +4,4 @@ skills/unicode-glyph-render/test_images
 skills/claude-chat-digger/test/scratch
 *.instructions.IFS_DEACTIVATED.md
 *.instructions.md
+_incoming
