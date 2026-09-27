@@ -39,7 +39,7 @@ Check the project root for `Status.md`, `HandOver_Protocol.md`, and `CLAUDE.md`.
 
 ## Step 2 — Confirm
 
-Tell the user what will be created (the three items above), then askUserQuestion once to proceed.
+Tell the user what will be created (the three items above), then ask once for approval to proceed.
 Treat **"Go ahead"** or **"okgo"** as approval.
 
 ## Step 3 — Scaffold (after approval)
