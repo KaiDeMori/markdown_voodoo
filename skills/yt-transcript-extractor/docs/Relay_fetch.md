@@ -63,3 +63,4 @@ Both can be deleted any time after Claude has imported the bundle.
 | `7-Zip is not on PATH` | Install 7-Zip or add its folder to PATH. |
 | `No listing for … - run round 1 first` | Round 2 needs the work folder from round 1. |
 | `Invalid track id` | Track ids look like `en.manual` or `fr-orig.auto` — copy them from Claude's line. |
+| `Refusing video id` | The video id may only hold letters, digits, `_` and `-`. It becomes part of folder names the script deletes, so anything else stops the script before it touches a file. |

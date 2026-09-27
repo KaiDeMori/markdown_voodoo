@@ -53,6 +53,7 @@ if not defined VID (
     exit /b 1
 )
 set "VID=%VID:.info=%"
+call :check_vid || exit /b 1
 set "WORK=%RELAY_DIR%\%VID%"
 set "INFO=%WORK%\%VID%.info.json"
 if exist "%WORK%" rmdir /s /q "%WORK%"
@@ -102,6 +103,7 @@ goto bundle
 
 :round2
 set "VID=%~1"
+call :check_vid || exit /b 1
 set "WORK=%RELAY_DIR%\%VID%"
 set "INFO=%WORK%\%VID%.info.json"
 if not exist "%INFO%" (
@@ -149,6 +151,24 @@ echo [relay] fetching %KIND% captions: %LANGS%
 "%YTDLP%" %SHARED% --no-simulate --no-write-info-json --load-info-json "%INFO%" %SUB_FLAGS% ^
  --sub-langs "%LANGS%" --sub-format "json3/best" --sleep-subtitles 2 ^
  -P "home:%WORK%" -P "temp:%WORK%" -o "%KIND%/%%(id)s.%%(ext)s" -o "subtitle:%KIND%/%%(id)s.%%(ext)s"
+exit /b 0
+
+
+:check_vid
+rem VID becomes part of every path, including the ones rmdir /s removes. Only plain
+rem video ids pass - letters, digits, _ and -. Every allowed character is stripped
+rem (case-insensitively); anything left over, such as . \ or :, refuses the id.
+rem The # sentinel keeps REST defined, so the replacements never meet an empty variable.
+if not defined VID (
+    echo [relay] No video id - refusing to continue.
+    exit /b 1
+)
+set "REST=#!VID!"
+for %%C in (a b c d e f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 _ -) do set "REST=!REST:%%C=!"
+if not "!REST!"=="#" (
+    echo [relay] Refusing video id "!VID!" - only letters, digits, _ and - are allowed.
+    exit /b 1
+)
 exit /b 0
 
 
