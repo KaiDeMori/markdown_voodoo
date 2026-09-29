@@ -1,7 +1,7 @@
 """Stage 1 - discover which subtitle tracks a video offers, and recommend one.
 
 Network stage. Fetches metadata only (no media, no subtitle files) and caches
-the full info-json plus the track report into meta/. Run once per video; later
+the full info-json plus the list report into meta/. Run once per video; later
 stages work off the cached files.
 
 YouTube's track labels are unreliable, so the report is built from evidence:
