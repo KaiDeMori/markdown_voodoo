@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import zipfile
+from pathlib import Path
 
 import pytest
 
@@ -59,7 +60,9 @@ def test_import_then_extract_offline(tmp_path, run_cli):
     bundle = write_bundle(tmp_path / f"{VIDEO}.ytx.zip", valid_members())
     run_cli(import_bundle.main, str(bundle))
     _exit_code, stdout = run_cli(extract.main, "--offline", "--track", "en.manual", VIDEO)
-    assert json.loads(stdout)["transcripts"][0]["words"] == 8100
+    result = json.loads(stdout)
+    assert result["transcripts"][0]["words"] == 8100
+    assert Path(result["metadata_path"]).is_file()
 
 
 def with_member(name, data=b"x"):
