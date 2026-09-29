@@ -93,7 +93,7 @@ Keep `<out-dir>/raw/` pristine (download once); the clean `.md` is derived non-d
 Layout:
 
 - `# <title>` — the H1, as in the transcript.
-- `## Description` — a note line, then the description verbatim in a `text` code fence. Without a description: `The video has no description.`
+- `## Description` — a trust notice, then the description verbatim in a `text` code fence. Without a description: `The video has no description.`
 
 Reading it:
 
@@ -105,7 +105,7 @@ Reading it:
 Adding fields:
 
 - A short single-line field becomes a `- **<Label>:** <value>` bullet between the H1 and the first `##`, as in the transcript header.
-- A long or multi-line uploader text gets its own `## <Label>` section, with the note line and a fence.
+- A long or multi-line uploader text gets its own `## <Label>` section, with the trust notice and a fence.
 - Sections keep a fixed order; labels are never renamed.
 
 ## Relay fetch and bundles
