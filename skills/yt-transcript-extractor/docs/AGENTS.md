@@ -47,13 +47,13 @@ Omitting `--out-dir` falls back to `$YTX_OUT`, then `<cwd>/YT-Transcripts` — s
 
 | File | Pattern | Example |
 |---|---|---|
-| Clean transcript (deliverable) | `<channel> - <title> [<id>].<lang>.md` | `Barry's Economics - … [ApSH0fCIjTY].en-orig.md` |
-| Metadata file | `<channel> - <title> [<id>].metadata.md` | `… [ApSH0fCIjTY].metadata.md` |
-| Fact-check companion | `<channel> - <title> [<id>].fact-check.md` | `… [ApSH0fCIjTY].fact-check.md` |
-| Raw caption (download-once) | `<id>.<lang>.<kind>.<fmt>` | `ApSH0fCIjTY.en-orig.auto.json3` |
-| Listing cache | `<id>.info.json` · `<id>.subs.json` | `ApSH0fCIjTY.subs.json` |
-| Standalone clean (debug only) | `<id>.<lang>.<kind>.<fmt>.txt` | `ApSH0fCIjTY.en-orig.auto.json3.txt` |
-| Relay bundle (from the user's machine) | `<id>.ytx.zip` | `ApSH0fCIjTY.ytx.zip` |
+| Clean transcript (deliverable) | `<channel> - <title> [<id>].<lang>.md` | `jawed - Me at the zoo [jNQXAC9IVRw].en.md` |
+| Metadata file | `<channel> - <title> [<id>].metadata.md` | `… [jNQXAC9IVRw].metadata.md` |
+| Fact-check companion | `<channel> - <title> [<id>].fact-check.md` | `… [jNQXAC9IVRw].fact-check.md` |
+| Raw caption (download-once) | `<id>.<lang>.<kind>.<fmt>` | `jNQXAC9IVRw.en.manual.json3` |
+| Listing cache | `<id>.info.json` · `<id>.subs.json` | `jNQXAC9IVRw.subs.json` |
+| Standalone clean (debug only) | `<id>.<lang>.<kind>.<fmt>.txt` | `jNQXAC9IVRw.en.manual.json3.txt` |
+| Relay bundle (from the user's machine) | `<id>.ytx.zip` | `jNQXAC9IVRw.ytx.zip` |
 
 `kind` ∈ {`manual`, `auto`}; `fmt` ∈ {`json3`, `vtt`, `srv3`, `ttml`, `srt`}; `lang` may carry the `-orig` ASR marker. The standalone-clean name (last row) deliberately differs from the deliverable — it's a debug artifact of running `ytx.clean` alone.
 

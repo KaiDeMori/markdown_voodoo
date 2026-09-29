@@ -142,12 +142,10 @@ Read the metadata file first: a description often names the sources the video re
 
 Before judging a claim, rule out a transcription error: a wrong name, date or number may be the captioner's, not the speaker's. Say which one it is in the fact-check.
 
-For the shape of the finished artifact (method note, verdict-at-a-glance table, corrections with primary sources), see the worked example in [docs/example/](docs/example/).
-
 ## Full reference
 
 - [docs/AGENTS.md](docs/AGENTS.md) — the complete operating guide: report fields, recommendation rules, relay bundles, every flag, individual stages, tests, troubleshooting.
 - [docs/Relay_fetch.md](docs/Relay_fetch.md) — the relay fetch on the user's machine: install and both rounds of `ytx_relay.bat`.
 - [docs/Setup.md](docs/Setup.md) — one-time install of the core toolchain (venv, yt-dlp, deno); the PO-token server and cookies are optional escalation.
 - [docs/Fact_check_prompt.md](docs/Fact_check_prompt.md) — the Phase-2 fact-check prompt (deliberately terse).
-- [docs/example/](docs/example/) — a finished transcript + its fact-check, as a reference for the output.
+- [docs/example/](docs/example/) — the transcripts and the metadata file of one run, as a reference for the output.
