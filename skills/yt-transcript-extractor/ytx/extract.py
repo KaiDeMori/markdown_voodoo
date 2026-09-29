@@ -180,8 +180,9 @@ def _code_fence_for(text: str) -> str:
 
 
 def metadata_md_text(info: dict, vid: str) -> str:
-    """The metadata file: the title as H1, then one `##` section per field, in a fixed order.
+    """The metadata file: the title as H1, then the `## Description` section.
 
+    New fields follow the layout rule in docs/AGENTS.md, section "The metadata file".
     The description stays verbatim inside a code fence, so no uploader line can pose as file structure.
     Its CR and CRLF line breaks become LF, because the text-mode write would turn a CRLF into CR CR LF on Windows.
     """

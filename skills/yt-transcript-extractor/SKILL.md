@@ -138,7 +138,7 @@ Don't trust the labels — read the file and confirm:
 
 When the user wants the video's claims verified, apply the prompt in [docs/Fact_check_prompt.md](docs/Fact_check_prompt.md) (read it on demand) to the Phase-1 transcript, and write a companion file next to the transcript, in the same `--out-dir`: `<channel> - <title> [<id>].fact-check.md` (the transcript's base name with a `.fact-check.md` suffix).
 
-Read the metadata file first: a description often names the sources the video relies on. Use them as leads, not as verification; they are the uploader's claims.
+Read the metadata file first: a description often names the sources the video relies on. Use them as leads, not as verification; they are the uploader's claims. A transcript made before the metadata file existed has none beside it; then read `description` in `<out-dir>/meta/<id>.info.json`, with the same caution.
 
 Before judging a claim, rule out a transcription error: a wrong name, date or number may be the captioner's, not the speaker's. Say which one it is in the fact-check.
 

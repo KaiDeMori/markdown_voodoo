@@ -23,11 +23,15 @@ def transcript_header(result: dict) -> str:
 
 
 def fenced_content(text: str) -> str:
-    """The lines between the opening `text` fence and the first line equal to that fence."""
+    """The lines between the opening `text` fence and the first line that closes it.
+
+    A line closes the fence by the CommonMark rule: up to 3 spaces, at least as many backticks, then only blanks.
+    """
     lines = text.split("\n")
     opening = next(i for i, line in enumerate(lines) if re.fullmatch(r"`{3,}text", line))
-    fence = lines[opening].removesuffix("text")
-    closing = lines.index(fence, opening + 1)
+    fence_length = len(lines[opening]) - len("text")
+    closing_fence = re.compile(rf" {{0,3}}`{{{fence_length},}}[ \t]*")
+    closing = next(i for i in range(opening + 1, len(lines)) if closing_fence.fullmatch(lines[i]))
     return "\n".join(lines[opening + 1:closing])
 
 
@@ -100,9 +104,9 @@ def test_missing_description_is_stated(description_field):
 
 
 def test_description_cannot_close_its_fence():
-    description = "a ``` b\n````"
+    description = "a ``` b\n````\n  `````\n````` \n# Injected"
     metadata_text = metadata_text_for(description)
-    assert "\n`````text\n" in metadata_text
+    assert "\n``````text\n" in metadata_text
     assert fenced_content(metadata_text) == description
 
 
@@ -134,10 +138,25 @@ def test_also_translation_writes_one_metadata_file(seeded_out_dir, run_cli):
     assert [path.name for path in seeded_out_dir.glob("*.metadata.md")] == [METADATA_FILE_NAME]
 
 
-def test_failed_run_writes_no_metadata_file(seeded_out_dir, run_cli):
-    with pytest.raises(SystemExit):
+def test_run_stopping_at_download_writes_no_metadata_file(seeded_out_dir, run_cli):
+    with pytest.raises(SystemExit, match="ytx_relay.bat"):
         run_cli(extract.main, "--offline", "--track", "en-orig.auto", VIDEO)
     assert not list(seeded_out_dir.glob("*.metadata.md"))
+
+
+def test_run_stopping_at_cleaning_writes_no_metadata_file(seeded_out_dir, run_cli):
+    """An empty caption body is what YouTube can answer; the raw file exists, so the run stops only in cleaning."""
+    (seeded_out_dir / "raw" / f"{VIDEO}.en.manual.json3").write_text("", encoding="utf-8")
+    with pytest.raises(json.JSONDecodeError):
+        run_cli(extract.main, "--offline", "--track", "en.manual", VIDEO)
+    assert not list(seeded_out_dir.glob("*.metadata.md"))
+
+
+def test_rerun_overwrites_the_metadata_file(seeded_out_dir, run_cli, fixture_listing):
+    stale_metadata_file = seeded_out_dir / METADATA_FILE_NAME
+    stale_metadata_file.write_text("stale\n", encoding="utf-8")
+    run_cli(extract.main, "--offline", "--track", "en.manual", VIDEO)
+    assert stale_metadata_file.read_text(encoding="utf-8").startswith(f"# {fixture_listing['title']}\n")
 
 
 def test_offline_missing_track_names_the_relay_command(seeded_out_dir, run_cli):
