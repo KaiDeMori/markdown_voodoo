@@ -121,7 +121,7 @@ Always pass `--offline` in this flow: it guarantees that nothing is fetched from
 Don't trust the labels — read the file and confirm:
 
 - **Language is what it should be.** The text reads as its `source_lang`, and that is the language the video is spoken in (title, channel, description). If not, see the failure modes below and extract another `--track`.
-- **"Manual" really is human-made.** A `manual` track should read like edited prose — punctuation, capitalization, no caption run-ons. If it reads like raw ASR, the label is wrong. A flow fallback in its header points the same way, unless the text uses CJK punctuation such as `。`.
+- **"Manual" really is human-made.** A `manual` track should read like edited prose — punctuation, capitalization, no caption run-ons. If it reads like raw ASR, the label is wrong. A flow fallback in its header points the same way, unless the text ends its sentences with a mark other than `.`, `!` or `?`, such as `。` or the danda `।`.
 - **Names are the weak spot — in manual tracks too.** Human captioners mishear proper names and technical terms ("the Miami region" for the Maya region, "Barry Phelan" for Barry Fell). "Manual" means human, not error-free: when a name matters, verify it before building on it.
 - **Length is plausible.** Speech runs roughly 120–220 words per minute; lively conversations sit at the top of that range. Far fewer means an empty or partial track.
 - **It's coherent, not garbage.** Real sentences, not truncated, empty, or endlessly repeated lines.

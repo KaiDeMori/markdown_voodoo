@@ -87,12 +87,14 @@ def has_too_few_sentence_enders(lines: list[str]) -> bool:
     An overlong sentence is longer than MAX_CAPTION_LINES_PER_SENTENCE caption
     lines of average length; caption-line units judge dense scripts like any
     other. Measuring the output of to_sentences keeps this check on exactly the
-    sentence enders the flows split on.
+    sentence enders the flows split on. The average is taken on the joined text,
+    because a sentence carries the spaces that join its caption lines.
     """
     sentences = to_sentences(lines)
     if not sentences:
         return False
-    max_sentence_length = MAX_CAPTION_LINES_PER_SENTENCE * sum(map(len, lines)) / len(lines)
+    average_caption_line_length = len(" ".join(lines)) / len(lines)
+    max_sentence_length = MAX_CAPTION_LINES_PER_SENTENCE * average_caption_line_length
     overlong_length = sum(len(sentence) for sentence in sentences
                           if len(sentence) > max_sentence_length)
     return overlong_length * 2 > sum(map(len, sentences))

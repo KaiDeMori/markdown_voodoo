@@ -150,8 +150,8 @@ The import writes `meta/<id>.info.json`, `meta/<id>.subs.json` and `raw/<id>.<la
 - `--also-translation` — adds a translation into the first reading language (`config.DEFAULT_READING_LANGS`) that differs from the primary.
 - `--refresh` — ignore the cached listing and fetch a fresh one.
 - `--offline` — never contact YouTube: cached listing and `raw/` files only (after a relay fetch). Contradicts `--refresh`. The `<url>` may then be the bare video id.
-- `--flow` — transcript layout (default `sentences`): `sentences` (one per line) · `paragraphs` (~4 sentences) · `wrapped` (continuous, ~88 cols) · `oneline` · `lines` (raw caption breaks). Auto-captions have no chapters or usable pauses, so `sentences` and `paragraphs` split after sentence enders: a `.`, `!` or `?` followed by whitespace. `。`, `｡`, `！` and `？` are not sentence enders.
-  - Without `--flow`, a track with too few sentence enders gets `lines`: more than half of its text would land in sentences longer than 10 average caption lines. The header then reads `flow=lines (fallback from sentences: too few sentence enders)`, and the transcript's `flow` on stdout is `lines`.
+- `--flow` — transcript layout (default `sentences`): `sentences` (one per line) · `paragraphs` (~4 sentences) · `wrapped` (continuous, ~88 cols) · `oneline` · `lines` (raw caption breaks). Auto-captions have no chapters or usable pauses, so `sentences` and `paragraphs` split after sentence enders: a `.`, `!` or `?` followed by whitespace. No other mark is a sentence ender, e.g. neither `。` nor the danda `।`.
+  - Without `--flow`, a track with too few sentence enders gets `lines`: more than half of its text would land in sentences longer than 10 caption lines of average length. The header then reads `flow=lines (fallback from sentences: too few sentence enders)`, and the transcript's `flow` on stdout is `lines`.
   - An explicit `--flow` is always honored: `--flow sentences` overrides the fallback.
   - `ytx.clean` follows the same rule.
 - `--cookies FILE` · `--use-cookies` · `--client` — escalation, see below.

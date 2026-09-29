@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 
 from conftest import FIXTURE_VIDEO_ID, UNPUNCTUATED_CAPTION_LINES
-from ytx import clean
+from ytx import clean, config
 
 FALLBACK_LABEL = "lines (fallback from sentences: too few sentence enders)"
 PUNCTUATED_CAPTION_LINES = [f"this is caption line {number} of the talk" + ("." if number % 2 else "")
@@ -26,6 +26,14 @@ def test_punctuated_track_keeps_the_default_flow():
     chosen_flow = clean.choose_flow(PUNCTUATED_CAPTION_LINES, None)
     assert chosen_flow == "sentences"
     assert clean.flow_label(None, chosen_flow) == "sentences"
+
+
+@pytest.mark.parametrize("caption_lines_per_sentence, expected_flow", [(10, "sentences"), (11, "lines")])
+def test_the_fallback_starts_above_ten_caption_lines_per_sentence(caption_lines_per_sentence, expected_flow):
+    lines = [f"caption line {number:03d} of the talk"
+             + ("." if number % caption_lines_per_sentence == caption_lines_per_sentence - 1 else "")
+             for number in range(300)]
+    assert clean.choose_flow(lines, None) == expected_flow
 
 
 def test_a_stray_sentence_ender_does_not_prevent_the_fallback():
@@ -60,6 +68,18 @@ def test_a_tiny_track_keeps_the_default_flow(lines):
     assert clean.choose_flow(lines, None) == "sentences"
 
 
+def test_a_default_flow_that_does_not_split_at_sentence_enders_never_falls_back(monkeypatch):
+    monkeypatch.setattr(config, "DEFAULT_FLOW", "wrapped")
+    assert clean.choose_flow(UNPUNCTUATED_CAPTION_LINES, None) == "wrapped"
+
+
+def test_the_fallback_label_names_the_default_flow(monkeypatch):
+    monkeypatch.setattr(config, "DEFAULT_FLOW", "paragraphs")
+    chosen_flow = clean.choose_flow(UNPUNCTUATED_CAPTION_LINES, None)
+    assert chosen_flow == "lines"
+    assert clean.flow_label(None, chosen_flow) == "lines (fallback from paragraphs: too few sentence enders)"
+
+
 def test_standalone_clean_applies_the_same_fallback(seeded_out_dir, unpunctuated_asr_track, run_cli):
     _exit_code, stdout = run_cli(clean.main, FIXTURE_VIDEO_ID)
     clean_text = (seeded_out_dir / f"{unpunctuated_asr_track.name}.txt").read_text(encoding="utf-8")
@@ -67,3 +87,11 @@ def test_standalone_clean_applies_the_same_fallback(seeded_out_dir, unpunctuated
     report_lines = {line.split()[1]: line for line in stdout.splitlines() if line.startswith("  [clean]")}
     assert report_lines[f"{unpunctuated_asr_track.name}.txt"].endswith(f"flow={FALLBACK_LABEL}")
     assert report_lines[f"{FIXTURE_VIDEO_ID}.en.manual.json3.txt"].endswith("flow=sentences")
+
+
+def test_standalone_clean_honors_an_explicit_flow(seeded_out_dir, unpunctuated_asr_track, run_cli):
+    _exit_code, stdout = run_cli(clean.main, "--flow", "sentences", FIXTURE_VIDEO_ID)
+    clean_text = (seeded_out_dir / f"{unpunctuated_asr_track.name}.txt").read_text(encoding="utf-8")
+    assert clean_text == " ".join(UNPUNCTUATED_CAPTION_LINES) + "\n"
+    report_lines = {line.split()[1]: line for line in stdout.splitlines() if line.startswith("  [clean]")}
+    assert report_lines[f"{unpunctuated_asr_track.name}.txt"].endswith("flow=sentences")
