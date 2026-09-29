@@ -2,6 +2,9 @@
 
 I use emojis when I chat with you, and I want to use them more precisely, so that we understand each other faster. Please describe how you read the common yellow face emojis when a person sends them to you.
 
+Answer only from you own memory. Any other source would invalidate the result.
+No tools, not internet, do agents needed.
+
 For each emoji below, give three things:
 
 - Reading — what it does in a message, as you read it: the feeling or intent you take from it.
