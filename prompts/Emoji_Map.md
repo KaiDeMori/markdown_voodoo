@@ -10,6 +10,6 @@ For each emoji below, give three things:
 
 Describe the meaning you have learned from use; you do not need to describe the picture. Where you are unsure, say "unsure".
 
-The emojis: 🙂 😊 😄 😁 😆 😅 😂 🤣 😉 😏 😋 😎 🤗 🤔 🤨 🙄 😒 😬 🙃 🥲 😌 🥱 🤪 🤯 😱 😳 🥳 😢 😭 😪 😥 🫠 🫡 🤓
+The emojis: 🙂 😊 😄 😁 😆 😅 😂 🤣 😉 😏 😋 😎 🤗 🤔 🤨 🙄 😒 😬 🙃 🥲 😌 🥱 🤪 🤯 😱 😳 🥳 😔 😢 😭 😪 😥 🫠 🫡 🤓
 
 Afterwards, name the emojis you find most ambiguous as a reader, and the ones whose meaning is clearest.
