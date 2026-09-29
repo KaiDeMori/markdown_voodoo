@@ -25,6 +25,9 @@ FIXTURE_CAPTION = FIXTURES_DIR / f"{FIXTURE_VIDEO_ID}.en.manual.json3"
 # audio track YouTube flags as original.
 FIXTURE_DUBBED_VIDEO_ID = "hBB__YXYpOc"
 FIXTURE_DUBBED_LISTING = FIXTURES_DIR / f"{FIXTURE_DUBBED_VIDEO_ID}.info.json"
+# Japanese ASR carries no sentence punctuation at all.
+UNPUNCTUATED_CAPTION_LINES = [f"今日は{number}番目の話題について少し詳しく説明していきます"
+                              for number in range(300)]
 
 
 class Network_blocked(RuntimeError):
@@ -68,6 +71,19 @@ def seeded_out_dir(isolated_output) -> Path:
     shutil.copy(FIXTURE_LISTING, isolated_output / "meta")
     shutil.copy(FIXTURE_CAPTION, isolated_output / "raw")
     return isolated_output
+
+
+@pytest.fixture
+def unpunctuated_asr_track(seeded_out_dir) -> Path:
+    """UNPUNCTUATED_CAPTION_LINES as the json3 of the ASR track the fixture listing offers.
+
+    The failure needs only length, not a real quirk, so the caption file is synthetic.
+    """
+    events = [{"tStartMs": number * 3000, "dDurationMs": 3000, "segs": [{"utf8": line}]}
+              for number, line in enumerate(UNPUNCTUATED_CAPTION_LINES)]
+    raw_file = seeded_out_dir / "raw" / f"{FIXTURE_VIDEO_ID}.en-orig.auto.json3"
+    raw_file.write_text(json.dumps({"events": events}, ensure_ascii=False), encoding="utf-8")
+    return raw_file
 
 
 @pytest.fixture(scope="session")

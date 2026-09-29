@@ -87,8 +87,9 @@ At most 2 tracks per call. Each track is downloaded into `raw/` (download-once, 
 "$PY" -m ytx --out-dir DIR --track <track> "<url>"
 ```
 
-Local after a probe. Prints JSON with `out_dir`, `metadata_path` and, per transcript, `path`, `track`, `name`, `source_lang`, `translated_to`, `selection`, `lines` and `words`. The transcript header records the same:
+Local after a probe. Prints JSON with `out_dir`, `metadata_path` and, per transcript, `path`, `track`, `flow`, `name`, `source_lang`, `translated_to`, `selection`, `lines` and `words`. The transcript header records the same:
 
+- `Track` — `<lang> · <kind> · <fmt> · flow=<flow>`. `flow=lines (fallback from sentences: too few sentence enders)` means the track has too few sentence enders to split into sentences, so the body keeps one caption line per line.
 - `Source` — YouTube's name, `source_lang`, `translated_to`.
 - `Selection` — `explicit · recommended=<track> · match=yes|no` for `--track`; `recommended` or `recommended (ambiguous)` for the one-shot.
 
@@ -120,7 +121,7 @@ Always pass `--offline` in this flow: it guarantees that nothing is fetched from
 Don't trust the labels — read the file and confirm:
 
 - **Language is what it should be.** The text reads as its `source_lang`, and that is the language the video is spoken in (title, channel, description). If not, see the failure modes below and extract another `--track`.
-- **"Manual" really is human-made.** A `manual` track should read like edited prose — punctuation, capitalization, no caption run-ons. If it reads like raw ASR, the label is wrong.
+- **"Manual" really is human-made.** A `manual` track should read like edited prose — punctuation, capitalization, no caption run-ons. If it reads like raw ASR, the label is wrong. A flow fallback in its header points the same way, unless the text uses CJK punctuation such as `。`.
 - **Names are the weak spot — in manual tracks too.** Human captioners mishear proper names and technical terms ("the Miami region" for the Maya region, "Barry Phelan" for Barry Fell). "Manual" means human, not error-free: when a name matters, verify it before building on it.
 - **Length is plausible.** Speech runs roughly 120–220 words per minute; lively conversations sit at the top of that range. Far fewer means an empty or partial track.
 - **It's coherent, not garbage.** Real sentences, not truncated, empty, or endlessly repeated lines.

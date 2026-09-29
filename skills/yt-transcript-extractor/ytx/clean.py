@@ -27,6 +27,11 @@ _WS = re.compile(r"\s+")
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+")   # split after sentence enders
 
 FLOW_MODES = ("sentences", "paragraphs", "wrapped", "oneline", "lines")
+FLOWS_SPLIT_AT_SENTENCE_ENDERS = ("sentences", "paragraphs")
+
+# Punctuated tracks average a few caption lines per sentence; a sentence many
+# times longer is a run of caption lines that no sentence ender split.
+MAX_CAPTION_LINES_PER_SENTENCE = 10
 
 
 def _norm(text: str) -> str:
@@ -76,6 +81,45 @@ def to_sentences(lines: list[str]) -> list[str]:
     return [s.strip() for s in _SENT_SPLIT.split(text) if s.strip()]
 
 
+def has_too_few_sentence_enders(lines: list[str]) -> bool:
+    """True when more than half of the text would land in overlong sentences.
+
+    An overlong sentence is longer than MAX_CAPTION_LINES_PER_SENTENCE caption
+    lines of average length; caption-line units judge dense scripts like any
+    other. Measuring the output of to_sentences keeps this check on exactly the
+    sentence enders the flows split on.
+    """
+    sentences = to_sentences(lines)
+    if not sentences:
+        return False
+    max_sentence_length = MAX_CAPTION_LINES_PER_SENTENCE * sum(map(len, lines)) / len(lines)
+    overlong_length = sum(len(sentence) for sentence in sentences
+                          if len(sentence) > max_sentence_length)
+    return overlong_length * 2 > sum(map(len, sentences))
+
+
+def choose_flow(lines: list[str], flow: str | None) -> str:
+    """The flow to lay out `lines` in.
+
+    An explicit `flow` is always honored. Without one, the default flow applies,
+    or `lines` when the default flow splits at sentence enders and the track has
+    too few of them.
+    """
+    if flow:
+        return flow
+    if config.DEFAULT_FLOW in FLOWS_SPLIT_AT_SENTENCE_ENDERS and has_too_few_sentence_enders(lines):
+        return "lines"
+    return config.DEFAULT_FLOW
+
+
+def flow_label(flow: str | None, chosen_flow: str) -> str:
+    """The flow as the transcript header states it: the chosen flow, plus the reason after a fallback."""
+    requested_flow = flow or config.DEFAULT_FLOW
+    if chosen_flow == requested_flow:
+        return chosen_flow
+    return f"{chosen_flow} (fallback from {requested_flow}: too few sentence enders)"
+
+
 def reflow(lines: list[str], mode: str = "sentences",
            sentences_per_para: int = 4, width: int = 88) -> str:
     """Render cleaned caption lines as text in the chosen layout.
@@ -109,7 +153,6 @@ def _stats(lines: list[str]) -> dict:
 
 
 def run(vid: str, compare_only: bool = False, flow: str | None = None) -> int:
-    flow = flow or config.DEFAULT_FLOW
     config.CLEAN_DIR.mkdir(parents=True, exist_ok=True)
     raws = sorted(config.RAW_DIR.glob(f"{vid}.*"))
     if not raws:
@@ -124,8 +167,9 @@ def run(vid: str, compare_only: bool = False, flow: str | None = None) -> int:
         results[path.name] = lines
         if not compare_only:
             out = config.CLEAN_DIR / (path.name + ".txt")
-            out.write_text(reflow(lines, flow), encoding="utf-8")
-            print(f"  [clean] {out.name:45s} {_stats(lines)}  flow={flow}")
+            chosen_flow = choose_flow(lines, flow)
+            out.write_text(reflow(lines, chosen_flow), encoding="utf-8")
+            print(f"  [clean] {out.name:45s} {_stats(lines)}  flow={flow_label(flow, chosen_flow)}")
 
     # Stage 4 - compare the cleaned outputs.
     if len(results) >= 2:
@@ -153,13 +197,13 @@ def main(argv: list[str] | None = None) -> int:
     compare_only = "--compare-only" in argv
     if compare_only:
         argv.remove("--compare-only")
-    flow = _take_opt(argv, "--flow") or config.DEFAULT_FLOW
+    flow = _take_opt(argv, "--flow")
     if not argv:
         print(__doc__)
         return 2
     for target in argv:
         vid = video_id(target)
-        print(f"\n=== cleaning {vid} (flow={flow}) ===")
+        print(f"\n=== cleaning {vid} (flow={flow or config.DEFAULT_FLOW}) ===")
         run(vid, compare_only=compare_only, flow=flow)
     return 0
 

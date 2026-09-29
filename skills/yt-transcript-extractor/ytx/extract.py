@@ -153,12 +153,13 @@ def track_provenance(info, lang, kind, fmt) -> dict:
 
 def _write_transcript_md(info, vid, lang, kind, fmt, lines, flow, provenance, selection):
     words = sum(len(l.split()) for l in lines)
+    chosen_flow = clean_mod.choose_flow(lines, flow)
     out = config.CLEAN_DIR / config.safe_filename(info, suffix=f".{lang}.md", max_len=200)
     header = (
         f"# {info.get('title') or vid}\n\n"
         f"- **Channel:** {info.get('channel') or info.get('uploader') or ''}\n"
         f"- **URL:** https://www.youtube.com/watch?v={vid}\n"
-        f"- **Track:** {lang} · {kind} · {fmt} · flow={flow}\n"
+        f"- **Track:** {lang} · {kind} · {fmt} · flow={clean_mod.flow_label(flow, chosen_flow)}\n"
         f"- **Source:** \"{provenance['name'] or ''}\" · "
         f"source_lang={provenance['source_lang'] or 'unknown'} · "
         f"translated_to={provenance['translated_to'] or 'none'}\n"
@@ -166,8 +167,8 @@ def _write_transcript_md(info, vid, lang, kind, fmt, lines, flow, provenance, se
         f"- **Words:** {words}\n\n"
         "---\n\n"
     )
-    out.write_text(header + clean_mod.reflow(lines, flow), encoding="utf-8")
-    return out, words
+    out.write_text(header + clean_mod.reflow(lines, chosen_flow), encoding="utf-8")
+    return out, words, chosen_flow
 
 
 def _code_fence_for(text: str) -> str:
@@ -210,8 +211,7 @@ def _write_metadata_md(info, vid):
 def extract(url, track=None, spoken_langs=None, also_translation=False,
             cookies_file=None, verbose=False, refresh=False, flow=None,
             player_clients=config.DEFAULT_PLAYER_CLIENTS, use_cookies=None, offline=False):
-    flow = flow or config.DEFAULT_FLOW
-    cookies = config.resolve_cookies(cookies_file, use_cookies=use_cookies)
+    cookies =config.resolve_cookies(cookies_file, use_cookies=use_cookies)
     if offline:
         print("[offline] no YouTube contact: cached listing and raw files only", file=sys.stderr)
     elif cookies:
@@ -251,12 +251,12 @@ def extract(url, track=None, spoken_langs=None, also_translation=False,
         raw = config.RAW_DIR / f"{vid}.{p['lang']}.{p['kind']}.{p['fmt']}"
         lines = clean_mod.clean_file(raw) or []
         provenance = track_provenance(info, p["lang"], p["kind"], p["fmt"])
-        md, words = _write_transcript_md(info, vid, p["lang"], p["kind"], p["fmt"], lines, flow,
-                                         provenance, p["selection"])
+        md, words, chosen_flow = _write_transcript_md(info, vid, p["lang"], p["kind"], p["fmt"],
+                                                      lines, flow, provenance, p["selection"])
         transcripts.append({
             "primary": i == 0,
             "track": track_id(p["lang"], p["kind"]),
-            "lang": p["lang"], "kind": p["kind"], "format": p["fmt"],
+            "lang": p["lang"], "kind": p["kind"], "format": p["fmt"], "flow": chosen_flow,
             **provenance,
             "selection": p["selection"],
             "lines": len(lines), "words": words, "path": str(md),

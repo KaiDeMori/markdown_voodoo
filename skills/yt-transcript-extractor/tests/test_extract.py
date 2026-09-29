@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import FIXTURE_CAPTION
+from conftest import FIXTURE_CAPTION, UNPUNCTUATED_CAPTION_LINES
 from synthetic_listings import listing
 from ytx import extract
 
@@ -48,9 +48,30 @@ def test_explicit_track_offline(seeded_out_dir, run_cli):
     assert transcript["words"] == 8100
     assert transcript["source_lang"] == "en"
     assert transcript["translated_to"] is None
+    assert transcript["flow"] == "sentences"
     header = transcript_header(result)
+    assert "- **Track:** en · manual · json3 · flow=sentences\n" in header
     assert '- **Source:** "English" · source_lang=en · translated_to=none' in header
     assert "- **Selection:** explicit · recommended=en.manual · match=yes" in header
+
+
+def test_unpunctuated_track_falls_back_to_lines(unpunctuated_asr_track, run_cli):
+    _exit_code, stdout = run_cli(extract.main, "--offline", "--track", "en-orig.auto", VIDEO)
+    result = json.loads(stdout)
+    transcript = result["transcripts"][0]
+    assert transcript["flow"] == "lines"
+    assert ("- **Track:** en-orig · auto · json3 · "
+            "flow=lines (fallback from sentences: too few sentence enders)\n") in transcript_header(result)
+    body = Path(transcript["path"]).read_text(encoding="utf-8").split("---\n\n", 1)[1]
+    assert body.splitlines() == UNPUNCTUATED_CAPTION_LINES
+
+
+def test_explicit_flow_is_honored_on_an_unpunctuated_track(unpunctuated_asr_track, run_cli):
+    _exit_code, stdout = run_cli(extract.main, "--offline", "--track", "en-orig.auto",
+                                 "--flow", "sentences", VIDEO)
+    result = json.loads(stdout)
+    assert result["transcripts"][0]["flow"] == "sentences"
+    assert "- **Track:** en-orig · auto · json3 · flow=sentences\n" in transcript_header(result)
 
 
 def test_one_shot_offline_takes_the_recommendation(seeded_out_dir, run_cli):

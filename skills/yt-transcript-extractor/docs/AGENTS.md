@@ -150,7 +150,10 @@ The import writes `meta/<id>.info.json`, `meta/<id>.subs.json` and `raw/<id>.<la
 - `--also-translation` — adds a translation into the first reading language (`config.DEFAULT_READING_LANGS`) that differs from the primary.
 - `--refresh` — ignore the cached listing and fetch a fresh one.
 - `--offline` — never contact YouTube: cached listing and `raw/` files only (after a relay fetch). Contradicts `--refresh`. The `<url>` may then be the bare video id.
-- `--flow` — transcript layout (default `sentences`). Auto-captions have no chapters or usable pauses, so reflow uses the ASR's sentence punctuation: `sentences` (one per line) · `paragraphs` (~4 sentences) · `wrapped` (continuous, ~88 cols) · `oneline` · `lines` (raw caption breaks).
+- `--flow` — transcript layout (default `sentences`): `sentences` (one per line) · `paragraphs` (~4 sentences) · `wrapped` (continuous, ~88 cols) · `oneline` · `lines` (raw caption breaks). Auto-captions have no chapters or usable pauses, so `sentences` and `paragraphs` split after sentence enders: a `.`, `!` or `?` followed by whitespace. `。`, `｡`, `！` and `？` are not sentence enders.
+  - Without `--flow`, a track with too few sentence enders gets `lines`: more than half of its text would land in sentences longer than 10 average caption lines. The header then reads `flow=lines (fallback from sentences: too few sentence enders)`, and the transcript's `flow` on stdout is `lines`.
+  - An explicit `--flow` is always honored: `--flow sentences` overrides the fallback.
+  - `ytx.clean` follows the same rule.
 - `--cookies FILE` · `--use-cookies` · `--client` — escalation, see below.
 - `--verbose` — yt-dlp's own diagnostics on stderr.
 
@@ -203,6 +206,7 @@ The batch tests are excluded from the plain run (`pytest.ini`); run them wheneve
   - Batch tests: yt-dlp runs as its own process, out of the socket guard's reach. Every run gets `HTTP(S)_PROXY` pointing at a closed local port, and its config, home and temp folders point into the test folder, so no config on the machine can bring its own proxy. Each session starts with a canary request that must be refused; otherwise no batch test runs.
 - **No test writes outside the project.** `pytest.ini` puts every temporary folder into `.pytest_tmp/` (emptied at the start of each run), and a guard stops the session if that folder would land elsewhere — e.g. when pytest is started from another folder.
 - **Rule tests use synthetic listings** (`tests/synthetic_listings.py`): small, readable listings shaped like yt-dlp's, e.g. an auto-dubbed video with its ASR tracks in a chosen order.
+- **Flow tests use synthetic caption lines** (`tests/test_clean.py`; the fixture `unpunctuated_asr_track` writes them as a json3 file into `raw/`). An unpunctuated track needs only length, no real quirk, so no real caption file is copied for it.
 - **Real data lives in `tests/fixtures/`, verbatim:** a listing with its caption file (`iyJj9RxSsBY`), and an auto-dubbed video's listing from a relay fetch (`hBB__YXYpOc`: eight ASR tracks and the original-audio flag).
 - **Batch tests run the production script.** A test copy differs in two spots only: round 1 copies a fixture listing where the script would ask yt-dlp for one, and Explorer stays closed. Both spots are matched literally, so a change to them in the script fails the tests instead of silently testing less.
 

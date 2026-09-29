@@ -151,6 +151,8 @@ RETRIES = 3
 # How transcripts are laid out. Auto-captions have no chapters/usable pauses, so
 # reflow leans on the ASR's sentence punctuation. One of:
 #   sentences | paragraphs | wrapped | oneline | lines
+# Without an explicit --flow, a track with too few sentence enders gets lines
+# instead: sentences would run its caption lines together (clean.choose_flow).
 DEFAULT_FLOW = "sentences"
 
 # The user's reading languages, best first. They break ties between manual tracks
