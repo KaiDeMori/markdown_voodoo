@@ -45,7 +45,7 @@ When asked to search, go ahead and search directly.
 Search is tiered — find the conversation, narrow to the matches, then read one in full:
 
 1. `search "<query>"` — find conversations matching a query, across everything.
-2. `in <session_id> "<query>" [--context N]` — show matches inside one conversation, with surrounding lines.
+2. `in <session_id> "<query>" [--context N]` — show matches inside one conversation, with surrounding lines; nearby matches share one excerpt.
 3. `show <session_id> <uuid> [--block N] [--thinking] [--meta]` — print one message in full.
 
 Beyond search:
@@ -57,7 +57,7 @@ Beyond search:
 - `families [--workspace W] [--project P]` — an overview of all fork families.
 - `list [--limit N]` — browse indexed conversations, newest first.
 
-Common filters on `search` and `in`: `--project`, `--workspace` (a folder and everything under it), `--date-from` / `--date-to`, `--role user|assistant|both`, `--model <model_id>` (only answers by that exact model, e.g. `claude-opus-5`), `--thinking` (also search thinking blocks), `--mode substring|all_terms|wildcard` (wildcard's `*` is non-greedy — `fix*bug` finds each separate occurrence rather than one span from the first `fix` to the last `bug`), and `--all` (every term in the same message).
+Common filters on `search` and `in`: `--project` (one exact folder), `--workspace` (whole folder names: a full path matches that folder and everything under it, a bare name like `app` any folder of that name), both in any path spelling; `--date-from` / `--date-to` (a local date `YYYY-MM-DD` or an ISO date-time, both inclusive), `--role user|assistant|both`, `--model <model_id>` (only answers by that exact model, e.g. `claude-opus-5`), `--thinking` (also search thinking blocks), `--mode substring|all_terms|wildcard` (wildcard's `*` is non-greedy — `fix*bug` finds each separate occurrence rather than one span from the first `fix` to the last `bug`), and `--all` (every term in the same message).
 
 A command's required arguments are positional: give them first, in the order shown, before any options.
 A search term may start with a dash (e.g. `search "-X"`) and is taken literally — no `--` escape needed.
@@ -73,7 +73,10 @@ Every command takes two universal output options:
   The JSON is richer than the text (snippet offsets, roles, match counts); for `tree` it is the render-neutral graph.
   Combine with `--out` to save it.
 
+Text shows times in local time, ISO 8601 with offset (`2026-10-01T15:51+02:00`); JSON keeps the stored UTC timestamps.
+
 Diagnostics — the receipt and any notes — go to stderr, so the saved file (or a piped stdout) carries the payload only, valid JSON included.
+A note also reports every cut, such as conversations beyond `--limit`.
 
 ## Full reference
 

@@ -1,3 +1,6 @@
+> Status: resolved with CCD index version 5.
+> Below: the report as received.
+
 # CCD: bug report and feature requests
 
 ## Context

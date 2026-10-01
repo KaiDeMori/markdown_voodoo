@@ -3,7 +3,7 @@
 Signatures and return types for discussion; no behaviour is implemented.
 The three search methods form a progressive-disclosure ladder: locate without content, then bounded snippets, then full content by exact id.
 A conversation tree is serialised to diagram-ready text deterministically — the model never draws a graph by hand.
-See api_design.md for rationale.
+Timestamps in every shape are the stored UTC ISO 8601 values; paths are in display form (see `CCD_normalise.py`).
 """
 
 from __future__ import annotations
@@ -54,7 +54,11 @@ class Diagram_format(Enum):
 
 @dataclass
 class Search_options:
-    """Filters shared by the search methods."""
+    """Filters shared by the search methods.
+
+    `projects` are exact project folders and `workspace` matches whole folder names (see `Chat_digger.list_families`); both accept any spelling of a path.
+    `date_from` and `date_to` take a local date (`2026-10-01`) or an ISO 8601 date-time, local when it has no offset; both are inclusive, and an upper bound covers its own precision, so a date covers the whole local day.
+    """
 
     match_mode: Match_mode = Match_mode.substring
     case_sensitive: bool = False
@@ -104,6 +108,8 @@ class Conversation_match:
 
 @dataclass
 class Search_all_result:
+    """Tier-1 result: `total_conversations` and `total_matches` count everything that matched; `conversations` is the ranked slice `offset` and `limit` select."""
+
     query: str
     match_mode: Match_mode
     total_conversations: int
@@ -138,6 +144,8 @@ class Chat_entry_match:
 
 @dataclass
 class Conversation_search_result:
+    """Tier-2 result: `match_count` counts every match; snippets cover only the first few excerpts of each block."""
+
     session_id: str
     title: str
     query: str
@@ -395,6 +403,7 @@ class Chat_digger:
         """Tier 2: matches within one conversation, each as bounded snippets.
 
         A chat entry is never returned whole here, regardless of its size; only `context` worth of surrounding text accompanies each match.
+        Matches whose context windows overlap or touch form one excerpt; snippets are built only for the first few excerpts of each block, while `match_count` counts every match.
         Each snippet carries its `block_index` so the exact block can be fetched at tier 3.
         """
         raise NotImplementedError
@@ -410,7 +419,7 @@ class Chat_digger:
         """Tier 3: the full content of one chat entry by exact id.
 
         `session_id` is required: it locates the file directly and doubles as a safety check — a uuid not found under that session is an error, not an empty result.
-        `block_index` returns just that one block (omit for every block), so a one-line text block need not drag along a huge `tool_result` in the same entry.
+        `block_index` returns just that one block, whatever its kind (omit for every block), so a one-line text block need not drag along a huge `tool_result` in the same entry.
         `include_meta` additionally populates `Message_meta` from the same raw-record read — model, usage, git branch, and the rest — at no extra cost when omitted.
         """
         raise NotImplementedError
@@ -449,7 +458,9 @@ class Chat_digger:
         """Every fork family in a workspace, condensed to one summary each.
 
         Each lone conversation is its own family of one, so the overview is uniform: one line per family with its session and leaf counts.
-        `workspace` matches a project folder and everything under it; `project` is one exact path.
+        `workspace` matches whole folder names: an absolute path matches that folder and everything under it, a relative one (`app`, `dev/app`) those folder names anywhere in the path, and `app` never matches `apple`.
+        `project` is one exact folder.
+        Both accept any spelling of a path: `\\` or `/`, any letter case, `~`.
         Most recent first.
         """
         raise NotImplementedError

@@ -4,13 +4,14 @@ CCD is a command-line tool that indexes and searches your past Claude Code conve
 Claude Code stores every conversation as a JSON-Lines file under `~/.claude/projects`; CCD reads those files into a single SQLite index and then lets you find which conversation a word or phrase appeared in (and when, and in which project), read the surrounding context, pull a full message, trace where a file was created or edited, and draw a conversation's fork tree.
 
 It is pure Python 3 standard library — no dependencies, no `pip install`.
-Run it as `python CCD.py <command>` from the directory that contains `CCD.py`.
+Run it as `python <path to>/CCD.py <command>`; the working directory does not matter.
 The first command to run is `index`, which builds the search index; everything else reads from it.
 
 ## Source layout
 
 - `CCD.py` — the command-line front end: argument parsing and output formatting.
 - `CCD_api.py` — the public contract: data shapes and method signatures, no behaviour.
+- `CCD_normalise.py` — the shared forms of paths and timestamps: one spelling per folder, local display times.
 - `CCD_parsing.py` — corpus parsing: raw `.jsonl` records to structured rows.
 - `CCD_search.py` — content search: matching primitives and the search methods.
 - `CCD_tree.py` — conversation structure: fork fingerprints, trees, fork families, diagrams.

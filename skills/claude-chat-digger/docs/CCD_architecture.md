@@ -1,10 +1,10 @@
 # Architecture
 
-CCD is six files.
-`CCD_api.py` defines the shared shapes; `CCD_parsing.py`, `CCD_search.py`, and `CCD_tree.py` each implement one concern over them; `CCD_engine.py` binds those three into the `Chat_digger` orchestrator; `CCD.py` drives the engine and prints results.
+CCD is seven files.
+`CCD_api.py` defines the shared shapes and `CCD_normalise.py` the shared forms of paths and timestamps; `CCD_parsing.py`, `CCD_search.py`, and `CCD_tree.py` each implement one concern over them; `CCD_engine.py` binds those three into the `Chat_digger` orchestrator; `CCD.py` drives the engine and prints results.
 Every module imports its data types from `CCD_api.py`.
 
-## The six modules
+## The seven modules
 
 ### `CCD.py` — command-line front end
 Argument parsing and output rendering only.
@@ -17,7 +17,11 @@ Two universal output axes, added to every command by `add_output_options`, decid
 `emit` puts the payload on its sink — stdout by default, or the `--out` file (written UTF-8 with `\n` line endings) — and sends the receipt and notes to stderr, so even a JSON payload stays pure.
 `render_json` is the single JSON point: `json.dumps` with a `default` that turns dataclasses into dicts and enums into their values, so the structured result serialises without per-command code.
 `force_utf8_output` reconfigures stdout/stderr to UTF-8 so non-ASCII content never crashes a legacy console.
+Text shows times through `local_time_text`, local ISO 8601 with offset; JSON keeps the stored UTC values.
+`command_in` prints a block's snippets as excerpts: `iter_excerpts` from `CCD_search.py` groups them, and `render_excerpt` joins their windows and marks every match.
+Every cut is reported as a note: `cut_notes` for `--limit` on `search`, `list`, and `families`, and a count of the matches the excerpt cap of `in` leaves out.
 No corpus or index logic lives here — to add a command, add a `Command_spec` entry to `command_specs` (with an `add_*_options` hook if it takes flags; every command already inherits `--out` and `--format`) plus a handler that delegates to the engine and returns a `Command_output` carrying both `body` and `data`.
+Then add the command's name to `CCD_CALL_PATTERN` in `CCD_parsing.py`, so its calls stay out of the index.
 
 ### `CCD_api.py` — the contract
 The data shapes and the public method surface, with no behaviour.
@@ -26,18 +30,33 @@ The `Chat_digger` class in this file is a documentation stub: every method raise
 The working class lives in `CCD_engine.py`.
 Keep this file in step whenever you change a signature or a return shape.
 
+### `CCD_normalise.py` — paths and timestamps
+Pure functions over values, no SQLite or corpus logic.
+One folder reaches CCD in several spellings: Claude Code records the drive letter in whatever case the entrypoint used, and callers type `/` or `\`, `~`, or Git Bash's `/c/`.
+`display_path` is the one form CCD stores and shows, with the drive letter upper-cased; `path_key` is the one form it compares: forward slashes, lower case, no trailing slash, `~` and `/c/` resolved.
+`in_workspace` compares two keys by whole folder names: an absolute workspace matches that folder and everything under it, a relative one those folder names anywhere, and `app` never matches `apple`.
+`Chat_digger._connect` registers it as an SQL function.
+Timestamps stay in the index as recorded, UTC with milliseconds, so they compare correctly as text.
+`local_time_text` shows one in local time, ISO 8601 to the minute with its offset.
+`time_span` turns a typed date or date-time bound into a stored-form `[start, end)` as long as the bound's own precision, which makes an upper bound inclusive.
+
 ### `CCD_parsing.py` — corpus parsing
 Raw `.jsonl` records to structured rows, no SQLite or search logic.
 `parse_session_file` reads one session into a conversation row, block rows, file-event rows, and model-count rows.
 The model id is taken from `message.model` of each deduplicated assistant entry, carried onto that entry's block rows, and counted once per entry into the model-count rows.
 `iter_searchable_blocks` decides what text is indexable (user/assistant text, thinking, selected tool-input keys, tool results) and drops injected machine wrappers via `is_machine_wrapper`.
+It also drops CCD's own calls and their results (`is_ccd_call`), so a search never matches the call that ran it.
 Streamed assistant duplicates are collapsed on `message.id`.
+Each record's `cwd` passes through `display_path` before it is counted, so the drive-letter spellings of one folder count as one; block rows carry its `path_key`.
 `_extract_message_meta` reads a record's full metadata (model, usage, git branch, subagent/skill attribution, ...) on demand for `show --meta`; fields it does not name land in `Message_meta.extra` rather than being dropped.
 
 ### `CCD_search.py` — content search
 Matching primitives plus `Search_mixin`, the `Chat_digger` methods for tier-1 (`search_all`) and tier-2 (`search_in_conversation`) search.
 Both build a content predicate (`_content_predicate`: `instr` for substring, `GLOB` for wildcard) and combine it with shared filter clauses (`_filter_clauses`: block kind, role, model, project, workspace, date range).
+Path filters compare `path_key` forms, `--project` by equality and `--workspace` through the `in_workspace` SQL function; date bounds go through `time_span`.
 `all_terms` mode has its own path requiring every term in one entry.
+Tier 2 counts every match but builds snippets only for the first `EXCERPTS_PER_BLOCK` excerpts of each block, from at most its first `MATCHES_PER_BLOCK` matches; an excerpt is a run of matches whose context windows overlap or touch (`iter_excerpts`).
+`_build_snippet` walks outward from the match one line at a time, so its cost follows the context size, not the block size.
 Wildcard mode uses two different notions of matching on purpose: the tier-1 `GLOB` predicate is a whole-string membership test (does this block match at all — greediness is meaningless there), while counting occurrences (`count_occurrences`) and locating them for snippets (`_iter_match_positions`) go through `_wildcard_pattern`, a hand-rolled glob-to-regex translator that makes `*` non-greedy so several occurrences in one block stay separate instead of collapsing into one match spanning from the first anchor to the last.
 
 ### `CCD_tree.py` — conversation structure
@@ -48,6 +67,7 @@ Fork fingerprints, single-session trees, fork-family assembly, graph reduction, 
 `_reduce_to_graph` collapses a tree to a render-neutral `Graph` per the `--detail` level; `_reduce_to_forks` is the `short` level that keeps only real forks — both fold linear runs into `... N entries` nodes and record what was hidden in `Graph.notes`.
 `conversation_graph` reduces a fork family to that render-neutral `Graph` (the structured tree result, what `tree --format json` serialises); `render_graph` then emits it to one diagram format through `graph_to_mermaid` / `graph_to_dot`.
 `render_conversation_tree` is the convenience that does both.
+Node labels show local time through `local_time_text`.
 Rendering is deterministic, never model-generated.
 There is no `graph_json` diagram format: a graph as JSON is the universal `--format json` over the `Graph` dataclass.
 
@@ -56,13 +76,16 @@ Binds the three modules above to the SQLite index.
 `Chat_digger(Search_mixin, Tree_mixin)` owns connection/schema management (`_connect`, `_ensure_schema`, `_open_for_read`), indexing (`build_index`, `_assign_families`), and the handful of methods that don't belong to either mixin: `index_status`, `list_conversations`, `list_models`, `find_file_origin`, `get_chat_entry`.
 `build_index` is the only writer: it drops and recreates the schema and reloads every session via `CCD_parsing.parse_session_file` and `CCD_tree.read_tree_records`.
 Reads go through `_open_for_read`, which refuses an index whose stored version is not `CCD_INDEX_VERSION`.
+`_connect` registers `in_workspace` on every connection, so SQL can compare path keys.
 `get_chat_entry` (tier 3) re-reads the original `.jsonl` by `source_path` for full content — full message bodies are never stored in the index; `include_meta=True` costs nothing extra to the index and nothing when omitted.
+With a `block_index`, it returns that block whatever its kind.
 
 ## Module dependency order
 
-`CCD_api.py` ← `CCD_parsing.py` ← {`CCD_search.py`, `CCD_tree.py`} ← `CCD_engine.py` ← `CCD.py`.
+{`CCD_api.py`, `CCD_normalise.py`} ← `CCD_parsing.py` ← {`CCD_search.py`, `CCD_tree.py`} ← `CCD_engine.py` ← `CCD.py`.
 One direction only, no circular imports.
-`CCD_search.py` and `CCD_tree.py` do not depend on each other.
+`CCD_normalise.py` imports nothing from CCD, so any module may use it.
+`CCD_search.py` and `CCD_tree.py` do not depend on each other; `CCD.py` also takes the excerpt grouping from `CCD_search.py`.
 
 ## The index
 
@@ -71,10 +94,10 @@ Tables:
 
 | Table | Holds |
 |---|---|
-| `conversations` | One row per session, keyed by `session_id`: title, project path, time span, entry count, source file path, `family_id`. |
-| `blocks` | One row per searchable block — the search target. Carries the `model` of its assistant entry (`NULL` on user blocks). |
+| `conversations` | One row per session, keyed by `session_id`: title, project path in display form and its `project_key`, time span, entry count, source file path, `family_id`. |
+| `blocks` | One row per searchable block — the search target. Carries the `project_key` of its entry's working directory and the `model` of its assistant entry (`NULL` on user blocks). |
 | `conversation_models` | One row per session and model: the deduplicated assistant message count. Exact where `blocks` is not, since an assistant entry without searchable text has no block row. |
-| `file_events` | File create/edit/read events for `origin`. |
+| `file_events` | File create/edit/read events for `origin`, paths in display form. |
 | `tree_nodes` | Per-record `uuid` / `parent_uuid` / `fingerprint` for tree and family building. |
 | `meta` | Key/value pairs: `built_at`, `CCD_version`. |
 
@@ -106,5 +129,10 @@ The load-bearing facts, summarised here and covered in full in [Storage_format.m
 - **Deterministic diagrams** — a tree reduces to a neutral `Graph` and renders through one emitter, so output is reproducible and any collapsing is reported, never silent.
 - **File output is a flag, not a redirect** — `--out` writes UTF-8 with `\n` straight from Python, where a host shell's redirection (PowerShell `>`) would impose UTF-16/BOM/CRLF and corrupt diagram source or JSON.
   Diagnostics stay on stderr so the saved payload is never polluted.
+- **Store UTC, show local** — the index keeps Claude Code's UTC timestamps, which compare correctly as text.
+  Every displayed time is local ISO 8601 with its offset; JSON keeps UTC.
+- **One spelling per folder** — a path is stored in one display form and compared through one key, so a folder never splits by how it was recorded or typed.
+- **Every cut is reported** — a limit or cap that leaves something out says so in a note, the same rule the diagrams follow.
+- **CCD does not index itself** — its own calls stay out of the index, so a search never adds a match for its own query.
 
 For the finer reasoning behind fingerprints, fork detection, and what is indexed versus dropped, read the module and function docstrings in `CCD_parsing.py`, `CCD_search.py`, and `CCD_tree.py`.

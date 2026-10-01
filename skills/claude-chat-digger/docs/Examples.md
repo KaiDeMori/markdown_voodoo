@@ -19,7 +19,9 @@ python CCD.py search "webhook retry" --limit 5
 python CCD.py search "auth token refresh" --all          # all three words in one message
 python CCD.py search "migrat*" --mode wildcard
 python CCD.py search "deadlock" --role assistant --date-from 2025-01-01
+python CCD.py search "deadlock" --date-from 2025-01-01 --date-to 2025-01-31   # all of January, both ends included
 python CCD.py search "TODO" --workspace ~/projects/todo-app
+python CCD.py search "TODO" --workspace todo-app                             # any folder named todo-app
 python CCD.py search "refactor" --model claude-opus-5        # only answers written by this model
 ```
 
@@ -29,7 +31,7 @@ Sample output:
 'rate limiter' — 18 matches across 2 conversations
 
  1. [12] Add request throttling to the API gateway
-      when    : 2025-02-14 09:31
+      when    : 2025-02-14T09:31+01:00
       project : /home/user/projects/api-gateway
       session : 3f2a9c10-7b4e-4d61-8a2c-0e1f2a3b4c5d
       entries : 6 matched
@@ -42,7 +44,22 @@ python CCD.py in <session_id> "rate limiter"
 python CCD.py in <session_id> "retry" --context 4
 ```
 
+Sample output:
+
+```
+'rate limiter' in Add request throttling to the API gateway — 3f2a9c10-7b4e-4d61-8a2c-0e1f2a3b4c5d
+3 matches in 2 entries
+
+- user 2025-02-14T09:31+01:00  8c0e5b7a-2d41-4f9e-b3a6-71c2d9e04f18
+    [block 0/text] Can we put a >>>rate limiter<<< in front of the upload endpoint?
+
+- assistant 2025-02-14T09:32+01:00  d41f6a2c-93b8-4e05-a7d1-5c8e2b9f3a60
+    [block 0/text] A token-bucket >>>rate limiter<<< fits best here.
+      Each client gets its own bucket, and the >>>rate limiter<<< refills it every second.
+```
+
 Each result line `- <type> <time>  <uuid>` (type is `user` or `assistant`) carries the uuid to hand to `show`.
+Matches close together in one block share one excerpt.
 
 ## show — read a full message
 

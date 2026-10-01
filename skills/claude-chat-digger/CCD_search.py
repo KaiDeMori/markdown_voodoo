@@ -1,10 +1,12 @@
 """CCD content search — matching primitives plus the `Chat_digger` search methods.
 
 `Search_mixin` is mixed into `Chat_digger` (see `CCD_engine.py`); its methods rely on `self._open_for_read()` / `self.index_path`, which the concrete class provides.
+Tier 2 groups each block's matches into excerpts (`iter_excerpts`); `CCD.py` renders them with the same grouping.
 """
 
 from __future__ import annotations
 
+import itertools
 import re
 from typing import Optional
 
@@ -21,6 +23,10 @@ from CCD_api import (
     Search_role,
     Snippet,
 )
+from CCD_normalise import path_key, time_span
+
+EXCERPTS_PER_BLOCK = 3
+MATCHES_PER_BLOCK = 100
 
 
 def _allowed_block_kinds(options: Search_options) -> list[str]:
@@ -67,52 +73,96 @@ def count_occurrences(content: str, query: str, options: Search_options) -> int:
     return 1
 
 
-def _iter_match_positions(content: str, query: str, options: Search_options, cap: int = 3):
+def _iter_match_positions(content: str, query: str, options: Search_options):
+    """Every (position, length) of a match in one block, in order."""
     if options.match_mode is Match_mode.wildcard:
-        pattern = _wildcard_pattern(query, options.case_sensitive)
-        found = 0
-        for match in pattern.finditer(content):
-            if found >= cap:
-                return
+        for match in _wildcard_pattern(query, options.case_sensitive).finditer(content):
             yield match.start(), match.end() - match.start()
-            found += 1
         return
     haystack = content if options.case_sensitive else content.lower()
     needle = query if options.case_sensitive else query.lower()
     start = 0
-    found = 0
-    while found < cap:
+    while True:
         position = haystack.find(needle, start)
         if position < 0:
             return
         yield position, len(query)
         start = position + max(len(needle), 1)
-        found += 1
 
 
 def _build_snippet(content: str, position: int, length: int, context: Context_window, block_index: int, block_kind: str) -> Snippet:
+    """One match with its context window.
+
+    Line context walks outward from the match one line at a time, so the cost follows the context size, not the block size.
+    """
     if context.unit is Context_unit.lines:
-        line_start = content.rfind("\n", 0, position) + 1
-        line_end = content.find("\n", position)
-        if line_end < 0:
-            line_end = len(content)
-        preceding = content[:line_start].split("\n")[:-1][-context.before:] if line_start else []
-        following = content[line_end + 1:].split("\n")[:context.after] if line_end < len(content) else []
-        before = ("\n".join(preceding) + "\n" if preceding else "") + content[line_start:position]
-        after = content[position + length:line_end] + (("\n" + "\n".join(following)) if following else "")
+        window_start = content.rfind("\n", 0, position) + 1
+        for _ in range(context.before):
+            if window_start == 0:
+                break
+            window_start = content.rfind("\n", 0, window_start - 1) + 1
+        window_end = content.find("\n", position + length)
+        if window_end < 0:
+            window_end = len(content)
+        for _ in range(context.after):
+            if window_end >= len(content):
+                break
+            next_end = content.find("\n", window_end + 1)
+            window_end = len(content) if next_end < 0 else next_end
     else:
-        before = content[max(0, position - context.before):position]
-        after = content[position + length:position + length + context.after]
-    consumed = len(before) + length + len(after)
+        window_start = max(0, position - context.before)
+        window_end = min(len(content), position + length + context.after)
     return Snippet(
         block_index=block_index,
         block_type=block_kind,
-        before=before,
+        before=content[window_start:position],
         match=content[position:position + length],
-        after=after,
+        after=content[position + length:window_end],
         char_offset=position,
-        truncated=consumed < len(content),
+        truncated=window_start > 0 or window_end < len(content),
     )
+
+
+def snippet_window(snippet: Snippet) -> tuple[int, int]:
+    """The `[start, end)` character range of its block that a snippet shows."""
+    start = snippet.char_offset - len(snippet.before)
+    return start, snippet.char_offset + len(snippet.match) + len(snippet.after)
+
+
+def iter_excerpts(snippets, unit: Context_unit = Context_unit.lines):
+    """Group one block's snippets, in `char_offset` order, into excerpts: runs whose windows overlap or touch.
+
+    Line windows also join across the one newline between neighbouring lines, so adjacent lines read as one excerpt.
+    """
+    allowed_gap = 1 if unit is Context_unit.lines else 0
+    excerpt: list = []
+    excerpt_end = 0
+    for snippet in snippets:
+        start, end = snippet_window(snippet)
+        if excerpt and start > excerpt_end + allowed_gap:
+            yield excerpt
+            excerpt = []
+        if not excerpt:
+            excerpt_end = end
+        excerpt.append(snippet)
+        excerpt_end = max(excerpt_end, end)
+    if excerpt:
+        yield excerpt
+
+
+def _excerpt_snippets(row, positions, context: Context_window) -> list[Snippet]:
+    """The snippets of a block's first `EXCERPTS_PER_BLOCK` excerpts, taken from at most its first `MATCHES_PER_BLOCK` matches.
+
+    Snippets past either cap are never built, so a query that matches densely, like a single letter, stays cheap.
+    """
+    snippets = (
+        _build_snippet(row["content"], position, length, context, row["block_index"], row["block_kind"])
+        for position, length in itertools.islice(positions, MATCHES_PER_BLOCK)
+    )
+    kept: list[Snippet] = []
+    for excerpt in itertools.islice(iter_excerpts(snippets, context.unit), EXCERPTS_PER_BLOCK):
+        kept.extend(excerpt)
+    return kept
 
 
 class Search_mixin:
@@ -135,17 +185,17 @@ class Search_mixin:
             clauses.append("model = ?")
             params.append(options.model)
         if options.projects:
-            clauses.append("project_path IN (%s)" % ",".join("?" * len(options.projects)))
-            params.extend(options.projects)
+            clauses.append("project_key IN (%s)" % ",".join("?" * len(options.projects)))
+            params.extend(path_key(project) for project in options.projects)
         if options.workspace:
-            clauses.append("instr(lower(project_path), lower(?)) > 0")
-            params.append(options.workspace.rstrip("/\\"))
+            clauses.append("in_workspace(project_key, ?)")
+            params.append(path_key(options.workspace))
         if options.date_from:
             clauses.append("timestamp >= ?")
-            params.append(options.date_from)
+            params.append(time_span(options.date_from)[0])
         if options.date_to:
-            clauses.append("timestamp <= ?")
-            params.append(options.date_to)
+            clauses.append("timestamp < ?")
+            params.append(time_span(options.date_to)[1])
         return clauses, params
 
     def _run_block_query(self, predicate: str, predicate_params: list, options: Search_options, session_id: Optional[str]):
@@ -283,6 +333,7 @@ class Search_mixin:
                 )
             )
         matches.sort(key=lambda item: item.match_count, reverse=True)
+        total_conversations = len(matches)
         if options.offset:
             matches = matches[options.offset:]
         if options.limit is not None:
@@ -290,7 +341,7 @@ class Search_mixin:
         return Search_all_result(
             query=query,
             match_mode=options.match_mode,
-            total_conversations=len(matches),
+            total_conversations=total_conversations,
             total_matches=total_matches,
             conversations=matches,
         )
@@ -335,11 +386,9 @@ class Search_mixin:
                     role=row["role"],
                 )
                 entries[row["uuid"]] = match
-            for position, length in _iter_match_positions(row["content"], query, options):
-                match_count += 1
-                match.snippets.append(
-                    _build_snippet(row["content"], position, length, context, row["block_index"], row["block_kind"])
-                )
+            positions = list(_iter_match_positions(row["content"], query, options))
+            match_count += len(positions)
+            match.snippets.extend(_excerpt_snippets(row, positions, context))
         return self._assemble_conversation_result(session_id, query, options, entries, match_count)
 
     def _search_in_conversation_all_terms(self, session_id, query, options, context) -> Conversation_search_result:
@@ -374,12 +423,13 @@ class Search_mixin:
                 role=meta_row["role"],
             )
             for row in rows_by_entry[key]:
-                for term in unique_terms:
-                    for position, length in _iter_match_positions(row["content"], term, options):
-                        match_count += 1
-                        match.snippets.append(
-                            _build_snippet(row["content"], position, length, context, row["block_index"], row["block_kind"])
-                        )
+                positions = sorted(
+                    found
+                    for term in unique_terms
+                    for found in _iter_match_positions(row["content"], term, options)
+                )
+                match_count += len(positions)
+                match.snippets.extend(_excerpt_snippets(row, positions, context))
             entries[key] = match
         return self._assemble_conversation_result(session_id, query, options, entries, match_count)
 

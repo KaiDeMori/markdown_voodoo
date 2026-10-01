@@ -7,6 +7,7 @@ The public surface mirrors `CCD_api.py`.
 
 `Chat_digger` binds three concerns to the SQLite index: corpus parsing (`CCD_parsing`), content search (`CCD_search.Search_mixin`), and conversation structure — fork families, trees, diagrams (`CCD_tree.Tree_mixin`).
 This module holds connection/schema management, indexing, and the handful of methods (`find_file_origin`, `get_chat_entry`, ...) that don't belong to either mixin.
+Paths are stored in their display form plus a `project_key` (see `CCD_normalise`); every connection registers `in_workspace` so SQL can compare keys by whole folder names.
 """
 
 from __future__ import annotations
@@ -27,6 +28,7 @@ from CCD_api import (
     Model_usage,
     Search_options,
 )
+from CCD_normalise import display_path, in_workspace
 from CCD_parsing import (
     default_corpus_root,
     default_index_path,
@@ -39,7 +41,7 @@ from CCD_parsing import (
 from CCD_search import Search_mixin
 from CCD_tree import Tree_mixin, read_tree_records
 
-CCD_INDEX_VERSION = 4
+CCD_INDEX_VERSION = 5
 
 
 class Chat_digger(Search_mixin, Tree_mixin):
@@ -56,6 +58,7 @@ class Chat_digger(Search_mixin, Tree_mixin):
         self.index_path.parent.mkdir(parents=True, exist_ok=True)
         connection = sqlite3.connect(str(self.index_path))
         connection.row_factory = sqlite3.Row
+        connection.create_function("in_workspace", 2, in_workspace, deterministic=True)
         return connection
 
     @staticmethod
@@ -66,6 +69,7 @@ class Chat_digger(Search_mixin, Tree_mixin):
                 session_id TEXT PRIMARY KEY,
                 title TEXT,
                 project_path TEXT,
+                project_key TEXT,
                 started_at TEXT,
                 last_active_at TEXT,
                 entry_count INTEGER,
@@ -80,7 +84,7 @@ class Chat_digger(Search_mixin, Tree_mixin):
                 block_index INTEGER,
                 block_kind TEXT,
                 timestamp TEXT,
-                project_path TEXT,
+                project_key TEXT,
                 content TEXT,
                 model TEXT
             );
@@ -163,8 +167,8 @@ class Chat_digger(Search_mixin, Tree_mixin):
                 continue
             connection.execute(
                 "INSERT OR REPLACE INTO conversations "
-                "(session_id, title, project_path, started_at, last_active_at, entry_count, source_path) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "(session_id, title, project_path, project_key, started_at, last_active_at, entry_count, source_path) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 conversation_row,
             )
             connection.executemany("INSERT INTO blocks VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", block_rows)
@@ -364,7 +368,7 @@ class Chat_digger(Search_mixin, Tree_mixin):
             raise ValueError("uuid %s not found in session %s" % (uuid, session_id))
 
         message = record.get("message") or {}
-        blocks = self._reconstruct_blocks(message.get("content"), include_thinking)
+        blocks = self._reconstruct_blocks(message.get("content"), include_thinking or block_index is not None)
         if block_index is not None:
             blocks = [block for block in blocks if block.block_index == block_index]
         return Chat_entry_content(
@@ -372,7 +376,7 @@ class Chat_digger(Search_mixin, Tree_mixin):
             session_id=session_id,
             chat_entry_type=record.get("type"),
             timestamp=record.get("timestamp"),
-            project_path=record.get("cwd") or row["project_path"],
+            project_path=display_path(record.get("cwd")) or row["project_path"],
             blocks=blocks,
             role=message.get("role"),
             meta=_extract_message_meta(record) if include_meta else None,

@@ -4,7 +4,7 @@
 python CCD.py [global-options] <command> [arguments] [options]
 ```
 
-Run from the directory containing `CCD.py`.
+Give Python the path to `CCD.py`; the working directory does not matter.
 Pure Python 3 standard library; no install.
 Build the index once with `index` before any search.
 
@@ -52,6 +52,12 @@ For `tree` it is the render-neutral graph (`directed`, `nodes`, `edges`, `notes`
 
 Prefer `--out` over shell redirection: PowerShell `>` writes UTF-16 with a BOM and CRLF, which corrupts JSON and diagram source.
 The receipt and any notes are diagnostics on stderr, so the saved file — or a piped stdout — carries the payload only, valid JSON included.
+Every cut is reported as a note: `--limit` on `search`, `list`, and `families`, and the excerpt cap of `in`.
+
+## Times
+
+- Text output shows every time in local time, ISO 8601 to the minute with its offset: `2026-10-01T15:51+02:00`.
+- JSON keeps the stored UTC timestamps: `2026-10-01T13:51:30.123Z`.
 
 ## Search filters (`search`, `in`)
 
@@ -62,14 +68,26 @@ The receipt and any notes are diagnostics on stderr, so the saved file — or a 
 | `--case-sensitive` | off | Case-sensitive matching. |
 | `--role user\|assistant\|both` | `both` | Restrict by speaker. |
 | `--model <model_id>` | — | Restrict to assistant messages answered by this exact model id (e.g. `claude-opus-5`). User messages carry no model, so they never match. `models <session_id>` lists the ids present. |
-| `--project <path>` | — | One exact project path. |
-| `--workspace <folder>` | — | A project folder and everything under it (case-insensitive). |
-| `--date-from <YYYY-MM-DD>` | — | Lower time bound. |
-| `--date-to <YYYY-MM-DD>` | — | Upper time bound. |
+| `--project <path>` | — | One exact project folder, in any spelling (see Paths). |
+| `--workspace <folder>` | — | Whole folder names: a full path matches that folder and everything under it; a relative one (`app`, `dev/app`) matches those folder names anywhere in the path. `app` never matches `apple`. |
+| `--date-from <date>` | — | Earliest time, inclusive: a local date `YYYY-MM-DD` or an ISO 8601 date-time, local if it has no offset. |
+| `--date-to <date>` | — | Latest time, inclusive through the bound's own precision: a date covers the whole local day, `2026-10-01T15:51` the whole minute. |
 | `--thinking` | off | Also search assistant thinking blocks. |
 | `--tool-result` | off | Also search tool-result bodies. |
 | `--no-tool-input` | off | Do not search tool inputs (searched by default). |
-| `--limit N` | `20` | Cap the number of results. |
+| `--limit N` | `20` | Cap the number of conversations `search` lists; `in` ignores it. |
+
+### Paths (`--project`, `--workspace`)
+
+- Any spelling names the same folder: `\` or `/`, any letter case, a trailing slash, `~`, and Git Bash's `/c/...`.
+- CCD shows a path with its drive letter upper-cased, whatever case Claude Code recorded.
+
+### Excerpts (`in`)
+
+- Matches in one block whose context lines overlap or touch merge into one excerpt, each match marked `>>>…<<<`.
+- At most 3 excerpts and 100 matches per block are shown; a note counts the matches left out, and `show --block N` prints the whole block.
+- The header counts every match.
+- `--format json` keeps one snippet per shown match, with its offset.
 
 ### Wildcard matching (`--mode wildcard`)
 
@@ -94,12 +112,13 @@ The receipt and any notes are diagnostics on stderr, so the saved file — or a 
 ## Other defaults
 
 - `show --meta` prints model, token usage, git branch, Claude Code version, and the rest of the message envelope, read from the source `.jsonl` file (never the index) — off by default.
+- `show --block N` returns that block whatever its kind; `--thinking` matters only for a whole message.
 - `models` counts deduplicated assistant messages per model, read from the index; the order is most-used first.
-- `in --context` (lines of context per side): `2`.
+- `in --context` (lines of context per side): `2`; `0` shows the match line only.
 - `families --limit`: `40`.
   `list --limit`: `40`.
 - `origin --mode`: `all`.
   Recognised tools: `Read`, `Write`, `Edit`, `MultiEdit`, `NotebookEdit`.
-- Index format version: `4`.
+- Index format version: `5`.
   A search refuses to run against an index built by a different version — rebuild with `index`.
 - Output is always UTF-8.

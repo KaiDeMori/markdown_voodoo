@@ -37,7 +37,8 @@ This is **not reversible** and genuinely collides:
 - A single folder can hold records from **several** `cwd`s — the root plus any subdirectory entered during the session.
 
 Therefore CCD treats the `projects/<encoded>` folder as an **opaque bucket id used only to find files** and recovers the real project path from each record's `cwd`.
-In `parse_session_file` it counts every record's `cwd` and takes the most common as the conversation's `project_path`.
+In `parse_session_file` it upper-cases each record's drive letter (`display_path`), counts the results, and takes the most common as the conversation's `project_path`.
+Filters compare paths through `path_key`, which also ignores `/` versus `\` and letter case (see `CCD_normalise.py`).
 
 ## The record envelope
 
@@ -148,9 +149,10 @@ Title records carry only `{ type, session, aiTitle | customTitle }` — no `uuid
 
 ## Timestamps ("when")
 
-Every record has an ISO-8601 `timestamp`.
+Every record has an ISO-8601 `timestamp`, in UTC with milliseconds (`2026-10-01T13:51:30.123Z`).
 For "when did this word appear", CCD uses the timestamp of the **matching message record**, not the file's overall span — a single session can run across several days.
 The conversation's `started_at` / `last_active_at` are the min / max record timestamps.
+CCD stores them unchanged, because the fixed UTC form compares correctly as text, and shows them in local time (`local_time_text`).
 
 ## What CCD indexes, what it drops
 
@@ -171,6 +173,7 @@ Pure flags (`limit`, `offset`, `timeout`, …) are never indexed.
 Dropped or deduped to avoid false and duplicate hits:
 
 - **Machine wrappers inside `user` records** — a user text block that *begins* with one of these injected tags is treated as machinery, not something the user typed, and is skipped: `<ide_opened_file>`, `<ide_selection>`, `<command-name>`, `<command-message>`, `<command-args>`, `<system-reminder>`, `<local-command-stdout>`, `<local-command-stderr>`, `<user-prompt-submit-hook>`, `<session-start-hook>` (see `WRAPPER_PATTERN`).
+- **CCD's own calls** — a `Bash` / `PowerShell` `tool_use` that runs `CCD.py`, and the `tool_result` answering it, are skipped (`is_ccd_call`); indexed, every search would match the call that ran it, and the call's output would copy other conversations' text into this one.
 - **Streamed assistant duplicates** — the same logical message is written more than once during streaming; CCD dedups on `message.id` (falling back to `uuid`) and keeps the last copy.
 - **Titles** — used for labeling, never indexed as content (see above).
 - **Records of types CCD does not consume** — `last-prompt`, `queue-operation`, and the like are skipped, so a `lastPrompt` echo of a real user message is not indexed twice.

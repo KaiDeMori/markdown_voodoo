@@ -57,9 +57,14 @@ Nesting is kept for realism, not because CCD requires it.
   `CCD_Test.py` must add the skill root to `sys.path` before importing `CCD_engine`.
 - Pass and fail with plain `assert` plus a clear message; no `unittest` / `pytest`.
 
-## Out of scope for this first test
+## Coverage beyond the round trip
 
-Only the index/search round trip above.
+The same scaffold also checks:
 
-Not yet covered: `in`, `show`, `origin`, `tree`, `family`, `families`, `list`; forks, compaction, streamed duplicates, unknown record types.
-This scaffold — scratch corpus, scratch index, fixture injection — is meant to be reused once those follow.
+- every match mode, and the role, case, model, path, and date filters;
+- indexing details baked into the fixture: machine wrappers, streamed duplicates, model counts;
+- output: local times, merged `in` excerpts, `--context 0`, reported cuts, `show --block`.
+
+The fixture holds no CCD call, so the last test writes a small synthetic session for that check and rebuilds the index.
+
+Not yet covered: `origin`, `tree`, `family`; forks, compaction, unknown record types.

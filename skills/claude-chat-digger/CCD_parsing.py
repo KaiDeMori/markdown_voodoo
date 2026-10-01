@@ -1,6 +1,7 @@
 """CCD corpus parsing — raw `.jsonl` records to structured rows.
 
 Turns one session file into a conversation row, block rows, file-event rows, and per-model message counts (`parse_session_file`), and reads a record's full metadata on demand for `show --meta` (`_extract_message_meta`).
+CCD's own calls and their results stay out of the rows (`is_ccd_call`), so a search never matches the call that ran it.
 No SQLite or search logic lives here.
 """
 
@@ -14,6 +15,7 @@ from pathlib import Path
 from typing import Optional
 
 from CCD_api import MESSAGE_TYPES, Message_meta
+from CCD_normalise import display_path, path_key
 
 WRAPPER_PATTERN = re.compile(
     r"^\s*</?(?:ide_opened_file|ide_selection|command-name|command-message|command-args"
@@ -41,6 +43,13 @@ TOOL_INPUT_TEXT_KEYS = (
 FILE_TOOLS = ("Read", "Write", "Edit", "MultiEdit", "NotebookEdit")
 FILE_PATH_KEYS = ("file_path", "notebook_path", "path")
 EDIT_TOOLS = ("Edit", "MultiEdit", "NotebookEdit")
+
+SHELL_TOOLS = ("Bash", "PowerShell")
+# The command names must stay in step with `command_specs` in CCD.py.
+CCD_CALL_PATTERN = re.compile(
+    r"\bCCD\.py[\"']?\s+(?:--(?:index-path|corpus-root)(?:=|\s+)\S+\s+)*"
+    r"(?:index|status|search|in|show|models|origin|tree|family|families|list)\b"
+)
 
 TITLE_FALLBACK_LENGTH = 90
 
@@ -135,8 +144,20 @@ def iter_file_operations(record: dict):
             yield tool, file_path
 
 
-def iter_searchable_blocks(record: dict):
-    """Yield (block_index, block_kind, content) for the indexable parts of a record."""
+def is_ccd_call(block: dict) -> bool:
+    """Whether a `tool_use` block runs CCD itself; indexed, it would make every search match the call that ran it."""
+    if block.get("name") not in SHELL_TOOLS:
+        return False
+    tool_input = block.get("input")
+    command = tool_input.get("command") if isinstance(tool_input, dict) else None
+    return isinstance(command, str) and bool(CCD_CALL_PATTERN.search(command))
+
+
+def iter_searchable_blocks(record: dict, ccd_call_ids: set):
+    """Yield (block_index, block_kind, content) for the indexable parts of a record.
+
+    CCD's own calls are skipped together with their results: `ccd_call_ids` collects the ids of the calls seen so far in the session, so the `tool_result` answering one is recognised when it arrives.
+    """
     message = record.get("message")
     if not isinstance(message, dict):
         return
@@ -160,10 +181,16 @@ def iter_searchable_blocks(record: dict):
         elif block_type == "thinking":
             yield block_index, "thinking", block.get("thinking", "")
         elif block_type == "tool_use":
+            if is_ccd_call(block):
+                if block.get("id"):
+                    ccd_call_ids.add(block["id"])
+                continue
             text = extract_tool_input_text(block.get("input"))
             if text:
                 yield block_index, "tool_input", text
         elif block_type == "tool_result":
+            if block.get("tool_use_id") in ccd_call_ids:
+                continue
             text = extract_tool_result_text(block.get("content"))
             if text:
                 yield block_index, "tool_result", text
@@ -220,6 +247,7 @@ def parse_session_file(path: Path, file_history_root: Path):
 
     Streaming assistant duplicates (same message id) are collapsed to the last copy.
     The model id lives only on assistant records, at `message.model`; it is carried onto every block row of that entry and counted once per deduplicated entry, so a model-count row is exact even for an assistant entry with no searchable block.
+    Every recorded `cwd` passes through `display_path` before it is counted, so the drive-letter spellings of one folder count as one; block rows carry its `path_key`.
     Returns (conversation_row, block_rows, file_event_rows, model_count_rows) or (None, [], [], []).
     """
     session_id = path.stem
@@ -231,6 +259,7 @@ def parse_session_file(path: Path, file_history_root: Path):
     working_directories = collections.Counter()
     entries = {}
     backups_by_basename = {}
+    ccd_call_ids = set()
 
     with open(path, encoding="utf-8", errors="replace") as handle:
         for line in handle:
@@ -248,7 +277,7 @@ def parse_session_file(path: Path, file_history_root: Path):
                     started_at = timestamp
                 if last_active_at is None or timestamp > last_active_at:
                     last_active_at = timestamp
-            record_cwd = record.get("cwd")
+            record_cwd = display_path(record.get("cwd"))
             if record_cwd:
                 working_directories[record_cwd] += 1
             if record_type == "ai-title":
@@ -258,7 +287,7 @@ def parse_session_file(path: Path, file_history_root: Path):
             elif record_type == "file-history-snapshot":
                 _collect_backups(record, backups_by_basename)
             elif record_type in MESSAGE_TYPES:
-                blocks = list(iter_searchable_blocks(record))
+                blocks = list(iter_searchable_blocks(record, ccd_call_ids))
                 if first_user_prompt is None and record_type == "user":
                     for _, block_kind, content in blocks:
                         if block_kind == "text" and content.strip():
@@ -300,7 +329,7 @@ def parse_session_file(path: Path, file_history_root: Path):
                     block_index,
                     block_kind,
                     entry["timestamp"],
-                    entry_cwd,
+                    path_key(entry_cwd),
                     content,
                     entry["model"],
                 )
@@ -320,7 +349,7 @@ def parse_session_file(path: Path, file_history_root: Path):
                     session_id,
                     entry["uuid"],
                     entry["timestamp"],
-                    file_path,
+                    display_path(file_path),
                     basename,
                     tool,
                     classify_file_operation(tool, backup_version),
@@ -333,6 +362,7 @@ def parse_session_file(path: Path, file_history_root: Path):
         session_id,
         title,
         project_path,
+        path_key(project_path),
         started_at,
         last_active_at,
         len(entries),

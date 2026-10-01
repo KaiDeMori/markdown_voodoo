@@ -5,14 +5,19 @@ Usage:
     python CCD.py status
     python CCD.py search "<query>" [options]
     python CCD.py in <session_id> "<query>" [--context N] [options]
-    python CCD.py show <session_id> <uuid> [--block N] [--thinking]
+    python CCD.py show <session_id> <uuid> [--block N] [--thinking] [--meta]
     python CCD.py models <session_id>
+    python CCD.py origin <filename> [--mode all|created|edited|read] [--tool T,T]
+    python CCD.py tree <session_id> [--diagram-format mermaid|dot] [--detail D] [--max-nodes N] [--single]
+    python CCD.py family <session_id>
+    python CCD.py families [--workspace W] [--project P] [--limit N]
     python CCD.py list [--limit N]
 
 A command's required arguments are positional: they come first, in the order shown, immediately after the command and before any options.
 A value may begin with a dash (searching for "-X", say) and is taken literally, so no "--" escape is needed.
 
 Two output axes apply to every command: --out/-o FILE writes the result to a UTF-8 file and prints a one-line receipt; --format text|json chooses human-readable text (the default) or the full structured result as JSON.
+Text shows times in local time, ISO 8601 with offset; JSON keeps the stored UTC timestamps.
 """
 
 from __future__ import annotations
@@ -31,9 +36,12 @@ from CCD_api import (
     Match_mode,
     Search_options,
     Search_role,
+    Snippet,
     Tree_detail,
 )
 from CCD_engine import CCD_INDEX_VERSION, Chat_digger
+from CCD_normalise import local_time_text
+from CCD_search import EXCERPTS_PER_BLOCK, MATCHES_PER_BLOCK, iter_excerpts, snippet_window
 
 
 @dataclass
@@ -58,10 +66,50 @@ def force_utf8_output() -> None:
             reconfigure(encoding="utf-8", errors="replace")
 
 
-def format_when(timestamp: str) -> str:
-    if not timestamp:
-        return "?"
-    return timestamp.replace("T", " ")[:16]
+def cut_notes(shown: int, total: int, noun: str) -> list[str]:
+    """The note for a list that `--limit` cut short, so that a cut is never silent."""
+    if shown >= total:
+        return []
+    return ["showing the first %d of %d %s; raise --limit to see more" % (shown, total, noun)]
+
+
+def iter_entry_excerpts(snippets: list[Snippet]):
+    """A chat entry's snippets as excerpts, block by block."""
+    by_block: dict = {}
+    for snippet in snippets:
+        by_block.setdefault(snippet.block_index, []).append(snippet)
+    for block_index in sorted(by_block):
+        yield from iter_excerpts(sorted(by_block[block_index], key=lambda snippet: snippet.char_offset), Context_unit.lines)
+
+
+def render_excerpt(excerpt: list[Snippet]) -> str:
+    """One excerpt as text: its snippets' windows joined into one, every match marked `>>>…<<<`.
+
+    Neighbouring line windows are joined by the newline between them; overlapping matches share one mark.
+    """
+    first = excerpt[0]
+    text_start, text_end = snippet_window(first)
+    text = first.before + first.match + first.after
+    for snippet in excerpt[1:]:
+        start, end = snippet_window(snippet)
+        window = snippet.before + snippet.match + snippet.after
+        if start > text_end:
+            text += "\n" + window
+            text_end = end
+        elif end > text_end:
+            text += window[text_end - start:]
+            text_end = end
+    marks: list = []
+    for snippet in sorted(excerpt, key=lambda item: item.char_offset):
+        begin = snippet.char_offset - text_start
+        finish = begin + len(snippet.match)
+        if marks and begin < marks[-1][1]:
+            marks[-1][1] = max(marks[-1][1], finish)
+        else:
+            marks.append([begin, finish])
+    for begin, finish in reversed(marks):
+        text = text[:begin] + ">>>" + text[begin:finish] + "<<<" + text[finish:]
+    return text
 
 
 def _json_default(value):
@@ -154,7 +202,7 @@ def emit(output: Command_output, out_path, output_format: str) -> None:
 
 
 def command_index(digger: Chat_digger, arguments) -> Command_output:
-    print("Indexing %s ..." % digger.corpus_root)
+    print("Indexing %s ..." % digger.corpus_root, file=sys.stderr)
     stats = digger.build_index()
     summary = "%d conversations, %d blocks" % (stats.conversation_count, stats.chat_entry_count)
     body = "Indexed %d conversations, %d searchable blocks." % (stats.conversation_count, stats.chat_entry_count)
@@ -191,12 +239,13 @@ def command_search(digger: Chat_digger, arguments) -> Command_output:
     lines = ["'%s' — %s" % (result.query, summary), ""]
     for rank, conversation in enumerate(result.conversations, start=1):
         lines.append("%2d. [%d] %s" % (rank, conversation.match_count, conversation.title))
-        lines.append("      when    : %s" % format_when(conversation.last_active_at))
+        lines.append("      when    : %s" % local_time_text(conversation.last_active_at))
         lines.append("      project : %s" % conversation.project_path)
         lines.append("      session : %s" % conversation.session_id)
         lines.append("      entries : %d matched" % len(conversation.matched_chat_entries))
         lines.append("")
-    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=result)
+    notes = cut_notes(len(result.conversations), result.total_conversations, "conversations")
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, notes=notes, data=result)
 
 
 def command_in(digger: Chat_digger, arguments) -> Command_output:
@@ -206,12 +255,19 @@ def command_in(digger: Chat_digger, arguments) -> Command_output:
     summary = "%d matches in %d entries" % (result.match_count, len(result.chat_entries))
     lines = ["'%s' in %s — %s" % (result.query, result.title, result.session_id), summary, ""]
     for entry in result.chat_entries:
-        lines.append("- %s %s  %s" % (entry.chat_entry_type, format_when(entry.timestamp), entry.uuid))
-        for snippet in entry.snippets:
-            body = "%s>>>%s<<<%s" % (snippet.before, snippet.match, snippet.after)
-            lines.append("    [block %d/%s] %s" % (snippet.block_index, snippet.block_type, body.replace("\n", "\n      ")))
+        lines.append("- %s %s  %s" % (entry.chat_entry_type, local_time_text(entry.timestamp), entry.uuid))
+        for excerpt in iter_entry_excerpts(entry.snippets):
+            body = render_excerpt(excerpt)
+            lines.append("    [block %d/%s] %s" % (excerpt[0].block_index, excerpt[0].block_type, body.replace("\n", "\n      ")))
         lines.append("")
-    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=result)
+    shown = sum(len(entry.snippets) for entry in result.chat_entries)
+    notes = []
+    if shown < result.match_count:
+        notes.append(
+            "%d of %d matches shown, at most %d excerpts and %d matches per block; show --block prints a whole block"
+            % (shown, result.match_count, EXCERPTS_PER_BLOCK, MATCHES_PER_BLOCK)
+        )
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, notes=notes, data=result)
 
 
 def format_message_meta(meta) -> list[str]:
@@ -284,7 +340,7 @@ def command_show(digger: Chat_digger, arguments) -> Command_output:
         include_meta=arguments.meta,
     )
     lines = [
-        "%s %s  %s" % (entry.chat_entry_type, format_when(entry.timestamp), entry.uuid),
+        "%s %s  %s" % (entry.chat_entry_type, local_time_text(entry.timestamp), entry.uuid),
         "project: %s" % entry.project_path,
     ]
     if entry.meta:
@@ -312,7 +368,7 @@ def command_origin(digger: Chat_digger, arguments) -> Command_output:
     lines = ["'%s' — %s" % (arguments.filename, summary), ""]
     for origin in origins:
         version = "" if origin.version is None else "  v%d%s" % (origin.version, " [backup]" if origin.has_backup else "")
-        lines.append("%s  %-7s via %-12s %s" % (format_when(origin.timestamp), origin.operation, origin.tool, origin.file_path))
+        lines.append("%s  %-7s via %-12s %s" % (local_time_text(origin.timestamp), origin.operation, origin.tool, origin.file_path))
         lines.append("      %s  —  %s%s" % (origin.title, origin.session_id, version))
         lines.append("")
     data = {"filename": arguments.filename, "mode": arguments.mode, "count": len(origins), "events": origins}
@@ -338,21 +394,23 @@ def command_family(digger: Chat_digger, arguments) -> Command_output:
 
 
 def command_families(digger: Chat_digger, arguments) -> Command_output:
-    families = digger.list_families(workspace=arguments.workspace, project=arguments.project, limit=arguments.limit)
+    families = digger.list_families(workspace=arguments.workspace, project=arguments.project)
+    shown = families[: arguments.limit]
     scope = arguments.workspace or arguments.project
     summary = "%d fork %s" % (len(families), "family" if len(families) == 1 else "families")
     lines = ["%s%s" % (summary, " in %s" % scope if scope else ""), ""]
-    for family in families:
+    for family in shown:
         if family.session_count == 1:
             shape = "single conversation"
         else:
             shape = "%d sessions, %d forks" % (family.session_count, family.session_count - 1)
-        lines.append("%s  %s  %s" % (format_when(family.last_active_at), family.root_session_id, family.title))
+        lines.append("%s  %s  %s" % (local_time_text(family.last_active_at), family.root_session_id, family.title))
         lines.append("      %s · %d leaves · %d entries" % (shape, family.leaf_count, family.node_count))
         lines.append("      project : %s" % family.project_path)
         lines.append("")
-    data = {"scope": scope, "count": len(families), "families": families}
-    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, data=data)
+    data = {"scope": scope, "count": len(shown), "total": len(families), "families": shown}
+    notes = cut_notes(len(shown), len(families), "fork families")
+    return Command_output(body="\n".join(lines).rstrip("\n"), summary=summary, notes=notes, data=data)
 
 
 def command_tree(digger: Chat_digger, arguments) -> Command_output:
@@ -371,11 +429,12 @@ def command_list(digger: Chat_digger, arguments) -> Command_output:
     conversations = digger.list_conversations()
     shown = conversations[: arguments.limit]
     lines = [
-        "%s  %s  %s" % (format_when(conversation.last_active_at), conversation.session_id, conversation.title)
+        "%s  %s  %s" % (local_time_text(conversation.last_active_at), conversation.session_id, conversation.title)
         for conversation in shown
     ]
-    data = {"count": len(shown), "conversations": shown}
-    return Command_output(body="\n".join(lines), summary="%d conversations" % len(shown), data=data)
+    data = {"count": len(shown), "total": len(conversations), "conversations": shown}
+    notes = cut_notes(len(shown), len(conversations), "conversations")
+    return Command_output(body="\n".join(lines), summary="%d conversations" % len(shown), notes=notes, data=data)
 
 
 def add_in_options(parser: argparse.ArgumentParser) -> None:

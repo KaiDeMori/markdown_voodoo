@@ -25,6 +25,7 @@ from CCD_api import (
     Tree_detail,
     Tree_node,
 )
+from CCD_normalise import local_time_text, path_key
 from CCD_parsing import extract_tool_result_text
 
 TREE_PREVIEW_LENGTH = 40
@@ -178,9 +179,9 @@ def build_conversation_tree(session_id: str, records: list[dict]) -> Conversatio
 
 def _node_label(record: dict) -> str:
     who = record.get("role") or record.get("type") or "?"
-    when = (record.get("timestamp") or "")[11:16]
+    timestamp = record.get("timestamp")
     preview = record.get("preview") or ""
-    label = who + (" " + when if when else "")
+    label = who + (" " + local_time_text(timestamp) if timestamp else "")
     return label + (": " + preview if preview else "")
 
 
@@ -521,7 +522,7 @@ def build_family_tree(session_id: str, rows: list[dict], session_titles: dict) -
 
 
 def _mermaid_label(label: str) -> str:
-    return label.replace("\\", "/").replace('"', "'").replace("\n", " ")[:70]
+    return label.replace("\\", "/").replace('"', "'").replace("\n", " ")[:90]
 
 
 def graph_to_mermaid(graph: Graph) -> str:
@@ -612,11 +613,11 @@ class Tree_mixin:
         clauses = []
         params: list = []
         if project:
-            clauses.append("project_path = ?")
-            params.append(project)
+            clauses.append("project_key = ?")
+            params.append(path_key(project))
         if workspace:
-            clauses.append("instr(lower(project_path), lower(?)) > 0")
-            params.append(workspace.rstrip("/\\"))
+            clauses.append("in_workspace(project_key, ?)")
+            params.append(path_key(workspace))
         where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
 
         connection = self._open_for_read()
