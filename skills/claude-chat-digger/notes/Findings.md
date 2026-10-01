@@ -46,6 +46,16 @@ Delete an entry once it is fixed.
 - **Check:** with the fixture, `search_all("hyednesenc")` counts 5 matches and `search_in_conversation` on the same conversation counts 4, because the answer block holds 4 and is capped at 3.
 - **Status:** code reading only.
 
+## `in --context 0` prints every preceding line
+
+- **Where:** `_build_snippet` in `CCD_search.py`.
+- **Cause:** the preceding lines are sliced with `[-context.before:]`, and `[-0:]` is the whole list.
+- **Symptom:** `in --context 0` prints the whole block up to each match, and no line after it.
+  The option meant to shrink the output can inflate it to the size of the block.
+- **Fix idea:** take no preceding lines when `context.before` is 0, or slice with an explicit start index.
+- **Check:** with the fixture, `search_in_conversation` for `hyednesencic` with `Context_window(before=0, after=0)` returns a `before` that starts with the answer's first line.
+- **Status:** code reading only.
+
 ## `--date-to` excludes its own day
 
 - **Where:** `Search_mixin._filter_clauses`.
