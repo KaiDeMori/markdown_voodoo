@@ -7,6 +7,7 @@ CCD indexes past Claude Code conversations from `~/.claude/projects` into a loca
 - `CCD.py` — command-line entry point.
 - `CCD_engine.py` — the `Chat_digger` orchestrator, the public API.
 - `SKILL.md` — the skill definition and command reference.
+- `deploy.bat` — copies `SKILL.md`, the only installed file, to `~/.claude/skills/claude-chat-digger/`; the code and docs run from this folder.
 - `docs/` — full reference docs (`Usage.md`, `Examples.md`, `CCD_architecture.md`, `Storage_format.md`).
 
 ## Test harness

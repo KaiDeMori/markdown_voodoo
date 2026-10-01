@@ -80,9 +80,9 @@ A note also reports every cut, such as conversations beyond `--limit`.
 
 ## Full reference
 
-The bundled docs under the skill's home carry the complete detail — read them on demand rather than guessing:
+The docs in the skill's home carry the complete detail — read them on demand rather than guessing:
 
-- `docs/Usage.md` — every command, option, and default, as a terse reference.
-- `docs/Examples.md` — worked examples for each command.
-- `docs/CCD_architecture.md` — where each part of the code lives and why; read before changing CCD.
-- `docs/Storage_format.md` — how Claude Code stores conversations on disk and how CCD parses them.
+- `~/markdown_voodoo/skills/claude-chat-digger/docs/Usage.md` — every command, option, and default, as a terse reference.
+- `~/markdown_voodoo/skills/claude-chat-digger/docs/Examples.md` — worked examples for each command.
+- `~/markdown_voodoo/skills/claude-chat-digger/docs/CCD_architecture.md` — where each part of the code lives and why; read before changing CCD.
+- `~/markdown_voodoo/skills/claude-chat-digger/docs/Storage_format.md` — how Claude Code stores conversations on disk and how CCD parses them.
