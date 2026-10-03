@@ -1,6 +1,6 @@
 ---
 name: flow-state
-description: This skill teaches the agent how to reach a flow state that allows the agent to stream documents and images into the context in the most optimal way.
+description: This skill teaches the agent how to reach a flow state that allows the agent to stream documents and images into the context in an optimal way.
 ---
 
 # Flow state skil
