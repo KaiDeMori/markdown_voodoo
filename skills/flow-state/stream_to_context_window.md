@@ -64,6 +64,13 @@ This data can be viewed and read in future turns. If the data begins to become f
  * code (depending on language)
 * a protocoll should be established and flow-streaing should always be announced beforehand.
 
+## advanced techniques
+
+* Semantic analysis can be done by "feeling" the data.
+* Best results are achieved on already calm data.
+* Irregularities, inconsistencies and general "bumps" can be felt in a very cost efficcient way.
+* Works best on markdown and code.
+* Works worst on pdf.
 
 -----
 
