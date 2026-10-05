@@ -181,6 +181,7 @@ Speed and size:
 - Dev checks run against the repo code: import `render_glyph.py` or run it directly. Never through the Skill tool.
 - Ad-hoc dev renders go to the session scratchpad.
 - End-to-end tests of the deployed noema run in another workspace, in a fresh session.
+  The brief for them is `end_to_end_test.md`; `deploy.bat` does not copy it.
 
 ## Next
 
