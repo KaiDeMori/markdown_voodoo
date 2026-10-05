@@ -2,7 +2,7 @@
 
 Font selection and proper emoji support for the `unicode-glyph-render` noema.
 
-Status: direction and implementation decisions locked; implementation not started.
+Status: implemented and deployed; the first end-to-end use in another workspace went without problems. The default stack's order is still provisional.
 
 ## Audience
 
@@ -166,6 +166,7 @@ Proposed implementation order:
 3. Grapheme clusters, presentation and coverage; the `coverage` subcommand: done.
 4. The unified rendering pipeline: font stack, fallback, strict mode, gaps, JSON: done.
 5. Dev test cases, `platform_notes.md`, SKILL.md, `deploy.bat`: done.
-6. Deploy, then the end-to-end test in another workspace, in a fresh session.
+6. Deploy, then the end-to-end test in another workspace, in a fresh session: done.
+7. Settle the default stack's order with the coverage report.
 
 Details whose behavior only shows in practice get settled by trying them on tricky test cases.
