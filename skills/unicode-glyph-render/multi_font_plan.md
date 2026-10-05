@@ -2,7 +2,7 @@
 
 Font selection and proper emoji support for the `unicode-glyph-render` noema.
 
-Status: implemented and deployed; the first end-to-end use in another workspace went without problems. The default stack's order is still provisional.
+Status: implemented and deployed; the first end-to-end use in another workspace went without problems. The settled default stack order reaches the deployed copy with the next deploy.
 
 ## Audience
 
@@ -68,6 +68,8 @@ Letters match the decision tour.
   A font in `fonts/` that is not on the list is used only when `--font-stack` names it.
   BYOF fonts are never on the list.
   Why: adding a font never changes existing renders, and a fresh clone without BYOF fonts has a complete default stack.
+  The order: Go Noto Current-Regular, Go Noto CJKCore, Go Noto Ancient, Go Noto Europe Americas, Go Noto East Asia, Go Noto Asia Historical, Noto Color Emoji.
+  Each Go Noto adds the most codepoints the ones before it lack. Go Noto Africa Middle East and Go Noto South Asia add none; they stay in the catalog only.
 - **L. A gap is drawn as a magenta/black checkerboard.**
   The JSON lists every gap under `gaps`.
   Why: the checkerboard is unmistakable in the image, and the facts are in the JSON.
@@ -162,11 +164,11 @@ The facts below describe this feature's implementation.
 Proposed implementation order:
 
 1. Bring the fonts: done. Fira Code Retina via `font_installer.py`; Segoe UI Emoji as a BYOF font in `fonts/BYOF/`.
-2. Font catalog, kinds and a provisional default stack; the `fonts` subcommand: done.
+2. Font catalog, kinds and a first default stack; the `fonts` subcommand: done.
 3. Grapheme clusters, presentation and coverage; the `coverage` subcommand: done.
 4. The unified rendering pipeline: font stack, fallback, strict mode, gaps, JSON: done.
 5. Dev test cases, `platform_notes.md`, SKILL.md, `deploy.bat`: done.
 6. Deploy, then the end-to-end test in another workspace, in a fresh session: done.
-7. Settle the default stack's order with the coverage report.
+7. Settle the default stack's order with the coverage report: done. All 22 test images stayed byte-identical; cuneiform is now attributed to Go Noto Ancient.
 
 Details whose behavior only shows in practice get settled by trying them on tricky test cases.

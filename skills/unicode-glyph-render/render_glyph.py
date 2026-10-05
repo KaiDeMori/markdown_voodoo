@@ -43,13 +43,11 @@ FONT_CATALOG = {
 
 DEFAULT_STACK = (
     "Go Noto Current-Regular",
-    "Go Noto Europe Americas",
-    "Go Noto Africa Middle East",
-    "Go Noto South Asia",
-    "Go Noto East Asia",
     "Go Noto CJKCore",
-    "Go Noto Asia Historical",
     "Go Noto Ancient",
+    "Go Noto Europe Americas",
+    "Go Noto East Asia",
+    "Go Noto Asia Historical",
     "Noto Color Emoji",
 )
 
