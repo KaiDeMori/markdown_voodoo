@@ -154,6 +154,7 @@ Current implementation:
 - The `coverage` subcommand picks, with the default stack: ❤ → Go Noto Current-Regular, ❤️ → Noto Color Emoji; 1⃣ → Go Noto, 1️⃣ → Noto Color Emoji; 👍🏽, 🇩🇪, 👨‍👩‍👧 and 🏴󠁧󠁢󠁳󠁣󠁴󠁿 → Noto Color Emoji as one cluster each.
   With `--font-stack "Fira Code Retina, Segoe UI Emoji"`: text → Fira Code Retina, 😀 and ❤️ → Segoe UI Emoji, ꙮ → Go Noto Current-Regular as fallback.
   😀 followed by U+0301 has no single covering font and is split: Noto Color Emoji, then Go Noto Current-Regular.
+- `render_test_glyphs.py` renders all 22 cases into `test_images/`; the tag flag 🏴󠁧󠁢󠁳󠁣󠁴󠁿 renders as Scotland's saltire.
 - Renders match the `coverage` picks. With Fira Code Retina, `->` and `!=` form ligatures across clusters. With `--strict`, ꙮ becomes a gap. 👨‍👩‍👧 renders as one glyph; at `glyph` size, Noto Color Emoji is scaled up from 109 ppem and its edges are slightly soft.
 
 Fira Code:

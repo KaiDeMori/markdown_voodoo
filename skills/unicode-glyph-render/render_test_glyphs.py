@@ -1,4 +1,5 @@
 import importlib.util
+import sys
 from pathlib import Path
 
 MODULE_PATH = Path(__file__).parent / "render_glyph.py"
@@ -15,6 +16,44 @@ TEST_STRINGS = ("A⃕᷋͡⃣̸︭᪶", "f̡̬̻̯̠̩̮͙̓᷀̇᷄ͤ̒̄̈́͢o�
                 "⃣︭b̅̆⃠᪶ᷓa̳̲ŕ⃔͡")
 
 
+
+LABELED_TEST_GLYPHS = (
+    ("glyph_ZWJ_family", "U+1F468 U+200D U+1F469 U+200D U+1F467", None, False),
+    ("glyph_segoe_thumbs_up", "U+1F44D U+1F3FD", "Segoe UI Emoji", False),
+    ("glyph_multiocular_o", "U+A66E", None, False),
+)
+
+LABELED_TEST_STRINGS = (
+    (
+        "emoji_sequences",
+        "\U0001F468‍\U0001F469‍\U0001F467 \U0001F1E9\U0001F1EA "
+        "\U0001F3F4\U000E0067\U000E0062\U000E0073\U000E0063\U000E0074\U000E007F "
+        "\U0001F44D\U0001F3FD",
+        None,
+        False,
+    ),
+    (
+        "presentation_pairs",
+        "❤❤️ 1⃣1️⃣ ☺︎☺️",
+        None,
+        False,
+    ),
+    ("fira_ligatures", "a -> b != c => d === e <= f www", "Fira Code Retina", False),
+    (
+        "fira_segoe_fallback",
+        "a -> b \U0001F600❤️ꙮ",
+        "Fira Code Retina, Segoe UI Emoji",
+        False,
+    ),
+    (
+        "fira_segoe_strict_gap",
+        "a -> b \U0001F600❤️ꙮ",
+        "Fira Code Retina, Segoe UI Emoji",
+        True,
+    ),
+    ("split_cluster", "x\U0001F600́y", None, False),
+    ("invisible_ZWSP", "a​b", None, False),
+)
 
 OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
 
@@ -33,7 +72,24 @@ def describe_fonts(assignments):
     return ", ".join(dict.fromkeys(family_names))
 
 
+def render_labeled_glyph(glyph, font_stack, strict):
+    cluster = render_glyph.parse_cluster_argument(glyph)
+    return render_glyph.render_cluster_image(cluster, font_stack, strict)
+
+
+def render_labeled_case(label, render, text, font_stack_argument, strict):
+    try:
+        font_stack = render_glyph.resolve_font_stack(font_stack_argument)
+        image, assignments = render(text, font_stack, strict)
+    except Exception as error:
+        print(f"{label}: FAILED ({error})")
+        return
+    image.save(OUTPUT_DIRECTORY / f"{label}.png")
+    print(f"{label} -> {describe_fonts(assignments)}")
+
+
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")
     OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
     for glyph in TEST_GLYPHS:
         cluster = render_glyph.parse_cluster_argument(glyph)
@@ -44,6 +100,12 @@ def main():
         image, assignments = render_glyph.render_text_image(text)
         image.save(OUTPUT_DIRECTORY / f"{text}.png")
         print(f"{text} -> {describe_fonts(assignments)}")
+    for label, glyph, font_stack_argument, strict in LABELED_TEST_GLYPHS:
+        render_labeled_case(label, render_labeled_glyph, glyph, font_stack_argument, strict)
+    for label, text, font_stack_argument, strict in LABELED_TEST_STRINGS:
+        render_labeled_case(
+            label, render_glyph.render_text_image, text, font_stack_argument, strict
+        )
 
 
 if __name__ == "__main__":
