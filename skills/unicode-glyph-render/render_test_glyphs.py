@@ -26,11 +26,11 @@ def main():
         image, spec = render_glyph.render_codepoint(codepoint)
         label = glyph
         image.save(OUTPUT_DIRECTORY / f"{label}.png")
-        print(f"{label} -> {spec.path.name}")
+        print(f"{label} -> {spec.family_name}")
     for text in TEST_STRINGS:
         image, specs = render_glyph.render_string(text)
         image.save(OUTPUT_DIRECTORY / f"{text}.png")
-        print(f"{text} -> {', '.join(spec.path.name for spec in specs)}")
+        print(f"{text} -> {', '.join(spec.family_name for spec in specs)}")
 
 
 if __name__ == "__main__":

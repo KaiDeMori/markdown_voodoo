@@ -13,17 +13,45 @@ from fontTools.ttLib import TTFont
 from PIL import Image, ImageDraw, ImageFont
 
 FONT_DIRECTORY = Path(__file__).parent / "fonts"
-FONT_FILE_EXTENSIONS = (".ttf", ".otf", ".ttc")
-COLOR_TABLE_TAGS = ("CBDT", "COLR", "SVG ")
+BYOF_DIRECTORY_NAME = "BYOF"
+COLOR_TABLE_TAGS = ("CBDT", "COLR", "SVG ", "sbix")
 SURROGATE_RANGE = range(0xD800, 0xE000)
 DEFAULT_SINGLE_GLYPH_SIZE = 256
 DEFAULT_STRING_GLYPH_SIZE = 109
 
-LAST_RESORT_FONT_STEM = "lastresort-regular"
+FONT_CATALOG = {
+    "Go Noto Current-Regular": "GoNotoCurrent-Regular.ttf",
+    "Go Noto Europe Americas": "GoNotoEuropeAmericas.ttf",
+    "Go Noto Africa Middle East": "GoNotoAfricaMiddleEast.ttf",
+    "Go Noto South Asia": "GoNotoSouthAsia.ttf",
+    "Go Noto East Asia": "GoNotoEastAsia.ttf",
+    "Go Noto CJKCore": "GoNotoCJKCore.ttf",
+    "Go Noto Asia Historical": "GoNotoAsiaHistorical.ttf",
+    "Go Noto Ancient": "GoNotoAncient.ttf",
+    "Noto Color Emoji": "NotoColorEmoji.ttf",
+    "Last Resort": "LastResort-Regular.ttf",
+    "Fira Code Retina": "FiraCode-Retina.ttf",
+    "Segoe UI Emoji": "BYOF/seguiemj.ttf",
+}
+
+DEFAULT_STACK = (
+    "Go Noto Current-Regular",
+    "Go Noto Europe Americas",
+    "Go Noto Africa Middle East",
+    "Go Noto South Asia",
+    "Go Noto East Asia",
+    "Go Noto CJKCore",
+    "Go Noto Asia Historical",
+    "Go Noto Ancient",
+    "Noto Color Emoji",
+)
+
+LAST_RESORT_FAMILY = "Last Resort"
 
 
 @dataclass(frozen=True)
 class Font_spec:
+    family_name: str
     path: Path
     variation_instance_name: Optional[str] = None
     has_color: bool = False
@@ -60,24 +88,38 @@ def has_bitmap_glyphs(ttfont):
     return "CBDT" in ttfont
 
 
-@lru_cache(maxsize=None)
-def load_font_specs():
-    specs = []
-    for path in sorted(FONT_DIRECTORY.iterdir()):
-        if path.suffix.lower() not in FONT_FILE_EXTENSIONS:
-            continue
-        ttfont = open_font(path)
-        specs.append(
-            Font_spec(
-                path=path,
-                variation_instance_name=find_regular_variation_instance_name(ttfont),
-                has_color=has_color_glyphs(ttfont),
-                has_bitmap=has_bitmap_glyphs(ttfont),
-            )
+def describe_missing_font_file(family_name, relative_path):
+    if Path(relative_path).parts[0] == BYOF_DIRECTORY_NAME:
+        return (
+            f"'{family_name}' is a BYOF font: put {Path(relative_path).name} "
+            f"into {FONT_DIRECTORY / BYOF_DIRECTORY_NAME}"
         )
-    if not specs:
-        raise RuntimeError(f"no fonts found in {FONT_DIRECTORY}")
-    return tuple(specs)
+    return (
+        f"'{family_name}' needs {FONT_DIRECTORY / relative_path}; "
+        f"font_installer.py downloads it"
+    )
+
+
+@lru_cache(maxsize=None)
+def load_font_spec(family_name):
+    if family_name not in FONT_CATALOG:
+        raise ValueError(
+            f"unknown family name '{family_name}'; "
+            f"available: {', '.join(FONT_CATALOG)}"
+        )
+    path = FONT_DIRECTORY / FONT_CATALOG[family_name]
+    if not path.exists():
+        raise FileNotFoundError(
+            describe_missing_font_file(family_name, FONT_CATALOG[family_name])
+        )
+    ttfont = open_font(path)
+    return Font_spec(
+        family_name=family_name,
+        path=path,
+        variation_instance_name=find_regular_variation_instance_name(ttfont),
+        has_color=has_color_glyphs(ttfont),
+        has_bitmap=has_bitmap_glyphs(ttfont),
+    )
 
 
 @lru_cache(maxsize=None)
@@ -86,19 +128,11 @@ def load_cmap(path):
 
 
 def pick_font_for_codepoint(codepoint):
-    fallback_spec = None
-    for spec in load_font_specs():
-        if spec.path.stem.lower() == LAST_RESORT_FONT_STEM:
-            fallback_spec = spec
-            continue
+    for family_name in DEFAULT_STACK:
+        spec = load_font_spec(family_name)
         if codepoint in load_cmap(spec.path):
             return spec
-    if fallback_spec is not None:
-        return fallback_spec
-    raise RuntimeError(
-        f"no installed font covers U+{codepoint:04X} and no "
-        f"{LAST_RESORT_FONT_STEM} fallback is present in {FONT_DIRECTORY}"
-    )
+    return load_font_spec(LAST_RESORT_FAMILY)
 
 
 @lru_cache(maxsize=None)
@@ -332,6 +366,8 @@ def build_argument_parser():
         help="absolute path of the PNG file to write",
     )
 
+    subparsers.add_parser("fonts", help="list the fonts of the font catalog")
+
     return parser
 
 
@@ -349,28 +385,56 @@ def run_glyph_command(arguments):
     image, spec = render_codepoint(codepoint)
     label = format_codepoint_label(codepoint)
     image.save(arguments.output_file)
-    print(f"{label} -> {spec.path.name}", file=sys.stderr)
-    return {"codepoint": label, "fonts": [spec.path.name], "path": str(arguments.output_file)}
+    print(f"{label} -> {spec.family_name}", file=sys.stderr)
+    return {"codepoint": label, "fonts": [spec.family_name], "path": str(arguments.output_file)}
 
 
 def run_string_command(arguments):
     require_absolute_output_file(arguments.output_file)
     image, specs = render_string(arguments.text)
-    font_names = [spec.path.name for spec in specs]
+    font_names = [spec.family_name for spec in specs]
     image.save(arguments.output_file)
     print(f"{arguments.text} -> {', '.join(font_names)}", file=sys.stderr)
     return {"text": arguments.text, "fonts": font_names, "path": str(arguments.output_file)}
 
 
+def describe_font(family_name):
+    relative_path = FONT_CATALOG[family_name]
+    description = {
+        "family": family_name,
+        "file": relative_path,
+        "present": (FONT_DIRECTORY / relative_path).exists(),
+        "in_default_stack": family_name in DEFAULT_STACK,
+        "kind": None,
+    }
+    if description["present"]:
+        description["kind"] = "emoji" if load_font_spec(family_name).has_color else "text"
+    return description
+
+
+def run_fonts_command(arguments):
+    return {"fonts": [describe_font(family_name) for family_name in FONT_CATALOG]}
+
+
+def describe_command_argument(arguments):
+    if arguments.command == "glyph":
+        return arguments.codepoint
+    if arguments.command == "string":
+        return arguments.text
+    return arguments.command
+
+
 def main():
     arguments = build_argument_parser().parse_args()
-    command_argument = arguments.codepoint if arguments.command == "glyph" else arguments.text
+    command_argument = describe_command_argument(arguments)
+    command_runners = {
+        "glyph": run_glyph_command,
+        "string": run_string_command,
+        "fonts": run_fonts_command,
+    }
 
     try:
-        if arguments.command == "glyph":
-            result = run_glyph_command(arguments)
-        else:
-            result = run_string_command(arguments)
+        result = command_runners[arguments.command](arguments)
         print(json.dumps(result))
         return 0
     except Exception as error:

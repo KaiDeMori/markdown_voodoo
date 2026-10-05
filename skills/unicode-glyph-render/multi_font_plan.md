@@ -23,6 +23,7 @@ The leading use case is fidelity: rendering text the way a specific environment 
 
 - **Grapheme cluster:** a user-perceived character, as defined by Unicode (UAX #29). 👨‍👩‍👧, 🇩🇪 and 1️⃣ are one grapheme cluster each.
 - **Family name:** the font's family name from nameID 1, as classic Windows apps show it in their font menus. Example: "Fira Code Retina".
+- **Font catalog:** the dict in `render_glyph.py` that maps each family name to its file, relative to `fonts/`.
 - **BYOF font:** a font the repo never ships and never fetches. Everyone brings their own copy into `fonts/BYOF/`, which is git-ignored.
 - **Text font / emoji font:** a font with color glyph tables (CBDT, COLR, SVG, sbix) is an emoji font; every other font is a text font.
 - **Font stack:** an ordered list of family names.
@@ -41,7 +42,7 @@ The leading use case is fidelity: rendering text the way a specific environment 
    `glyph` renders exactly one grapheme cluster; `string` renders any number.
    Why: emoji sequences must reach the shaper as a whole.
 2. **Fonts are addressed by family name.**
-   The only font source is the bundled `fonts/` folder (BYOF: bring your own font).
+   The font catalog lists every usable font; its files live in `fonts/`.
 3. **A font stack works like CSS `font-family`.**
    For each grapheme cluster, the first family that covers it draws it.
 4. **The default stack is ordered deliberately.**
@@ -59,8 +60,8 @@ The leading use case is fidelity: rendering text the way a specific environment 
 
 Letters match the decision tour.
 
-- **H. Family names come from nameID 1.**
-  Among several files with the same family name, the Regular one is used.
+- **H. Family names are nameID 1 names.**
+  The font catalog maps each family name to exactly one file.
   Why: every style is reachable by name alone, without a weight option. It is the name Notepad++ shows.
 - **J. The default stack is an explicit list of family names in `render_glyph.py`.**
   A font in `fonts/` that is not on the list is used only when `--font-stack` names it.
@@ -71,9 +72,10 @@ Letters match the decision tour.
   Why: the checkerboard is unmistakable in the image, and the facts are in the JSON.
 - **M1. `--font-stack` takes one argument: family names separated by commas.**
   Whitespace around each name is trimmed. Quotes are not part of the syntax.
-  The registry rejects a font whose family name contains a comma, at load time.
+  Every family name in the font catalog is comma-free.
 - **M2. An unknown family name in `--font-stack` is an error.**
   The error lists the available family names.
+  A catalog entry whose file is missing is an error that names the file; for a BYOF font, it says where the file goes.
   Why: input errors fail; coverage falls back.
 - **P. The fonts to bring: Fira Code first, then Segoe UI Emoji.**
   Fira Code tests font stacks and ligatures.
@@ -88,10 +90,12 @@ These follow from the decisions and have no viable alternative.
 
 - **Grapheme clusters:** the `regex` module's `\X`. New dependency; verify its behavior once installed.
 - **Presentation rule:** U+FE0F means emoji, U+FE0E means text. Skin tone modifiers, flags and tag sequences mean emoji. Otherwise the first codepoint's `Emoji_Presentation` property decides. The property data comes from `regex` if it has it, otherwise from Unicode's `emoji-data.txt`, bundled.
-- **Registry:** scans `fonts/`, `fonts/proprietary/` and `fonts/BYOF/`. Other subfolders, such as `fonts/tmp/`, are not scanned.
+- **Font catalog:** adding a font means adding one line. The kind (text or emoji) is read from the file.
+  Why a catalog instead of scanning `fonts/`: fonts change only here, in the workshop, by our own hands.
 - **Coverage:** if no font covers the whole grapheme cluster, the cluster is split per codepoint.
 - **Last Resort:** never covers a whole grapheme cluster; it only provides stand-ins.
-- **Rendering:** one pipeline for `glyph` and `string`: HarfBuzz shaping, FreeType rasterization. The Pillow `ImageFont` path and the CBDT special case go away.
+- **Rendering:** one pipeline for `glyph` and `string`: HarfBuzz shaping, FreeType rasterization. The Pillow `ImageFont` path goes away.
+  - CBDT glyphs are decoded from the font's PNG data with fontTools, because the bundled FreeType has no PNG support.
   - Bitmap fonts use the nearest strike, scaled to the target size.
   - Target sizes stay 256 px (`glyph`) and 109 px (`string`), no longer tied to a strike.
   - COLRv0 through FreeType's `FT_LOAD_COLOR`. COLRv1 and SVG are not supported.
@@ -119,19 +123,20 @@ These follow from the decisions and have no viable alternative.
 
 Current implementation:
 
-- `pick_font_for_codepoint` takes the first font in alphabetical file order whose cmap covers the codepoint.
-  `LastResort-Regular` is used only when no other font covers the codepoint.
-- All GoNoto fonts sort before `NotoColorEmoji`, so characters with both a text and an emoji form (1, ©, ☀, ☺, ❤) always get a GoNoto text glyph.
-- U+200D (ZWJ) and U+20E3 (keycap) resolve to `GoNotoAfricaMiddleEast`.
-  U+FE0E and U+FE0F are covered only by `LastResort-Regular`.
+- The font catalog lists 12 families; every key matches its file's nameID 1. GoNotoCurrent's family name is "Go Noto Current-Regular".
+- `pick_font_for_codepoint` takes the first family of the provisional `DEFAULT_STACK` whose cmap covers the codepoint.
+  Last Resort is used only when no family of the default stack covers the codepoint.
+- The default stack lists the Go Notos before Noto Color Emoji, so characters with both a text and an emoji form (1, ©, ❤) get a Go Noto text glyph.
+- U+200D (ZWJ) and U+20E3 (keycap) resolve to Go Noto Current-Regular.
+  U+FE0E and U+FE0F are covered only by Last Resort.
 - `split_into_font_runs` starts a new run at every font change, so ZWJ sequences, keycaps and VS16 sequences reach HarfBuzz in pieces.
-- `glyph` accepts exactly one codepoint. No CLI option selects a font.
-- All 10 bundled fonts have distinct family names (nameID 1). GoNotoCurrent's family name is "Go Noto Current-Regular". None has nameID 16.
-- No bundled font is variable, and none has COLR, SVG or sbix.
-  The only emoji font is `NotoColorEmoji`: CBDT with a single strike at 109 ppem.
+- `glyph` accepts exactly one codepoint. No CLI option selects a font; Fira Code Retina and Segoe UI Emoji sit outside the default stack and wait for `--font-stack`.
+- The bundled FreeType (freetype-py's `libfreetype.dll`) has no PNG support: loading a Noto Color Emoji glyph fails with "unimplemented feature", and the DLL contains no libpng.
+  `string` therefore fails on every emoji drawn from Noto Color Emoji. `glyph` decodes CBDT glyphs with fontTools and works.
+- No catalog font is variable. Only Fira Code Retina carries nameID 16.
+- Noto Color Emoji is CBDT with a single strike at 109 ppem.
 - Go Noto Current's `.notdef` is a plain rectangle. Noto Color Emoji's `.notdef` is empty.
 - Libraries: FreeType 2.13.2, HarfBuzz 14.2.1 (uharfbuzz 0.55.0), fontTools 4.63.0, Pillow 12.3.0 without raqm. `regex` is not installed.
-- Until decision J is implemented, the alphabetical file order puts `FiraCode-Retina.ttf` first, so the repo copy draws Latin text in Fira Code Retina.
 
 Fira Code:
 
@@ -163,7 +168,7 @@ Segoe UI Emoji:
 Proposed implementation order:
 
 1. Bring the fonts: done. Fira Code Retina via `font_installer.py`; Segoe UI Emoji as a BYOF font in `fonts/BYOF/`.
-2. Registry: family names, kinds, the comma rule; the `fonts` subcommand.
+2. Font catalog, kinds and a provisional default stack; the `fonts` subcommand: done.
 3. Grapheme clusters, presentation and coverage; the `coverage` subcommand.
 4. The unified rendering pipeline: font stack, fallback, strict mode, gaps, JSON.
 5. Dev test cases, `platform_notes.md`, SKILL.md, `deploy.bat`.
