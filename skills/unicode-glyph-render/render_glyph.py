@@ -11,7 +11,7 @@ import freetype
 import regex
 import uharfbuzz as harfbuzz
 from fontTools.ttLib import TTFont
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 FONT_DIRECTORY = Path(__file__).parent / "fonts"
 BYOF_DIRECTORY_NAME = "BYOF"
@@ -19,6 +19,12 @@ COLOR_TABLE_TAGS = ("CBDT", "COLR", "SVG ", "sbix")
 SURROGATE_RANGE = range(0xD800, 0xE000)
 DEFAULT_SINGLE_GLYPH_SIZE = 256
 DEFAULT_STRING_GLYPH_SIZE = 109
+
+GAP_WIDTH_PER_EM = 0.6
+GAP_HEIGHT_PER_EM = 0.8
+GAP_CELLS_PER_EM = 8
+GAP_MAGENTA = (255, 0, 255, 255)
+GAP_BLACK = (0, 0, 0, 255)
 
 FONT_CATALOG = {
     "Go Noto Current-Regular": "GoNotoCurrent-Regular.ttf",
@@ -56,37 +62,32 @@ EMOJI_PRESENTATION_PATTERN = regex.compile(r"\p{Emoji_Presentation}")
 EMOJI_SEQUENCE_COMPONENT_PATTERN = regex.compile(
     r"[\p{Emoji_Modifier}\p{Regional_Indicator}\U000E0020-\U000E007F]"
 )
+CODEPOINT_SEQUENCE_PATTERN = regex.compile(
+    r"[uU]\+[0-9a-fA-F]{1,6}(?:\s+[uU]\+[0-9a-fA-F]{1,6})*"
+)
 
 
 @dataclass(frozen=True)
 class Font_spec:
     family_name: str
     path: Path
-    variation_instance_name: Optional[str] = None
     has_color: bool = False
     has_bitmap: bool = False
+
+
+@dataclass(frozen=True)
+class Cluster_assignment:
+    cluster: str
+    family_name: Optional[str]
+    codepoint_families: tuple = ()
+    fallback: bool = False
+    is_gap: bool = False
 
 
 def open_font(path):
     if path.suffix.lower() == ".ttc":
         return TTFont(path, fontNumber=0)
     return TTFont(path)
-
-
-def find_regular_variation_instance_name(ttfont):
-    if "fvar" not in ttfont:
-        return None
-    instances = ttfont["fvar"].instances
-    if not instances:
-        return None
-    name_table = ttfont["name"]
-    instance_names = [
-        name_table.getDebugName(instance.subfamilyNameID) for instance in instances
-    ]
-    for instance_name in instance_names:
-        if instance_name and instance_name.lower() == "regular":
-            return instance_name
-    return instance_names[0]
 
 
 def has_color_glyphs(ttfont):
@@ -125,7 +126,6 @@ def load_font_spec(family_name):
     return Font_spec(
         family_name=family_name,
         path=path,
-        variation_instance_name=find_regular_variation_instance_name(ttfont),
         has_color=has_color_glyphs(ttfont),
         has_bitmap=has_bitmap_glyphs(ttfont),
     )
@@ -148,9 +148,20 @@ def parse_font_stack(argument):
     return family_names
 
 
+def resolve_font_stack(argument):
+    if argument is None:
+        return DEFAULT_STACK
+    return parse_font_stack(argument)
+
+
 @lru_cache(maxsize=None)
 def load_cmap(path):
     return open_font(path).getBestCmap()
+
+
+@lru_cache(maxsize=None)
+def load_glyph_order(path):
+    return open_font(path).getGlyphOrder()
 
 
 def pick_font_for_codepoint(codepoint, font_stack=DEFAULT_STACK):
@@ -178,6 +189,16 @@ def determine_presentation(cluster):
 
 
 @lru_cache(maxsize=None)
+def load_hb_font(path):
+    with open(path, "rb") as file:
+        face = harfbuzz.Face(file.read())
+    font = harfbuzz.Font(face)
+    font.scale = (face.upem, face.upem)
+    harfbuzz.ot_font_set_funcs(font)
+    return font, face.upem
+
+
+@lru_cache(maxsize=None)
 def font_covers_cluster(family_name, cluster):
     hb_font, _ = load_hb_font(load_font_spec(family_name).path)
     buffer = harfbuzz.Buffer()
@@ -185,6 +206,16 @@ def font_covers_cluster(family_name, cluster):
     buffer.guess_segment_properties()
     harfbuzz.shape(hb_font, buffer)
     return all(info.codepoint != 0 for info in buffer.glyph_infos)
+
+
+def list_covering_families(cluster):
+    return [
+        family_name
+        for family_name in FONT_CATALOG
+        if family_name != LAST_RESORT_FAMILY
+        and font_file_is_present(family_name)
+        and font_covers_cluster(family_name, cluster)
+    ]
 
 
 def pick_family_for_cluster(cluster, font_stack):
@@ -208,125 +239,42 @@ def select_family_for_cluster(cluster, font_stack):
     return family_name, family_name is not None
 
 
-def describe_cluster_coverage(cluster, font_stack):
+def assign_cluster(cluster, font_stack, strict):
+    if strict:
+        family_name = pick_family_for_cluster(cluster, font_stack)
+        return Cluster_assignment(cluster, family_name, is_gap=family_name is None)
     family_name, fallback = select_family_for_cluster(cluster, font_stack)
-    description = {
-        "text": cluster,
-        "codepoints": [format_codepoint_label(ord(character)) for character in cluster],
-        "presentation": determine_presentation(cluster),
-        "covering_families": [
-            covering_family_name
-            for covering_family_name in FONT_CATALOG
-            if covering_family_name != LAST_RESORT_FAMILY
-            and font_file_is_present(covering_family_name)
-            and font_covers_cluster(covering_family_name, cluster)
-        ],
-        "font": family_name,
-        "fallback": fallback,
-    }
-    if family_name is None:
-        description["codepoint_fonts"] = [
-            pick_font_for_codepoint(ord(character), font_stack).family_name
-            for character in cluster
-        ]
-    return description
-
-
-@lru_cache(maxsize=None)
-def bitmap_strike_ppems(path):
-    return tuple(
-        strike.bitmapSizeTable.ppemY for strike in open_font(path)["CBLC"].strikes
+    if family_name is not None:
+        return Cluster_assignment(cluster, family_name, fallback=fallback)
+    codepoint_families = tuple(
+        pick_font_for_codepoint(ord(character), font_stack).family_name
+        for character in cluster
+    )
+    return Cluster_assignment(
+        cluster,
+        None,
+        codepoint_families=codepoint_families,
+        fallback=any(
+            codepoint_family not in font_stack for codepoint_family in codepoint_families
+        ),
     )
 
 
-def resolve_bitmap_strike_index(path, requested_size):
-    ppems = bitmap_strike_ppems(path)
-    return min(range(len(ppems)), key=lambda index: abs(ppems[index] - requested_size))
-
-
-@lru_cache(maxsize=None)
-def load_cbdt_strikes(path):
-    return open_font(path)["CBDT"].strikeData
-
-
-def load_bitmap_glyph_image(spec, codepoint):
-    glyph_name = load_cmap(spec.path)[codepoint]
-    strike_index = resolve_bitmap_strike_index(spec.path, DEFAULT_SINGLE_GLYPH_SIZE)
-    png_bytes = load_cbdt_strikes(spec.path)[strike_index][glyph_name].imageData
-    return Image.open(io.BytesIO(png_bytes)).convert("RGBA")
-
-
-def render_codepoint(codepoint):
-    spec = pick_font_for_codepoint(codepoint)
-    if spec.has_bitmap:
-        image = render_bitmap_codepoint(spec, codepoint)
-    else:
-        image = render_vector_codepoint(spec, codepoint)
-    return image, spec
-
-
-def render_bitmap_codepoint(spec, codepoint):
-    glyph_image = load_bitmap_glyph_image(spec, codepoint)
-    image = Image.new("RGB", glyph_image.size, "white")
-    image.paste(glyph_image, (0, 0), glyph_image)
-    return image
-
-
-def render_vector_codepoint(spec, codepoint):
-    character = chr(codepoint)
-    font = ImageFont.truetype(str(spec.path), size=DEFAULT_SINGLE_GLYPH_SIZE, index=0)
-    if spec.variation_instance_name is not None:
-        font.set_variation_by_name(spec.variation_instance_name)
-
-    measuring_draw = ImageDraw.Draw(Image.new("RGB", (1, 1)))
-    left, top, right, bottom = measuring_draw.textbbox(
-        (0, 0), character, font=font, embedded_color=spec.has_color
-    )
-
-    working_size = max(DEFAULT_SINGLE_GLYPH_SIZE, right - left, bottom - top)
-    image = Image.new("RGB", (working_size, working_size), "white")
-    draw = ImageDraw.Draw(image)
-    horizontal_offset = (working_size - (right - left)) / 2 - left
-    vertical_offset = (working_size - (bottom - top)) / 2 - top
-    draw.text(
-        (horizontal_offset, vertical_offset),
-        character,
-        font=font,
-        fill=(0, 0, 0),
-        embedded_color=spec.has_color,
-    )
-
-    return image
-
-
-@lru_cache(maxsize=None)
-def load_hb_font(path):
-    with open(path, "rb") as file:
-        face = harfbuzz.Face(file.read())
-    font = harfbuzz.Font(face)
-    font.scale = (face.upem, face.upem)
-    harfbuzz.ot_font_set_funcs(font)
-    return font, face.upem
-
-
-@lru_cache(maxsize=None)
-def load_freetype_face(path):
-    return freetype.Face(str(path))
-
-
-def split_into_font_runs(text):
+def split_into_runs(assignments):
     runs = []
-    current_spec = None
-    current_characters = []
-    for character in text:
-        spec = pick_font_for_codepoint(ord(character))
-        if spec != current_spec and current_characters:
-            runs.append((current_spec, "".join(current_characters)))
-            current_characters = []
-        current_spec = spec
-        current_characters.append(character)
-    if current_characters:
-        runs.append((current_spec, "".join(current_characters)))
+    for assignment in assignments:
+        if assignment.is_gap:
+            runs.append((None, assignment.cluster))
+            continue
+        if assignment.family_name is not None:
+            pieces = [(assignment.family_name, assignment.cluster)]
+        else:
+            pieces = list(zip(assignment.codepoint_families, assignment.cluster))
+        for family_name, text in pieces:
+            if runs and runs[-1][0] == family_name:
+                runs[-1] = (family_name, runs[-1][1] + text)
+            else:
+                runs.append((family_name, text))
     return runs
 
 
@@ -349,11 +297,52 @@ def shape_run(spec, text, pixel_size):
     ]
 
 
+@lru_cache(maxsize=None)
+def bitmap_strike_ppems(path):
+    return tuple(
+        strike.bitmapSizeTable.ppemY for strike in open_font(path)["CBLC"].strikes
+    )
+
+
+def resolve_bitmap_strike_index(path, requested_size):
+    ppems = bitmap_strike_ppems(path)
+    return min(range(len(ppems)), key=lambda index: abs(ppems[index] - requested_size))
+
+
+@lru_cache(maxsize=None)
+def load_cbdt_strikes(path):
+    return open_font(path)["CBDT"].strikeData
+
+
+@lru_cache(maxsize=None)
+def load_freetype_face(path):
+    return freetype.Face(str(path))
+
+
+def rasterize_bitmap_glyph(spec, glyph_index, pixel_size):
+    strike_index = resolve_bitmap_strike_index(spec.path, pixel_size)
+    strike = load_cbdt_strikes(spec.path)[strike_index]
+    glyph_name = load_glyph_order(spec.path)[glyph_index]
+    if glyph_name not in strike:
+        return None, 0, 0
+    bitmap_glyph = strike[glyph_name]
+    scale = pixel_size / bitmap_strike_ppems(spec.path)[strike_index]
+    image = Image.open(io.BytesIO(bitmap_glyph.imageData)).convert("RGBA")
+    if scale != 1:
+        scaled_size = (
+            max(1, round(image.width * scale)),
+            max(1, round(image.height * scale)),
+        )
+        image = image.resize(scaled_size, Image.LANCZOS)
+    metrics = bitmap_glyph.metrics
+    return image, metrics.BearingX * scale, metrics.BearingY * scale
+
+
 def convert_bitmap_to_image(bitmap):
     buffer = bytes(bitmap.buffer)
     if bitmap.pixel_mode == freetype.FT_PIXEL_MODE_BGRA:
         return Image.frombytes(
-            "RGBA", (bitmap.width, bitmap.rows), buffer, "raw", ("BGRA", bitmap.pitch, 1)
+            "RGBA", (bitmap.width, bitmap.rows), buffer, "raw", ("BGRa", bitmap.pitch, 1)
         )
     return Image.frombytes(
         "L", (bitmap.width, bitmap.rows), buffer, "raw", ("L", bitmap.pitch, 1)
@@ -361,6 +350,8 @@ def convert_bitmap_to_image(bitmap):
 
 
 def rasterize_glyph(spec, glyph_index, pixel_size):
+    if spec.has_bitmap:
+        return rasterize_bitmap_glyph(spec, glyph_index, pixel_size)
     face = load_freetype_face(spec.path)
     face.set_pixel_sizes(0, pixel_size)
     face.load_glyph(glyph_index, freetype.FT_LOAD_COLOR | freetype.FT_LOAD_RENDER)
@@ -370,18 +361,35 @@ def rasterize_glyph(spec, glyph_index, pixel_size):
     return convert_bitmap_to_image(bitmap), face.glyph.bitmap_left, face.glyph.bitmap_top
 
 
-def render_string(text):
-    pixel_size = DEFAULT_STRING_GLYPH_SIZE
-    shaped_runs = [
-        (spec, shape_run(spec, run_text, pixel_size))
-        for spec, run_text in split_into_font_runs(text)
-    ]
+def draw_gap_image(pixel_size):
+    width = round(pixel_size * GAP_WIDTH_PER_EM)
+    height = round(pixel_size * GAP_HEIGHT_PER_EM)
+    cell_size = max(2, pixel_size // GAP_CELLS_PER_EM)
+    image = Image.new("RGBA", (width, height), GAP_BLACK)
+    draw = ImageDraw.Draw(image)
+    for top in range(0, height, cell_size):
+        for left in range(0, width, cell_size):
+            if (top // cell_size + left // cell_size) % 2 == 0:
+                draw.rectangle(
+                    [left, top, left + cell_size - 1, top + cell_size - 1], fill=GAP_MAGENTA
+                )
+    return image
 
+
+def lay_out_runs(runs, pixel_size):
     placements = []
     pen_x = 0.0
     pen_y = 0.0
-    for spec, glyphs in shaped_runs:
-        for glyph_index, x_advance, y_advance, x_offset, y_offset in glyphs:
+    for family_name, run_text in runs:
+        if family_name is None:
+            gap_image = draw_gap_image(pixel_size)
+            placements.append((gap_image, pen_x, pen_y - gap_image.height))
+            pen_x += gap_image.width
+            continue
+        spec = load_font_spec(family_name)
+        for glyph_index, x_advance, y_advance, x_offset, y_offset in shape_run(
+            spec, run_text, pixel_size
+        ):
             glyph_image, bitmap_left, bitmap_top = rasterize_glyph(spec, glyph_index, pixel_size)
             if glyph_image is not None:
                 origin_x = pen_x + x_offset + bitmap_left
@@ -389,52 +397,141 @@ def render_string(text):
                 placements.append((glyph_image, origin_x, origin_y))
             pen_x += x_advance
             pen_y -= y_advance
+    return placements
 
-    margin = pixel_size // 8
-    if placements:
-        ink_left = min(origin_x for _, origin_x, _ in placements)
-        ink_top = min(origin_y for _, _, origin_y in placements)
-        ink_right = max(origin_x + glyph_image.width for glyph_image, origin_x, _ in placements)
-        ink_bottom = max(origin_y + glyph_image.height for glyph_image, _, origin_y in placements)
-    else:
-        ink_left = ink_top = 0.0
-        ink_right = ink_bottom = 0.0
 
-    canvas_width = max(pixel_size, round(ink_right - ink_left)) + margin * 2
-    canvas_height = max(pixel_size, round(ink_bottom - ink_top)) + margin * 2
-    image = Image.new("RGB", (canvas_width, canvas_height), "white")
+def measure_ink(placements):
+    if not placements:
+        return 0.0, 0.0, 0.0, 0.0
+    ink_left = min(origin_x for _, origin_x, _ in placements)
+    ink_top = min(origin_y for _, _, origin_y in placements)
+    ink_right = max(origin_x + glyph_image.width for glyph_image, origin_x, _ in placements)
+    ink_bottom = max(origin_y + glyph_image.height for glyph_image, _, origin_y in placements)
+    return ink_left, ink_top, ink_right, ink_bottom
 
-    shift_x = margin - ink_left
-    shift_y = margin - ink_top
+
+def compose_image(placements, canvas_size, shift_x, shift_y):
+    image = Image.new("RGB", canvas_size, "white")
     for glyph_image, origin_x, origin_y in placements:
-        draw_x = round(origin_x + shift_x)
-        draw_y = round(origin_y + shift_y)
+        position = (round(origin_x + shift_x), round(origin_y + shift_y))
         if glyph_image.mode == "RGBA":
-            image.paste(glyph_image, (draw_x, draw_y), glyph_image)
+            image.paste(glyph_image, position, glyph_image)
         else:
             black_fill = Image.new("RGB", glyph_image.size, (0, 0, 0))
-            image.paste(black_fill, (draw_x, draw_y), glyph_image)
+            image.paste(black_fill, position, glyph_image)
+    return image
 
-    return image, [spec for spec, _ in shaped_runs]
+
+def compose_line_image(placements, pixel_size):
+    margin = pixel_size // 8
+    ink_left, ink_top, ink_right, ink_bottom = measure_ink(placements)
+    canvas_width = max(pixel_size, round(ink_right - ink_left)) + margin * 2
+    canvas_height = max(pixel_size, round(ink_bottom - ink_top)) + margin * 2
+    return compose_image(
+        placements, (canvas_width, canvas_height), margin - ink_left, margin - ink_top
+    )
 
 
-def parse_codepoint_argument(argument):
-    if argument.lower().startswith("u+"):
-        codepoint = int(argument[2:], 16)
-    elif len(argument) == 1:
-        codepoint = ord(argument)
-    else:
-        raise ValueError(
-            f"'{argument}' is ambiguous — pass a single character or U+<HEX>"
-        )
+def compose_centered_image(placements, pixel_size):
+    ink_left, ink_top, ink_right, ink_bottom = measure_ink(placements)
+    ink_width = ink_right - ink_left
+    ink_height = ink_bottom - ink_top
+    side = max(pixel_size, round(ink_width), round(ink_height))
+    return compose_image(
+        placements,
+        (side, side),
+        (side - ink_width) / 2 - ink_left,
+        (side - ink_height) / 2 - ink_top,
+    )
 
-    if codepoint > 0x10FFFF or codepoint in SURROGATE_RANGE:
-        raise ValueError(f"'{argument}' is not a valid Unicode scalar value")
-    return codepoint
+
+def render_cluster_image(cluster, font_stack=DEFAULT_STACK, strict=False):
+    assignments = [assign_cluster(cluster, font_stack, strict)]
+    placements = lay_out_runs(split_into_runs(assignments), DEFAULT_SINGLE_GLYPH_SIZE)
+    return compose_centered_image(placements, DEFAULT_SINGLE_GLYPH_SIZE), assignments
+
+
+def render_text_image(text, font_stack=DEFAULT_STACK, strict=False):
+    assignments = [
+        assign_cluster(cluster, font_stack, strict)
+        for cluster in split_into_grapheme_clusters(text)
+    ]
+    placements = lay_out_runs(split_into_runs(assignments), DEFAULT_STRING_GLYPH_SIZE)
+    return compose_line_image(placements, DEFAULT_STRING_GLYPH_SIZE), assignments
 
 
 def format_codepoint_label(codepoint):
     return f"U+{codepoint:04X}"
+
+
+def parse_codepoint_label(label):
+    codepoint = int(label[2:], 16)
+    if codepoint > 0x10FFFF or codepoint in SURROGATE_RANGE:
+        raise ValueError(f"'{label}' is not a valid Unicode scalar value")
+    return codepoint
+
+
+def parse_cluster_argument(argument):
+    cluster = argument
+    if CODEPOINT_SEQUENCE_PATTERN.fullmatch(argument.strip()):
+        cluster = "".join(chr(parse_codepoint_label(label)) for label in argument.split())
+    clusters = split_into_grapheme_clusters(cluster)
+    if len(clusters) != 1:
+        raise ValueError(
+            f"'{argument}' is {len(clusters)} grapheme clusters; "
+            f"glyph takes exactly one, string takes any number"
+        )
+    return cluster
+
+
+def describe_cluster_assignment(assignment):
+    description = {
+        "text": assignment.cluster,
+        "codepoints": [format_codepoint_label(ord(character)) for character in assignment.cluster],
+        "presentation": determine_presentation(assignment.cluster),
+        "font": assignment.family_name,
+        "fallback": assignment.fallback,
+        "covered": not assignment.is_gap,
+    }
+    if assignment.codepoint_families:
+        description["codepoint_fonts"] = list(assignment.codepoint_families)
+    return description
+
+
+def describe_cluster_coverage(cluster, font_stack):
+    description = describe_cluster_assignment(assign_cluster(cluster, font_stack, strict=False))
+    description["covering_families"] = list_covering_families(cluster)
+    return description
+
+
+def describe_render_result(text, font_stack, assignments, output_file):
+    clusters = [describe_cluster_assignment(assignment) for assignment in assignments]
+    return {
+        "text": text,
+        "path": str(output_file),
+        "font_stack": list(font_stack),
+        "clusters": clusters,
+        "gaps": [
+            {"index": index, "text": cluster["text"], "codepoints": cluster["codepoints"]}
+            for index, cluster in enumerate(clusters)
+            if not cluster["covered"]
+        ],
+    }
+
+
+def add_rendering_arguments(parser):
+    parser.add_argument(
+        "--output-file",
+        required=True,
+        type=Path,
+        help="absolute path of the PNG file to write",
+    )
+    parser.add_argument("--font-stack", help="family names separated by commas")
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="draw gaps instead of falling back to the default stack",
+    )
 
 
 def build_argument_parser():
@@ -443,25 +540,16 @@ def build_argument_parser():
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    glyph_parser = subparsers.add_parser("glyph", help="render a single codepoint")
+    glyph_parser = subparsers.add_parser("glyph", help="render a single grapheme cluster")
     glyph_parser.add_argument(
-        "codepoint", help="e.g. U+1F600, or a single literal character"
+        "cluster",
+        help='one grapheme cluster: a literal, or codepoints like "U+0031 U+FE0F U+20E3"',
     )
-    glyph_parser.add_argument(
-        "--output-file",
-        required=True,
-        type=Path,
-        help="absolute path of the PNG file to write",
-    )
+    add_rendering_arguments(glyph_parser)
 
-    string_parser = subparsers.add_parser("string", help="render a shaped run of text")
+    string_parser = subparsers.add_parser("string", help="render a shaped line of text")
     string_parser.add_argument("text", help="the text to render")
-    string_parser.add_argument(
-        "--output-file",
-        required=True,
-        type=Path,
-        help="absolute path of the PNG file to write",
-    )
+    add_rendering_arguments(string_parser)
 
     subparsers.add_parser("fonts", help="list the fonts of the font catalog")
 
@@ -469,9 +557,7 @@ def build_argument_parser():
         "coverage", help="report which fonts cover each grapheme cluster"
     )
     coverage_parser.add_argument("text", help="the text to analyze")
-    coverage_parser.add_argument(
-        "--font-stack", help="family names separated by commas"
-    )
+    coverage_parser.add_argument("--font-stack", help="family names separated by commas")
 
     return parser
 
@@ -486,21 +572,19 @@ def require_absolute_output_file(output_file):
 
 def run_glyph_command(arguments):
     require_absolute_output_file(arguments.output_file)
-    codepoint = parse_codepoint_argument(arguments.codepoint)
-    image, spec = render_codepoint(codepoint)
-    label = format_codepoint_label(codepoint)
+    cluster = parse_cluster_argument(arguments.cluster)
+    font_stack = resolve_font_stack(arguments.font_stack)
+    image, assignments = render_cluster_image(cluster, font_stack, arguments.strict)
     image.save(arguments.output_file)
-    print(f"{label} -> {spec.family_name}", file=sys.stderr)
-    return {"codepoint": label, "fonts": [spec.family_name], "path": str(arguments.output_file)}
+    return describe_render_result(cluster, font_stack, assignments, arguments.output_file)
 
 
 def run_string_command(arguments):
     require_absolute_output_file(arguments.output_file)
-    image, specs = render_string(arguments.text)
-    font_names = [spec.family_name for spec in specs]
+    font_stack = resolve_font_stack(arguments.font_stack)
+    image, assignments = render_text_image(arguments.text, font_stack, arguments.strict)
     image.save(arguments.output_file)
-    print(f"{arguments.text} -> {', '.join(font_names)}", file=sys.stderr)
-    return {"text": arguments.text, "fonts": font_names, "path": str(arguments.output_file)}
+    return describe_render_result(arguments.text, font_stack, assignments, arguments.output_file)
 
 
 def describe_font(family_name):
@@ -522,9 +606,7 @@ def run_fonts_command(arguments):
 
 
 def run_coverage_command(arguments):
-    font_stack = DEFAULT_STACK
-    if arguments.font_stack is not None:
-        font_stack = parse_font_stack(arguments.font_stack)
+    font_stack = resolve_font_stack(arguments.font_stack)
     return {
         "text": arguments.text,
         "font_stack": list(font_stack),
@@ -537,13 +619,15 @@ def run_coverage_command(arguments):
 
 def describe_command_argument(arguments):
     if arguments.command == "glyph":
-        return arguments.codepoint
+        return arguments.cluster
     if arguments.command in ("string", "coverage"):
         return arguments.text
     return arguments.command
 
 
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
     arguments = build_argument_parser().parse_args()
     command_argument = describe_command_argument(arguments)
     command_runners = {
@@ -555,11 +639,11 @@ def main():
 
     try:
         result = command_runners[arguments.command](arguments)
-        print(json.dumps(result))
+        print(json.dumps(result, ensure_ascii=False))
         return 0
     except Exception as error:
         print(f"{command_argument}: {error}", file=sys.stderr)
-        print(json.dumps({"argument": command_argument, "error": str(error)}))
+        print(json.dumps({"argument": command_argument, "error": str(error)}, ensure_ascii=False))
         return 1
 
 

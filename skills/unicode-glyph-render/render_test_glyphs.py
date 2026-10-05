@@ -19,18 +19,29 @@ TEST_STRINGS = ("A⃕᷋͡⃣̸︭᪶", "f̡̬̻̯̠̩̮͙̓᷀̇᷄ͤ̒̄̈́͢o�
 OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
 
 
+def describe_fonts(assignments):
+    family_names = []
+    for assignment in assignments:
+        if assignment.is_gap:
+            family_names.append("gap")
+        elif assignment.family_name is not None:
+            family_names.append(assignment.family_name)
+        else:
+            family_names.extend(assignment.codepoint_families)
+    return ", ".join(dict.fromkeys(family_names))
+
+
 def main():
     OUTPUT_DIRECTORY.mkdir(parents=True, exist_ok=True)
     for glyph in TEST_GLYPHS:
-        codepoint = render_glyph.parse_codepoint_argument(glyph)
-        image, spec = render_glyph.render_codepoint(codepoint)
-        label = glyph
-        image.save(OUTPUT_DIRECTORY / f"{label}.png")
-        print(f"{label} -> {spec.family_name}")
+        cluster = render_glyph.parse_cluster_argument(glyph)
+        image, assignments = render_glyph.render_cluster_image(cluster)
+        image.save(OUTPUT_DIRECTORY / f"{glyph}.png")
+        print(f"{glyph} -> {describe_fonts(assignments)}")
     for text in TEST_STRINGS:
-        image, specs = render_glyph.render_string(text)
+        image, assignments = render_glyph.render_text_image(text)
         image.save(OUTPUT_DIRECTORY / f"{text}.png")
-        print(f"{text} -> {', '.join(spec.family_name for spec in specs)}")
+        print(f"{text} -> {describe_fonts(assignments)}")
 
 
 if __name__ == "__main__":
