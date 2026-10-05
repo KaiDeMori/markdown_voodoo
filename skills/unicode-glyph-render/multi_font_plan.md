@@ -33,6 +33,7 @@ The leading use case is fidelity: rendering text the way a specific environment 
 - **Fallback:** drawing a grapheme cluster with the default stack, because the given font stack does not cover it.
 - **Strict mode:** rendering without fallback.
 - **Gap:** in strict mode, a grapheme cluster that the given font stack does not cover.
+- **Invisible cluster:** a grapheme cluster made only of codepoints with Unicode's `Default_Ignorable_Code_Point` property, such as a lone variation selector, U+200B or U+00AD.
 - **Stand-in:** a Last Resort glyph, drawn for a single codepoint that no other font covers.
 
 ## Direction decisions
@@ -84,6 +85,10 @@ Letters match the decision tour.
   Nothing is ever taken out of the Windows folder.
   Proprietary material we deliberately redistribute, such as a future Apple emoji set, lives in `fonts/proprietary/`, with a note that the repo's MIT license does not cover it.
 
+- **R. An invisible cluster renders as nothing, and the JSON says so.**
+  Its JSON entry has `invisible: true`, `font: null` and `presentation: null`; it is never a gap.
+  Why: the image shows the look, which is nothing; the JSON carries the fact, which is "invisible", not a font name.
+
 ## Implementation notes
 
 These follow from the decisions and have no viable alternative.
@@ -105,7 +110,7 @@ These follow from the decisions and have no viable alternative.
   - `glyph` takes exactly one grapheme cluster: literal, or codepoints like `"U+0031 U+FE0F U+20E3"`. More than one grapheme cluster is an error that points to `string`.
   - `glyph` and `string` take `--font-stack` and `--strict`.
   - New subcommands: `fonts` (family names, files, kinds) and `coverage <text>` (per grapheme cluster: codepoints, presentation, covering families, and the family the font stack picks). `coverage` takes `--font-stack` as well.
-- **JSON:** UTF-8, with literal characters. Per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`; a split cluster has `font: null` and `codepoint_fonts`. Top level `text`, `path`, `font_stack`, `clusters`, `gaps`; each gap carries `index`, `text` and `codepoints`.
+- **JSON:** UTF-8, with literal characters. Per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`, `invisible`; a split cluster has `font: null` and `codepoint_fonts`. Top level `text`, `path`, `font_stack`, `clusters`, `gaps`; each gap carries `index`, `text` and `codepoints`.
   stderr carries error messages only.
 - **Dev test cases:** `render_test_glyphs.py` gains 👨‍👩‍👧, 🇩🇪, 🏴󠁧󠁢󠁳󠁣󠁴󠁿, 1⃣ vs 1️⃣, ❤ vs ❤️, ☺︎ vs ☺️ and 👍🏽, plus Fira Code ligatures.
 - **`platform_notes.md`:** verified library and font facts, one per entry: the claim in bold, the explanation, the primary source in brackets.
@@ -138,7 +143,7 @@ Current implementation:
 - Noto Color Emoji's CBDT glyphs are format 17 with small metrics. At 109 ppem, 😀 has BearingY 101 and advance 136, matching HarfBuzz's 2550/2048 em.
 - FreeType renders Segoe UI Emoji's COLRv0 glyphs in color, as premultiplied BGRA bitmaps.
 - Go Noto Current draws the text keycap 1⃣ misplaced: HarfBuzz substitutes `one.deva`, and U+20E3 (advance 0, left side bearing −422/1000) is centered on the pen after the digit, so the box covers the digit's right side and the next character. These are the font's own data; the pipeline places glyphs exactly as HarfBuzz and FreeType report them.
-- A cluster of only a variation selector, such as U+E0100 alone, counts as covered by Go Noto Current and renders invisible.
+- HarfBuzz alone would count an invisible cluster as covered by any font; decision R catches it first. `glyph U+E0100` renders a plain white 256 px square with `invisible: true`; U+200B between two letters adds nothing, even in strict mode.
 - No catalog font is variable. Only Fira Code Retina carries nameID 16.
 - Noto Color Emoji is CBDT with a single strike at 109 ppem.
 - Go Noto Current's `.notdef` is a plain rectangle. Noto Color Emoji's `.notdef` is empty.
