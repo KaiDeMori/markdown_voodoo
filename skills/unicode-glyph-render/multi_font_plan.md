@@ -153,6 +153,16 @@ The facts below describe this feature's implementation.
 - `render_test_glyphs.py` renders all 22 cases into `test_images/`; the tag flag 🏴󠁧󠁢󠁳󠁣󠁴󠁿 renders as Scotland's saltire.
 - Renders match the `coverage` picks. With Fira Code Retina, `->` and `!=` form ligatures across clusters. With `--strict`, ꙮ becomes a gap. 👨‍👩‍👧 renders as one glyph; at `glyph` size, Noto Color Emoji is scaled up from 109 ppem and its edges are slightly soft.
 
+Speed and size:
+
+- One call takes 0.4 to 1.1 s: `string Hello` 0.4 s, `glyph U+0041` 0.5 s, `coverage a` 0.5 s, `fonts` 0.6 s, `glyph U+1F600` 1.1 s.
+- An 81-character `string` makes a 4091 × 137 px image; scaled down to 2000 px wide, it stays legible.
+
+## Known issues
+
+- **Mixed-direction text renders right-to-left words backwards.** A run gets one direction, guessed from its first strong script: "Hello שלום world" is shaped `ltr`, so the Hebrew glyphs appear in logical order. Shaped alone, the same word gets `rtl` and the correct order. There is no bidi reordering.
+- **A newline does not break the line.** `\n` is a grapheme cluster that no font covers, so Last Resort's "BASIC LATIN" sign appears in the middle of the line.
+
 ## Testing
 
 - Dev checks run against the repo code: import `render_glyph.py` or run it directly. Never through the Skill tool.
