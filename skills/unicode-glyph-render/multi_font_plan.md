@@ -113,7 +113,7 @@ These follow from the decisions and have no viable alternative.
 - **JSON:** UTF-8, with literal characters. Per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`, `invisible`; a split cluster has `font: null` and `codepoint_fonts`. Top level `text`, `path`, `font_stack`, `clusters`, `gaps`; each gap carries `index`, `text` and `codepoints`.
   stderr carries error messages only.
 - **Dev test cases:** `render_test_glyphs.py` gains 👨‍👩‍👧, 🇩🇪, 🏴󠁧󠁢󠁳󠁣󠁴󠁿, 1⃣ vs 1️⃣, ❤ vs ❤️, ☺︎ vs ☺️ and 👍🏽, plus Fira Code ligatures.
-- **`platform_notes.md`:** verified library and font facts, one per entry: the claim in bold, the explanation, the primary source in brackets.
+- **`platform_notes.md`:** verified library and font facts, one per entry: the claim in bold, the explanation, the source in brackets. It holds every library and font fact; the plan holds only this feature's facts.
 - **SKILL.md:** rewritten for the new options. Its description says when to use the noema, not only what the commands do.
 - **`deploy.bat`:** following the repo's convention, for the end-to-end test loop.
 
@@ -130,46 +130,23 @@ These follow from the decisions and have no viable alternative.
 
 ## Verified facts
 
-Current implementation:
+Library and font behavior lives in [platform_notes.md](platform_notes.md).
+The facts below describe this feature's implementation.
 
-- The font catalog lists 12 families; every key matches its file's nameID 1. GoNotoCurrent's family name is "Go Noto Current-Regular".
+- The font catalog lists 12 families; every key matches its file's nameID 1. No catalog font is variable.
+- `font_installer.py` extracts `ttf/FiraCode-Retina.ttf` from Fira Code's release 6.2 zip.
 - `pick_font_for_codepoint` serves split clusters only: the given font stack, then the default stack, then Last Resort.
 - U+200D (ZWJ) and U+20E3 (keycap) resolve to Go Noto Current-Regular at codepoint level.
   U+FE0E and U+FE0F are covered only by Last Resort.
 - `split_into_runs` merges consecutive pieces with the same font into one shaping run.
 - `glyph` takes one grapheme cluster, literal or as a `U+` sequence; two clusters fail with a pointer to `string`.
-- The bundled FreeType (freetype-py's `libfreetype.dll`) has no PNG support: loading a Noto Color Emoji glyph fails with "unimplemented feature", and the DLL contains no libpng.
-  The pipeline decodes CBDT glyphs with fontTools, so `string` renders Noto Color Emoji.
-- Noto Color Emoji's CBDT glyphs are format 17 with small metrics. At 109 ppem, 😀 has BearingY 101 and advance 136, matching HarfBuzz's 2550/2048 em.
-- FreeType renders Segoe UI Emoji's COLRv0 glyphs in color, as premultiplied BGRA bitmaps.
-- Go Noto Current draws the text keycap 1⃣ misplaced: HarfBuzz substitutes `one.deva`, and U+20E3 (advance 0, left side bearing −422/1000) is centered on the pen after the digit, so the box covers the digit's right side and the next character. These are the font's own data; the pipeline places glyphs exactly as HarfBuzz and FreeType report them.
-- HarfBuzz alone would count an invisible cluster as covered by any font; decision R catches it first. `glyph U+E0100` renders a plain white 256 px square with `invisible: true`; U+200B between two letters adds nothing, even in strict mode.
-- No catalog font is variable. Only Fira Code Retina carries nameID 16.
-- Noto Color Emoji is CBDT with a single strike at 109 ppem.
-- Go Noto Current's `.notdef` is a plain rectangle. Noto Color Emoji's `.notdef` is empty.
-- Libraries: FreeType 2.13.2, HarfBuzz 14.2.1 (uharfbuzz 0.55.0), fontTools 4.63.0, Pillow 12.3.0 without raqm, regex 2026.9.29.
-- `regex`'s `\X` keeps ZWJ sequences, flags, tag flags, keycaps, presentation sequences, skin tones and Indic conjuncts whole.
-  `regex` offers `Emoji_Presentation`, `Emoji_Modifier`, `Regional_Indicator` and `Extended_Pictographic`.
-- HarfBuzz hides variation selectors a font lacks (U+FE0F, U+FE0E, U+E0100), so a cluster containing one counts as covered.
+- `string` renders Noto Color Emoji through the fontTools CBDT path.
+- Decision R catches an invisible cluster before HarfBuzz's coverage test. `glyph U+E0100` renders a plain white 256 px square with `invisible: true`; U+200B between two letters adds nothing, even in strict mode.
 - The `coverage` subcommand picks, with the default stack: ❤ → Go Noto Current-Regular, ❤️ → Noto Color Emoji; 1⃣ → Go Noto, 1️⃣ → Noto Color Emoji; 👍🏽, 🇩🇪, 👨‍👩‍👧 and 🏴󠁧󠁢󠁳󠁣󠁴󠁿 → Noto Color Emoji as one cluster each.
   With `--font-stack "Fira Code Retina, Segoe UI Emoji"`: text → Fira Code Retina, 😀 and ❤️ → Segoe UI Emoji, ꙮ → Go Noto Current-Regular as fallback.
   😀 followed by U+0301 has no single covering font and is split: Noto Color Emoji, then Go Noto Current-Regular.
 - `render_test_glyphs.py` renders all 22 cases into `test_images/`; the tag flag 🏴󠁧󠁢󠁳󠁣󠁴󠁿 renders as Scotland's saltire.
 - Renders match the `coverage` picks. With Fira Code Retina, `->` and `!=` form ligatures across clusters. With `--strict`, ꙮ becomes a gap. 👨‍👩‍👧 renders as one glyph; at `glyph` size, Noto Color Emoji is scaled up from 109 ppem and its edges are slightly soft.
-
-Fira Code:
-
-- The source is tonsky's release 6.2 (2021), `Fira_Code_v6.2.zip`; `font_installer.py` extracts `ttf/FiraCode-Retina.ttf` from it.
-- Only the static TTFs contain Retina. `woff/` and `woff2/` have no Retina file.
-- The variable font has no Retina instance (Light, Regular, Medium, SemiBold, Bold), and its nameID 1 is "Fira Code Light".
-- `FiraCode-Retina.ttf` carries nameID 1 "Fira Code Retina", nameID 16 "Fira Code", nameID 17 "Retina", weight class 450, license OFL 1.1 in nameID 13 and 14.
-- Its ligatures live in `calt`; there is no `liga` feature.
-- `shape_run` passes no features to HarfBuzz, and the default `calt` draws the ligatures: `->`, `!=`, `=>`, `===`, `<=`, `www` render as ligatures.
-
-Segoe UI Emoji:
-
-- `fonts/BYOF/seguiemj.ttf`: nameID 1 "Segoe UI Emoji", version 1.29, COLR version 0 with CPAL, 12189 glyphs.
-- Its license string (nameID 13) permits creating, displaying and printing content; it says nothing about redistribution.
 
 ## Testing
 
