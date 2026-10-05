@@ -94,17 +94,19 @@ These follow from the decisions and have no viable alternative.
   Why a catalog instead of scanning `fonts/`: fonts change only here, in the workshop, by our own hands.
 - **Coverage:** if no font covers the whole grapheme cluster, the cluster is split per codepoint.
 - **Last Resort:** never covers a whole grapheme cluster; it only provides stand-ins.
-- **Rendering:** one pipeline for `glyph` and `string`: HarfBuzz shaping, FreeType rasterization. The Pillow `ImageFont` path goes away.
+- **Rendering:** one pipeline for `glyph` and `string`: HarfBuzz shaping, FreeType rasterization.
   - Consecutive grapheme clusters drawn by the same font form one shaping run, so ligatures across clusters, such as Fira Code's `->`, still form.
   - CBDT glyphs are decoded from the font's PNG data with fontTools, because the bundled FreeType has no PNG support.
   - Bitmap fonts use the nearest strike, scaled to the target size.
-  - Target sizes stay 256 px (`glyph`) and 109 px (`string`), no longer tied to a strike.
-  - COLRv0 through FreeType's `FT_LOAD_COLOR`. COLRv1 and SVG are not supported.
+  - Target sizes stay 256 px (`glyph`) and 109 px (`string`), no longer tied to a strike. `glyph` centers the ink on a square canvas of at least 256 px.
+  - COLRv0 through FreeType's `FT_LOAD_COLOR`; FreeType's BGRA bitmaps are premultiplied and read with Pillow's raw mode `BGRa`.
+  - A gap is a magenta/black checkerboard, 0.6 em wide and 0.8 em tall with 8 cells per em, standing on the baseline.
 - **CLI:**
   - `glyph` takes exactly one grapheme cluster: literal, or codepoints like `"U+0031 U+FE0F U+20E3"`. More than one grapheme cluster is an error that points to `string`.
   - `glyph` and `string` take `--font-stack` and `--strict`.
   - New subcommands: `fonts` (family names, files, kinds) and `coverage <text>` (per grapheme cluster: codepoints, presentation, covering families, and the family the font stack picks). `coverage` takes `--font-stack` as well.
-- **JSON:** per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`. Top level `path`, `font_stack`, `clusters`, `gaps`.
+- **JSON:** UTF-8, with literal characters. Per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`; a split cluster has `font: null` and `codepoint_fonts`. Top level `text`, `path`, `font_stack`, `clusters`, `gaps`; each gap carries `index`, `text` and `codepoints`.
+  stderr carries error messages only.
 - **Dev test cases:** `render_test_glyphs.py` gains 👨‍👩‍👧, 🇩🇪, 🏴󠁧󠁢󠁳󠁣󠁴󠁿, 1⃣ vs 1️⃣, ❤ vs ❤️, ☺︎ vs ☺️ and 👍🏽, plus Fira Code ligatures.
 - **`platform_notes.md`:** verified library and font facts, one per entry: the claim in bold, the explanation, the primary source in brackets.
 - **SKILL.md:** rewritten for the new options. Its description says when to use the noema, not only what the commands do.
@@ -119,21 +121,24 @@ These follow from the decisions and have no viable alternative.
 - Emoji image sets (emoji-datasource): one mechanism would bring four vendor looks, Apple (what Signal shows), Google, Twitter and Facebook. They are bitmaps of 64 px, not fonts, so they need an extension of decision 2 and a second drawing path.
 - COLRv1 and SVG fonts.
 - Unicode names in the JSON.
+- Variable fonts: the pipeline draws a variable font's default instance.
 
 ## Verified facts
 
 Current implementation:
 
 - The font catalog lists 12 families; every key matches its file's nameID 1. GoNotoCurrent's family name is "Go Noto Current-Regular".
-- `pick_font_for_codepoint` takes the first family of the provisional `DEFAULT_STACK` whose cmap covers the codepoint.
-  Last Resort is used only when no family of the default stack covers the codepoint.
-- The default stack lists the Go Notos before Noto Color Emoji, so characters with both a text and an emoji form (1, ©, ❤) get a Go Noto text glyph.
-- U+200D (ZWJ) and U+20E3 (keycap) resolve to Go Noto Current-Regular.
+- `pick_font_for_codepoint` serves split clusters only: the given font stack, then the default stack, then Last Resort.
+- U+200D (ZWJ) and U+20E3 (keycap) resolve to Go Noto Current-Regular at codepoint level.
   U+FE0E and U+FE0F are covered only by Last Resort.
-- `split_into_font_runs` starts a new run at every font change, so ZWJ sequences, keycaps and VS16 sequences reach HarfBuzz in pieces.
-- `glyph` accepts exactly one codepoint. No CLI option selects a font; Fira Code Retina and Segoe UI Emoji sit outside the default stack and wait for `--font-stack`.
+- `split_into_runs` merges consecutive pieces with the same font into one shaping run.
+- `glyph` takes one grapheme cluster, literal or as a `U+` sequence; two clusters fail with a pointer to `string`.
 - The bundled FreeType (freetype-py's `libfreetype.dll`) has no PNG support: loading a Noto Color Emoji glyph fails with "unimplemented feature", and the DLL contains no libpng.
-  `string` therefore fails on every emoji drawn from Noto Color Emoji. `glyph` decodes CBDT glyphs with fontTools and works.
+  The pipeline decodes CBDT glyphs with fontTools, so `string` renders Noto Color Emoji.
+- Noto Color Emoji's CBDT glyphs are format 17 with small metrics. At 109 ppem, 😀 has BearingY 101 and advance 136, matching HarfBuzz's 2550/2048 em.
+- FreeType renders Segoe UI Emoji's COLRv0 glyphs in color, as premultiplied BGRA bitmaps.
+- Go Noto Current draws the text keycap 1⃣ misplaced: HarfBuzz substitutes `one.deva`, and U+20E3 (advance 0, left side bearing −422/1000) is centered on the pen after the digit, so the box covers the digit's right side and the next character. These are the font's own data; the pipeline places glyphs exactly as HarfBuzz and FreeType report them.
+- A cluster of only a variation selector, such as U+E0100 alone, counts as covered by Go Noto Current and renders invisible.
 - No catalog font is variable. Only Fira Code Retina carries nameID 16.
 - Noto Color Emoji is CBDT with a single strike at 109 ppem.
 - Go Noto Current's `.notdef` is a plain rectangle. Noto Color Emoji's `.notdef` is empty.
@@ -144,6 +149,7 @@ Current implementation:
 - The `coverage` subcommand picks, with the default stack: ❤ → Go Noto Current-Regular, ❤️ → Noto Color Emoji; 1⃣ → Go Noto, 1️⃣ → Noto Color Emoji; 👍🏽, 🇩🇪, 👨‍👩‍👧 and 🏴󠁧󠁢󠁳󠁣󠁴󠁿 → Noto Color Emoji as one cluster each.
   With `--font-stack "Fira Code Retina, Segoe UI Emoji"`: text → Fira Code Retina, 😀 and ❤️ → Segoe UI Emoji, ꙮ → Go Noto Current-Regular as fallback.
   😀 followed by U+0301 has no single covering font and is split: Noto Color Emoji, then Go Noto Current-Regular.
+- Renders match the `coverage` picks. With Fira Code Retina, `->` and `!=` form ligatures across clusters. With `--strict`, ꙮ becomes a gap. 👨‍👩‍👧 renders as one glyph; at `glyph` size, Noto Color Emoji is scaled up from 109 ppem and its edges are slightly soft.
 
 Fira Code:
 
@@ -159,10 +165,6 @@ Segoe UI Emoji:
 - `fonts/BYOF/seguiemj.ttf`: nameID 1 "Segoe UI Emoji", version 1.29, COLR version 0 with CPAL, 12189 glyphs.
 - Its license string (nameID 13) permits creating, displaying and printing content; it says nothing about redistribution.
 
-## To confirm
-
-- FreeType renders COLRv0 glyphs in color with `FT_LOAD_COLOR`.
-
 ## Testing
 
 - Dev checks run against the repo code: import `render_glyph.py` or run it directly. Never through the Skill tool.
@@ -176,7 +178,7 @@ Proposed implementation order:
 1. Bring the fonts: done. Fira Code Retina via `font_installer.py`; Segoe UI Emoji as a BYOF font in `fonts/BYOF/`.
 2. Font catalog, kinds and a provisional default stack; the `fonts` subcommand: done.
 3. Grapheme clusters, presentation and coverage; the `coverage` subcommand: done.
-4. The unified rendering pipeline: font stack, fallback, strict mode, gaps, JSON.
+4. The unified rendering pipeline: font stack, fallback, strict mode, gaps, JSON: done.
 5. Dev test cases, `platform_notes.md`, SKILL.md, `deploy.bat`.
 
 Details whose behavior only shows in practice get settled by trying them on tricky test cases.
