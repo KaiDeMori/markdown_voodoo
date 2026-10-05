@@ -1,34 +1,41 @@
 @echo off
 
+set "source=%~dp0"
 set "target=%USERPROFILE%\.claude\skills\unicode-glyph-render"
 
+echo Deploying to %target%
 mkdir "%target%\fonts\BYOF" 2>nul
-copy /y "%~dp0SKILL.md" "%target%\SKILL.md"
-copy /y "%~dp0render_glyph.py" "%target%\render_glyph.py"
-copy /y "%~dp0requirements.txt" "%target%\requirements.txt"
+call :copy_file SKILL.md
+call :copy_file render_glyph.py
+call :copy_file requirements.txt
 
-copy /y "%~dp0fonts\GoNotoCurrent-Regular.ttf" "%target%\fonts\GoNotoCurrent-Regular.ttf"
-copy /y "%~dp0fonts\GoNotoEuropeAmericas.ttf" "%target%\fonts\GoNotoEuropeAmericas.ttf"
-copy /y "%~dp0fonts\GoNotoAfricaMiddleEast.ttf" "%target%\fonts\GoNotoAfricaMiddleEast.ttf"
-copy /y "%~dp0fonts\GoNotoSouthAsia.ttf" "%target%\fonts\GoNotoSouthAsia.ttf"
-copy /y "%~dp0fonts\GoNotoEastAsia.ttf" "%target%\fonts\GoNotoEastAsia.ttf"
-copy /y "%~dp0fonts\GoNotoCJKCore.ttf" "%target%\fonts\GoNotoCJKCore.ttf"
-copy /y "%~dp0fonts\GoNotoAsiaHistorical.ttf" "%target%\fonts\GoNotoAsiaHistorical.ttf"
-copy /y "%~dp0fonts\GoNotoAncient.ttf" "%target%\fonts\GoNotoAncient.ttf"
-copy /y "%~dp0fonts\NotoColorEmoji.ttf" "%target%\fonts\NotoColorEmoji.ttf"
-copy /y "%~dp0fonts\LastResort-Regular.ttf" "%target%\fonts\LastResort-Regular.ttf"
-copy /y "%~dp0fonts\FiraCode-Retina.ttf" "%target%\fonts\FiraCode-Retina.ttf"
-if exist "%~dp0fonts\BYOF\seguiemj.ttf" (
-    copy /y "%~dp0fonts\BYOF\seguiemj.ttf" "%target%\fonts\BYOF\seguiemj.ttf"
+call :copy_file fonts\GoNotoCurrent-Regular.ttf
+call :copy_file fonts\GoNotoEuropeAmericas.ttf
+call :copy_file fonts\GoNotoAfricaMiddleEast.ttf
+call :copy_file fonts\GoNotoSouthAsia.ttf
+call :copy_file fonts\GoNotoEastAsia.ttf
+call :copy_file fonts\GoNotoCJKCore.ttf
+call :copy_file fonts\GoNotoAsiaHistorical.ttf
+call :copy_file fonts\GoNotoAncient.ttf
+call :copy_file fonts\NotoColorEmoji.ttf
+call :copy_file fonts\LastResort-Regular.ttf
+call :copy_file fonts\FiraCode-Retina.ttf
+if exist "%source%fonts\BYOF\seguiemj.ttf" (
+    call :copy_file fonts\BYOF\seguiemj.ttf
 ) else (
-    echo Segoe UI Emoji is a BYOF font: seguiemj.ttf is missing in fonts\BYOF, skipped
+    echo skipped fonts\BYOF\seguiemj.ttf - Segoe UI Emoji is a BYOF font and the file is missing
 )
 
 if not exist "%target%\.venv\Scripts\python.exe" (
     echo Creating the venv in %target%\.venv
-    "%~dp0.venv\Scripts\python.exe" -m venv "%target%\.venv"
+    "%source%.venv\Scripts\python.exe" -m venv "%target%\.venv"
 )
 echo Installing requirements
 "%target%\.venv\Scripts\python.exe" -m pip install --disable-pip-version-check --quiet -r "%target%\requirements.txt"
 
 pause
+exit /b
+
+:copy_file
+copy /y "%source%%~1" "%target%\%~1" >nul && (echo copied  %~1) || (echo FAILED  %~1)
+exit /b
