@@ -31,6 +31,7 @@ Any session may read and edit this notebook at any time, without asking.
   A scope like `skills/<name>` means the repo copy.
 - The preferred deploy mechanism is a `deploy.bat` in the skill's own folder that copies only the files and folders Claude reads, each named explicitly.
   Not every skill has one; `skills/handover-protocol-setup/deploy.bat` is the minimal example.
+- A deploy only copies; a file removed from a skill stays in its deployed copy until it is deleted there.
 - Dev checks call a skill's repo code directly.
   The Skill tool is reserved for end-to-end tests of the deployed skill, in another workspace, in a fresh session.
 - `C:\Users\devboese\Documents\_dev\_groundzero_\Aliens` is off limits; its content confuses every session.
