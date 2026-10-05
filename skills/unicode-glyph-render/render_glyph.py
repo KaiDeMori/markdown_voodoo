@@ -568,9 +568,29 @@ def describe_cluster_coverage(cluster, font_stack):
     return description
 
 
-def describe_render_result(text, font_stack, assignments, output_file):
+def describe_runs(assignments):
+    runs = []
+    for line_index, line_assignments in enumerate(split_into_lines(assignments)):
+        for family_name, text in split_into_runs(line_assignments):
+            if family_name is None:
+                continue
+            spec = load_font_spec(family_name)
+            glyph_order = load_glyph_order(spec.path)
+            shaped_glyphs = shape_run(spec, text, DEFAULT_STRING_GLYPH_SIZE)
+            runs.append(
+                {
+                    "line": line_index,
+                    "font": family_name,
+                    "text": text,
+                    "glyphs": [glyph_order[glyph_index] for glyph_index, *_ in shaped_glyphs],
+                }
+            )
+    return runs
+
+
+def describe_render_result(text, font_stack, assignments, output_file, include_glyphs=False):
     clusters = [describe_cluster_assignment(assignment) for assignment in assignments]
-    return {
+    result = {
         "text": text,
         "path": str(output_file),
         "font_stack": list(font_stack),
@@ -581,6 +601,9 @@ def describe_render_result(text, font_stack, assignments, output_file):
             if not cluster["covered"]
         ],
     }
+    if include_glyphs:
+        result["runs"] = describe_runs(assignments)
+    return result
 
 
 def add_rendering_arguments(parser):
@@ -595,6 +618,11 @@ def add_rendering_arguments(parser):
         "--strict",
         action="store_true",
         help="draw gaps instead of falling back to the default stack",
+    )
+    parser.add_argument(
+        "--glyphs",
+        action="store_true",
+        help="also report the glyph names of every shaping run (verbose)",
     )
 
 
@@ -648,7 +676,9 @@ def run_glyph_command(arguments):
     font_stack = resolve_font_stack(arguments.font_stack)
     image, assignments = render_cluster_image(cluster, font_stack, arguments.strict)
     image.save(arguments.output_file)
-    return describe_render_result(cluster, font_stack, assignments, arguments.output_file)
+    return describe_render_result(
+        cluster, font_stack, assignments, arguments.output_file, arguments.glyphs
+    )
 
 
 def run_string_command(arguments):
@@ -657,7 +687,9 @@ def run_string_command(arguments):
     font_stack = resolve_font_stack(arguments.font_stack)
     image, assignments = render_text_image(text, font_stack, arguments.strict)
     image.save(arguments.output_file)
-    return describe_render_result(text, font_stack, assignments, arguments.output_file)
+    return describe_render_result(
+        text, font_stack, assignments, arguments.output_file, arguments.glyphs
+    )
 
 
 def describe_font(family_name):

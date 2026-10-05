@@ -11,7 +11,7 @@ description: >-
 # unicode-glyph-render
 
 Shows what a human sees: text drawn in a font stack, plus the facts behind it.
-The JSON on stdout carries every fact; the PNG shows the look.
+The JSON on stdout carries every fact, glyph names on request; the PNG shows the look.
 Read the JSON first, then view the PNG with the Read tool.
 
 ## Commands
@@ -68,8 +68,21 @@ Each entry in `clusters` holds:
 On failure, stdout holds `{"argument": ..., "value": ..., "error": ...}` and the exit code is 1.
 `argument` names the failing argument (`--font-stack`, `--output-file`, `cluster` or `text`), and `value` echoes what was passed; both are `null` for an internal error.
 
+## Advanced: glyph names
+
+`--glyphs` (`glyph`, `string`) adds a top-level `runs` list: one entry per shaping run, with `line`, `font`, `text` and `glyphs`, the glyph names in the order HarfBuzz returns them.
+Use it to see what shaping did, for example whether `->` became a ligature: Fira Code Retina draws it as `hyphen_start.seq` and `greater_hyphen_end.seq`.
+Glyph names come from the font, and some fonts use meaningless names such as `glyph00123`.
+Every glyph is listed, so long texts produce long JSON; use it only when the glyph level matters.
+
 ## Good to know
 
 - The image follows the font's own data, weaknesses included. Example: Go Noto draws the text keycap 1⃣ with its box half a digit too far right, so the box covers most of the digit and reaches into the next character.
 - `glyph` draws at 256 px per em. Its square canvas is at least 256 px and grows to fit wider or taller ink, such as most emoji; nothing is clipped or scaled down.
+
+## Limitations
+
+- **No bidi reordering.** A line entirely in a right-to-left script, such as Hebrew or Arabic, renders correctly.
+  In a line that mixes directions, the parts in the other direction appear in typing order, even digits inside Hebrew: "שלום 123" shows the number as 321.
+  To see such text, render each direction's part as its own `string`.
 - Noto Color Emoji stores 109 px bitmaps; at `glyph` size they are scaled up and their edges are slightly soft. Segoe UI Emoji is vector-based and stays crisp.

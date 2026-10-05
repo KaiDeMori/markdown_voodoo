@@ -2,7 +2,7 @@
 
 Font selection and proper emoji support for the `unicode-glyph-render` noema.
 
-Status: implemented and deployed. The first end-to-end test (ten questions, SKILL.md only) succeeded; its findings are addressed in step 8, except ligatures in the JSON and bidi. The changes since the last deploy reach the deployed copy with the next deploy.
+Status: implemented and deployed. The first end-to-end test (ten questions, SKILL.md only) succeeded; its findings are addressed in steps 8 to 10. The changes since the last deploy reach the deployed copy with the next deploy.
 
 ## Audience
 
@@ -16,7 +16,7 @@ The leading use case is fidelity: rendering text the way a specific environment 
 
 ## Principles
 
-- **The JSON carries every fact; the image shows the look.** Claude reads the JSON exactly but sees images approximately, so nothing important may exist only in the image.
+- **The JSON carries every fact, glyph-level facts on request; the image shows the look.** Claude reads the JSON exactly but sees images approximately, so nothing important may exist only in the image. Glyph names are opt-in, because they cost a lot of JSON.
 - **Input errors fail; coverage falls back.** A wrong argument is the caller's mistake and fails immediately. A missing glyph is nobody's mistake; the noema falls back and reports it.
 
 ## Terms
@@ -88,6 +88,12 @@ Letters match the decision tour.
   Nothing is ever taken out of the Windows folder.
   Proprietary material we deliberately redistribute, such as a future Apple emoji set, lives in `fonts/proprietary/`, with a note that the repo's MIT license does not cover it.
 
+- **F2. Glyph names are opt-in and reported per shaping run.**
+  `--glyphs` adds `runs` to the JSON: per shaping run its `line`, `font`, `text` and glyph names. Without the option, the JSON holds no glyph names.
+  Why: ligatures and contextual forms are facts, but glyph names for every cluster would flood the JSON, especially for Arabic and Indic text, where shaping replaces nearly every glyph. Per run, no mapping from glyphs back to clusters is needed.
+- **B1. No bidi reordering, ever.**
+  Lines that mix directions stay a documented limitation in SKILL.md.
+  Why: no real use runs into it, and the cost would be a new dependency plus reordering logic.
 - **R. An invisible cluster renders as nothing, and the JSON says so.**
   Its JSON entry has `invisible: true`, `font: null` and `presentation: null`; it is never a gap.
   Why: the image shows the look, which is nothing; the JSON carries the fact, which is "invisible", not a font name.
@@ -117,6 +123,7 @@ These follow from the decisions and have no viable alternative.
   - An input error names the failing argument: `--font-stack`, `--output-file`, `cluster` or `text`.
   - New subcommands: `fonts` (family names, files, kinds) and `coverage <text>` (per grapheme cluster: codepoints, presentation, covering families, and the family the font stack picks). `coverage` takes `--font-stack` as well.
 - **JSON:** UTF-8, with literal characters. Per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`, `invisible`, `line_break`; a split cluster has `font: null` and `codepoint_fonts`. Top level `text`, `path`, `font_stack`, `clusters`, `gaps`; each gap carries a 0-based `index`, `text` and `codepoints`.
+  With `--glyphs`, the top level also holds `runs`.
   An error is `{"argument", "value", "error"}`; `argument` and `value` are `null` for an internal error.
   stderr carries error messages only.
 - **Dev test cases:** `render_test_glyphs.py` gains 👨‍👩‍👧, 🇩🇪, 🏴󠁧󠁢󠁳󠁣󠁴󠁿, 1⃣ vs 1️⃣, ❤ vs ❤️, ☺︎ vs ☺️ and 👍🏽, plus Fira Code ligatures.
@@ -163,9 +170,11 @@ Speed and size:
 - One call takes 0.4 to 1.1 s: `string Hello` 0.4 s, `glyph U+0041` 0.5 s, `coverage a` 0.5 s, `fonts` 0.6 s, `glyph U+1F600` 1.1 s.
 - An 81-character `string` makes a 4091 × 137 px image; scaled down to 2000 px wide, it stays legible.
 
-## Known issues
+## Limitations
 
-- **Mixed-direction text renders right-to-left words backwards.** A run gets one direction, guessed from its first strong script: "Hello שלום world" is shaped `ltr`, so the Hebrew glyphs appear in logical order. Shaped alone, the same word gets `rtl` and the correct order. There is no bidi reordering.
+- **No bidi reordering (decision B1).** A run gets one direction, guessed from its first strong script.
+  A line entirely in a right-to-left script renders correctly: "שלום עולם" and "سلام" come out in visual order, Arabic letter forms and the lam-alef ligature included.
+  A mixed line does not: in "Hello שלום world" the Hebrew appears in typing order, and in "שלום 123" the number reads 321.
 
 ## Testing
 
@@ -185,6 +194,7 @@ Proposed implementation order:
 6. Deploy, then the end-to-end test in another workspace, in a fresh session: done.
 7. Settle the default stack's order with the coverage report: done. All 22 test images stayed byte-identical; cuneiform is now attributed to Go Noto Ancient.
 8. Fixes from the first end-to-end report: SKILL.md clarifications, errors that name the failing argument, the `U+` form for `string` and `coverage`, line breaks: done. All 22 earlier test images stayed byte-identical; two new cases cover the `U+` form and line breaks.
-9. Open from the same report: ligatures in the JSON (a decision) and bidi (a task of its own).
+9. Ligatures in the JSON (F2): done, as opt-in glyph names per shaping run.
+10. Bidi (B1): dropped for good; lines that mix directions are a documented limitation.
 
 Details whose behavior only shows in practice get settled by trying them on tricky test cases.

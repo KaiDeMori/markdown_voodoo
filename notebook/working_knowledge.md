@@ -22,6 +22,7 @@ Any session may read and edit this notebook at any time, without asking.
   A fragment is not an instruction; wait for the rest or ask.
 - When data is deleted, the wording is always "delete".
 - Whenever possible, wording states what is the case.
+- We build what a real use runs into; what no use runs into gets documented as a limitation.
 - `CLAUDE.md` holds only the reference to this notebook; writing it needs a `[GRANTED]`.
 
 ## Environment
