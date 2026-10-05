@@ -26,7 +26,7 @@ LABELED_TEST_GLYPHS = (
 LABELED_TEST_STRINGS = (
     (
         "emoji_sequences",
-        "\U0001F468‍\U0001F469‍\U0001F467 \U0001F1E9\U0001F1EA "
+        "\U0001F468\U0000200D\U0001F469\U0000200D\U0001F467 \U0001F1E9\U0001F1EA "
         "\U0001F3F4\U000E0067\U000E0062\U000E0073\U000E0063\U000E0074\U000E007F "
         "\U0001F44D\U0001F3FD",
         None,
@@ -34,25 +34,28 @@ LABELED_TEST_STRINGS = (
     ),
     (
         "presentation_pairs",
-        "❤❤️ 1⃣1️⃣ ☺︎☺️",
+        "\U00002764\U00002764\U0000FE0F 1\U000020E31\U0000FE0F\U000020E3 "
+        "\U0000263A\U0000FE0E\U0000263A\U0000FE0F",
         None,
         False,
     ),
     ("fira_ligatures", "a -> b != c => d === e <= f www", "Fira Code Retina", False),
     (
         "fira_segoe_fallback",
-        "a -> b \U0001F600❤️ꙮ",
+        "a -> b \U0001F600\U00002764\U0000FE0F\U0000A66E",
         "Fira Code Retina, Segoe UI Emoji",
         False,
     ),
     (
         "fira_segoe_strict_gap",
-        "a -> b \U0001F600❤️ꙮ",
+        "a -> b \U0001F600\U00002764\U0000FE0F\U0000A66E",
         "Fira Code Retina, Segoe UI Emoji",
         True,
     ),
-    ("split_cluster", "x\U0001F600́y", None, False),
-    ("invisible_ZWSP", "a​b", None, False),
+    ("split_cluster", "x\U0001F600\U00000301y", None, False),
+    ("invisible_ZWSP", "a\U0000200Bb", None, False),
+    ("U_plus_string", "U+0061 U+200B U+0062", None, False),
+    ("line_breaks", "line one\nline two\r\nline three", None, False),
 )
 
 OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
@@ -61,7 +64,9 @@ OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
 def describe_fonts(assignments):
     family_names = []
     for assignment in assignments:
-        if assignment.is_invisible:
+        if assignment.is_line_break:
+            family_names.append("line break")
+        elif assignment.is_invisible:
             family_names.append("invisible")
         elif assignment.is_gap:
             family_names.append("gap")
@@ -75,6 +80,11 @@ def describe_fonts(assignments):
 def render_labeled_glyph(glyph, font_stack, strict):
     cluster = render_glyph.parse_cluster_argument(glyph)
     return render_glyph.render_cluster_image(cluster, font_stack, strict)
+
+
+def render_labeled_text(text, font_stack, strict):
+    parsed_text = render_glyph.parse_text_argument("text", text)
+    return render_glyph.render_text_image(parsed_text, font_stack, strict)
 
 
 def render_labeled_case(label, render, text, font_stack_argument, strict):
@@ -103,9 +113,7 @@ def main():
     for label, glyph, font_stack_argument, strict in LABELED_TEST_GLYPHS:
         render_labeled_case(label, render_labeled_glyph, glyph, font_stack_argument, strict)
     for label, text, font_stack_argument, strict in LABELED_TEST_STRINGS:
-        render_labeled_case(
-            label, render_glyph.render_text_image, text, font_stack_argument, strict
-        )
+        render_labeled_case(label, render_labeled_text, text, font_stack_argument, strict)
 
 
 if __name__ == "__main__":

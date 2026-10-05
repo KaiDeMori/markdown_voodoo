@@ -24,12 +24,13 @@ ${CLAUDE_SKILL_DIR}/.venv/Scripts/python.exe ${CLAUDE_SKILL_DIR}/render_glyph.py
 
 | Command | Draws | Output |
 |---|---|---|
-| `glyph <cluster> --output-file <path>` | one grapheme cluster at 256 px, centered on a square | PNG and JSON |
-| `string <text> --output-file <path>` | one line of text at 109 px per em | PNG and JSON |
+| `glyph <cluster> --output-file <path>` | one grapheme cluster at 256 px per em, centered on a square canvas | PNG and JSON |
+| `string <text> --output-file <path>` | text at 109 px per em; a newline starts a new line | PNG and JSON |
 | `coverage <text>` | nothing | JSON: per grapheme cluster, the covering families and the picked family |
 | `fonts` | nothing | JSON: every family name with its file, kind, presence and default-stack membership |
 
 - `<cluster>` is one grapheme cluster, the character as a human perceives it: a literal such as `👍🏽`, or codepoints such as `"U+0031 U+FE0F U+20E3"`. The `U+` form passes invisible or hard-to-type codepoints. More than one grapheme cluster is an error that points to `string`.
+- `<text>` is a literal, or codepoints such as `"U+0061 U+200B U+0062"`. An argument made only of `U+` labels is read as codepoints; a space between labels only separates them, so a space to render is `U+0020`. Shell escapes for non-ASCII characters are unreliable, and the `U+` form avoids them.
 - `--output-file` is an absolute path; missing parent folders are created.
 
 ## Options
@@ -58,12 +59,17 @@ Each entry in `clusters` holds:
 - `font`: the family that drew the cluster.
 - `fallback: true`: the given font stack does not cover the cluster; the default stack drew it.
 - `font: null` with `codepoint_fonts`: no single font covers the whole cluster, so it was drawn codepoint by codepoint.
-- `covered: false`: a gap, in strict mode only. The image shows a magenta/black checkerboard, and `gaps` lists every gap with its index.
+- `covered: false`: a gap, in strict mode only. The image shows a magenta/black checkerboard, and `gaps` lists every gap with its 0-based index into `clusters`.
 - `invisible: true`: the cluster has no visible form, such as a lone variation selector, U+200B or U+00AD. The image shows nothing for it, and `font` and `presentation` are `null`.
+- `line_break: true`: the cluster is a line break, such as U+000A or U+000D U+000A. The next cluster starts a new line, and `font` and `presentation` are `null`.
 
-On failure, stdout holds `{"argument": ..., "error": ...}` and the exit code is 1.
+`coverage` adds `covering_families` to each cluster: every catalog font except Last Resort that covers the cluster, independent of `--font-stack`.
+
+On failure, stdout holds `{"argument": ..., "value": ..., "error": ...}` and the exit code is 1.
+`argument` names the failing argument (`--font-stack`, `--output-file`, `cluster` or `text`), and `value` echoes what was passed; both are `null` for an internal error.
 
 ## Good to know
 
-- The image follows the font's own data, weaknesses included. Example: Go Noto draws the text keycap 1⃣ with its box shifted to the right.
+- The image follows the font's own data, weaknesses included. Example: Go Noto draws the text keycap 1⃣ with its box half a digit too far right, so the box covers most of the digit and reaches into the next character.
+- `glyph` draws at 256 px per em. Its square canvas is at least 256 px and grows to fit wider or taller ink, such as most emoji; nothing is clipped or scaled down.
 - Noto Color Emoji stores 109 px bitmaps; at `glyph` size they are scaled up and their edges are slightly soft. Segoe UI Emoji is vector-based and stays crisp.

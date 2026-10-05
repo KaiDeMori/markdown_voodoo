@@ -2,7 +2,7 @@
 
 Font selection and proper emoji support for the `unicode-glyph-render` noema.
 
-Status: implemented and deployed; the first end-to-end use in another workspace went without problems. The settled default stack order reaches the deployed copy with the next deploy.
+Status: implemented and deployed. The first end-to-end test (ten questions, SKILL.md only) succeeded; its findings are addressed in step 8, except ligatures in the JSON and bidi. The changes since the last deploy reach the deployed copy with the next deploy.
 
 ## Audience
 
@@ -33,6 +33,7 @@ The leading use case is fidelity: rendering text the way a specific environment 
 - **Fallback:** drawing a grapheme cluster with the default stack, because the given font stack does not cover it.
 - **Strict mode:** rendering without fallback.
 - **Gap:** in strict mode, a grapheme cluster that the given font stack does not cover.
+- **Line break:** a grapheme cluster that is a mandatory break: U+000A, U+000B, U+000C, U+000D, U+000D U+000A, U+0085, U+2028 or U+2029.
 - **Invisible cluster:** a grapheme cluster made only of codepoints with Unicode's `Default_Ignorable_Code_Point` property, such as a lone variation selector, U+200B or U+00AD.
 - **Stand-in:** a Last Resort glyph, drawn for a single codepoint that no other font covers.
 
@@ -108,11 +109,15 @@ These follow from the decisions and have no viable alternative.
   - Target sizes stay 256 px (`glyph`) and 109 px (`string`), no longer tied to a strike. `glyph` centers the ink on a square canvas of at least 256 px.
   - COLRv0 through FreeType's `FT_LOAD_COLOR`; FreeType's BGRA bitmaps are premultiplied and read with Pillow's raw mode `BGRa`.
   - A gap is a magenta/black checkerboard, 0.6 em wide and 0.8 em tall with 8 cells per em, standing on the baseline.
+  - A line break starts a new line, left-aligned, 1.25 em below the previous baseline.
 - **CLI:**
   - `glyph` takes exactly one grapheme cluster: literal, or codepoints like `"U+0031 U+FE0F U+20E3"`. More than one grapheme cluster is an error that points to `string`.
   - `glyph` and `string` take `--font-stack` and `--strict`.
+  - `string` and `coverage` accept the `U+` form as well: an argument made only of `U+` labels is read as codepoints.
+  - An input error names the failing argument: `--font-stack`, `--output-file`, `cluster` or `text`.
   - New subcommands: `fonts` (family names, files, kinds) and `coverage <text>` (per grapheme cluster: codepoints, presentation, covering families, and the family the font stack picks). `coverage` takes `--font-stack` as well.
-- **JSON:** UTF-8, with literal characters. Per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`, `invisible`; a split cluster has `font: null` and `codepoint_fonts`. Top level `text`, `path`, `font_stack`, `clusters`, `gaps`; each gap carries `index`, `text` and `codepoints`.
+- **JSON:** UTF-8, with literal characters. Per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`, `invisible`, `line_break`; a split cluster has `font: null` and `codepoint_fonts`. Top level `text`, `path`, `font_stack`, `clusters`, `gaps`; each gap carries a 0-based `index`, `text` and `codepoints`.
+  An error is `{"argument", "value", "error"}`; `argument` and `value` are `null` for an internal error.
   stderr carries error messages only.
 - **Dev test cases:** `render_test_glyphs.py` gains 👨‍👩‍👧, 🇩🇪, 🏴󠁧󠁢󠁳󠁣󠁴󠁿, 1⃣ vs 1️⃣, ❤ vs ❤️, ☺︎ vs ☺️ and 👍🏽, plus Fira Code ligatures.
 - **`platform_notes.md`:** verified library and font facts, one per entry: the claim in bold, the explanation, the source in brackets. It holds every library and font fact; the plan holds only this feature's facts.
@@ -161,7 +166,6 @@ Speed and size:
 ## Known issues
 
 - **Mixed-direction text renders right-to-left words backwards.** A run gets one direction, guessed from its first strong script: "Hello שלום world" is shaped `ltr`, so the Hebrew glyphs appear in logical order. Shaped alone, the same word gets `rtl` and the correct order. There is no bidi reordering.
-- **A newline does not break the line.** `\n` is a grapheme cluster that no font covers, so Last Resort's "BASIC LATIN" sign appears in the middle of the line.
 
 ## Testing
 
@@ -180,5 +184,7 @@ Proposed implementation order:
 5. Dev test cases, `platform_notes.md`, SKILL.md, `deploy.bat`: done.
 6. Deploy, then the end-to-end test in another workspace, in a fresh session: done.
 7. Settle the default stack's order with the coverage report: done. All 22 test images stayed byte-identical; cuneiform is now attributed to Go Noto Ancient.
+8. Fixes from the first end-to-end report: SKILL.md clarifications, errors that name the failing argument, the `U+` form for `string` and `coverage`, line breaks: done. All 22 earlier test images stayed byte-identical; two new cases cover the `U+` form and line breaks.
+9. Open from the same report: ligatures in the JSON (a decision) and bidi (a task of its own).
 
 Details whose behavior only shows in practice get settled by trying them on tricky test cases.

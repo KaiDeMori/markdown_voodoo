@@ -51,8 +51,8 @@ DEFAULT_STACK = (
 
 LAST_RESORT_FAMILY = "Last Resort"
 
-TEXT_PRESENTATION_SELECTOR = "︎"
-EMOJI_PRESENTATION_SELECTOR = "️"
+TEXT_PRESENTATION_SELECTOR = "\U0000FE0E"
+EMOJI_PRESENTATION_SELECTOR = "\U0000FE0F"
 GRAPHEME_CLUSTER_PATTERN = regex.compile(r"\X")
 INVISIBLE_CLUSTER_PATTERN = regex.compile(r"\p{Default_Ignorable_Code_Point}+")
 EMOJI_PRESENTATION_PATTERN = regex.compile(r"\p{Emoji_Presentation}")
@@ -62,6 +62,8 @@ EMOJI_SEQUENCE_COMPONENT_PATTERN = regex.compile(
 CODEPOINT_SEQUENCE_PATTERN = regex.compile(
     r"[uU]\+[0-9a-fA-F]{1,6}(?:\s+[uU]\+[0-9a-fA-F]{1,6})*"
 )
+LINE_BREAK_PATTERN = regex.compile(r"\r\n|[\n\v\f\r\x85\U00002028\U00002029]")
+LINE_HEIGHT_PER_EM = 1.25
 
 
 @dataclass(frozen=True)
@@ -80,6 +82,14 @@ class Cluster_assignment:
     fallback: bool = False
     is_gap: bool = False
     is_invisible: bool = False
+    is_line_break: bool = False
+
+
+class Argument_error(ValueError):
+    def __init__(self, argument, value, message):
+        super().__init__(message)
+        self.argument = argument
+        self.value = value
 
 
 def open_font(path):
@@ -140,9 +150,14 @@ def font_kind(spec):
 def parse_font_stack(argument):
     family_names = tuple(name.strip() for name in argument.split(","))
     if "" in family_names:
-        raise ValueError(f"--font-stack '{argument}' contains an empty family name")
+        raise Argument_error(
+            "--font-stack", argument, f"--font-stack '{argument}' contains an empty family name"
+        )
     for family_name in family_names:
-        load_font_spec(family_name)
+        try:
+            load_font_spec(family_name)
+        except (ValueError, FileNotFoundError) as error:
+            raise Argument_error("--font-stack", argument, str(error)) from error
     return family_names
 
 
@@ -176,6 +191,10 @@ def split_into_grapheme_clusters(text):
 
 def is_invisible_cluster(cluster):
     return INVISIBLE_CLUSTER_PATTERN.fullmatch(cluster) is not None
+
+
+def is_line_break_cluster(cluster):
+    return LINE_BREAK_PATTERN.fullmatch(cluster) is not None
 
 
 def determine_presentation(cluster):
@@ -242,6 +261,8 @@ def select_family_for_cluster(cluster, font_stack):
 
 
 def assign_cluster(cluster, font_stack, strict):
+    if is_line_break_cluster(cluster):
+        return Cluster_assignment(cluster, None, is_line_break=True)
     if is_invisible_cluster(cluster):
         return Cluster_assignment(cluster, None, is_invisible=True)
     if strict:
@@ -382,10 +403,30 @@ def draw_gap_image(pixel_size):
     return image
 
 
-def lay_out_runs(runs, pixel_size):
+def split_into_lines(assignments):
+    lines = [[]]
+    for assignment in assignments:
+        if assignment.is_line_break:
+            lines.append([])
+        else:
+            lines[-1].append(assignment)
+    return lines
+
+
+def lay_out_lines(assignments, pixel_size):
+    placements = []
+    line_height = pixel_size * LINE_HEIGHT_PER_EM
+    for line_index, line_assignments in enumerate(split_into_lines(assignments)):
+        placements.extend(
+            lay_out_runs(split_into_runs(line_assignments), pixel_size, line_index * line_height)
+        )
+    return placements
+
+
+def lay_out_runs(runs, pixel_size, baseline_y=0.0):
     placements = []
     pen_x = 0.0
-    pen_y = 0.0
+    pen_y = baseline_y
     for family_name, run_text in runs:
         if family_name is None:
             gap_image = draw_gap_image(pixel_size)
@@ -453,7 +494,7 @@ def compose_centered_image(placements, pixel_size):
 
 def render_cluster_image(cluster, font_stack=DEFAULT_STACK, strict=False):
     assignments = [assign_cluster(cluster, font_stack, strict)]
-    placements = lay_out_runs(split_into_runs(assignments), DEFAULT_SINGLE_GLYPH_SIZE)
+    placements = lay_out_lines(assignments, DEFAULT_SINGLE_GLYPH_SIZE)
     return compose_centered_image(placements, DEFAULT_SINGLE_GLYPH_SIZE), assignments
 
 
@@ -462,7 +503,7 @@ def render_text_image(text, font_stack=DEFAULT_STACK, strict=False):
         assign_cluster(cluster, font_stack, strict)
         for cluster in split_into_grapheme_clusters(text)
     ]
-    placements = lay_out_runs(split_into_runs(assignments), DEFAULT_STRING_GLYPH_SIZE)
+    placements = lay_out_lines(assignments, DEFAULT_STRING_GLYPH_SIZE)
     return compose_line_image(placements, DEFAULT_STRING_GLYPH_SIZE), assignments
 
 
@@ -477,28 +518,39 @@ def parse_codepoint_label(label):
     return codepoint
 
 
+def parse_text_argument(argument_name, argument):
+    if not CODEPOINT_SEQUENCE_PATTERN.fullmatch(argument.strip()):
+        return argument
+    try:
+        return "".join(chr(parse_codepoint_label(label)) for label in argument.split())
+    except ValueError as error:
+        raise Argument_error(argument_name, argument, str(error)) from error
+
+
 def parse_cluster_argument(argument):
-    cluster = argument
-    if CODEPOINT_SEQUENCE_PATTERN.fullmatch(argument.strip()):
-        cluster = "".join(chr(parse_codepoint_label(label)) for label in argument.split())
+    cluster = parse_text_argument("cluster", argument)
     clusters = split_into_grapheme_clusters(cluster)
     if len(clusters) != 1:
-        raise ValueError(
+        raise Argument_error(
+            "cluster",
+            argument,
             f"'{argument}' is {len(clusters)} grapheme clusters; "
-            f"glyph takes exactly one, string takes any number"
+            f"glyph takes exactly one, string takes any number",
         )
     return cluster
 
 
 def describe_cluster_assignment(assignment):
+    draws_nothing = assignment.is_invisible or assignment.is_line_break
     description = {
         "text": assignment.cluster,
         "codepoints": [format_codepoint_label(ord(character)) for character in assignment.cluster],
-        "presentation": None if assignment.is_invisible else determine_presentation(assignment.cluster),
+        "presentation": None if draws_nothing else determine_presentation(assignment.cluster),
         "font": assignment.family_name,
         "fallback": assignment.fallback,
         "covered": not assignment.is_gap,
         "invisible": assignment.is_invisible,
+        "line_break": assignment.is_line_break,
     }
     if assignment.codepoint_families:
         description["codepoint_fonts"] = list(assignment.codepoint_families)
@@ -506,9 +558,12 @@ def describe_cluster_assignment(assignment):
 
 
 def describe_cluster_coverage(cluster, font_stack):
-    description = describe_cluster_assignment(assign_cluster(cluster, font_stack, strict=False))
+    assignment = assign_cluster(cluster, font_stack, strict=False)
+    description = describe_cluster_assignment(assignment)
     description["covering_families"] = (
-        [] if description["invisible"] else list_covering_families(cluster)
+        []
+        if assignment.is_invisible or assignment.is_line_break
+        else list_covering_families(cluster)
     )
     return description
 
@@ -556,8 +611,12 @@ def build_argument_parser():
     )
     add_rendering_arguments(glyph_parser)
 
-    string_parser = subparsers.add_parser("string", help="render a shaped line of text")
-    string_parser.add_argument("text", help="the text to render")
+    string_parser = subparsers.add_parser(
+        "string", help="render shaped text; a newline starts a new line"
+    )
+    string_parser.add_argument(
+        "text", help='the text to render: a literal, or codepoints like "U+0061 U+200B U+0062"'
+    )
     add_rendering_arguments(string_parser)
 
     subparsers.add_parser("fonts", help="list the fonts of the font catalog")
@@ -565,7 +624,9 @@ def build_argument_parser():
     coverage_parser = subparsers.add_parser(
         "coverage", help="report which fonts cover each grapheme cluster"
     )
-    coverage_parser.add_argument("text", help="the text to analyze")
+    coverage_parser.add_argument(
+        "text", help='the text to analyze: a literal, or codepoints like "U+0061 U+200B U+0062"'
+    )
     coverage_parser.add_argument("--font-stack", help="family names separated by commas")
 
     return parser
@@ -573,8 +634,10 @@ def build_argument_parser():
 
 def require_absolute_output_file(output_file):
     if not output_file.is_absolute():
-        raise ValueError(
-            f"--output-file must be an absolute path, got '{output_file}'"
+        raise Argument_error(
+            "--output-file",
+            str(output_file),
+            f"--output-file must be an absolute path, got '{output_file}'",
         )
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -590,10 +653,11 @@ def run_glyph_command(arguments):
 
 def run_string_command(arguments):
     require_absolute_output_file(arguments.output_file)
+    text = parse_text_argument("text", arguments.text)
     font_stack = resolve_font_stack(arguments.font_stack)
-    image, assignments = render_text_image(arguments.text, font_stack, arguments.strict)
+    image, assignments = render_text_image(text, font_stack, arguments.strict)
     image.save(arguments.output_file)
-    return describe_render_result(arguments.text, font_stack, assignments, arguments.output_file)
+    return describe_render_result(text, font_stack, assignments, arguments.output_file)
 
 
 def describe_font(family_name):
@@ -615,30 +679,27 @@ def run_fonts_command(arguments):
 
 
 def run_coverage_command(arguments):
+    text = parse_text_argument("text", arguments.text)
     font_stack = resolve_font_stack(arguments.font_stack)
     return {
-        "text": arguments.text,
+        "text": text,
         "font_stack": list(font_stack),
         "clusters": [
             describe_cluster_coverage(cluster, font_stack)
-            for cluster in split_into_grapheme_clusters(arguments.text)
+            for cluster in split_into_grapheme_clusters(text)
         ],
     }
 
 
-def describe_command_argument(arguments):
-    if arguments.command == "glyph":
-        return arguments.cluster
-    if arguments.command in ("string", "coverage"):
-        return arguments.text
-    return arguments.command
+def report_error(argument, value, message):
+    print(f"{argument or 'error'}: {message}", file=sys.stderr)
+    print(json.dumps({"argument": argument, "value": value, "error": message}, ensure_ascii=False))
 
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
     arguments = build_argument_parser().parse_args()
-    command_argument = describe_command_argument(arguments)
     command_runners = {
         "glyph": run_glyph_command,
         "string": run_string_command,
@@ -650,9 +711,11 @@ def main():
         result = command_runners[arguments.command](arguments)
         print(json.dumps(result, ensure_ascii=False))
         return 0
+    except Argument_error as error:
+        report_error(error.argument, error.value, str(error))
+        return 1
     except Exception as error:
-        print(f"{command_argument}: {error}", file=sys.stderr)
-        print(json.dumps({"argument": command_argument, "error": str(error)}, ensure_ascii=False))
+        report_error(None, None, str(error))
         return 1
 
 

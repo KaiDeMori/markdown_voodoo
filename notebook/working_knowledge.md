@@ -47,8 +47,10 @@ Any session may read and edit this notebook at any time, without asking.
 - The Write tool writes LF; the Edit tool keeps a file's existing line endings.
   Check line endings with `file` before rewriting a file.
   `.gitignore` and the `deploy.bat` files use CRLF; convert a freshly written file with `sed -i 's/$/\r/'`.
-- Bash here leaves `$'\uXXXX'` unexpanded and passes the backslash sequence literally.
-  Non-ASCII test text goes in as literal characters or through Python escapes.
+- Bash here leaves `$'\uXXXX'` unexpanded; byte escapes work: `$'\xe2\x80\x8b'` yields U+200B.
+- In Bash tool input, `\\` arrives as a single backslash.
+- Write and Edit turn a four-digit `\u` escape with hex digits into the character itself; `\UXXXXXXXX` and `\\` arrive as typed.
+  Python source written with these tools therefore spells escapes as `\UXXXXXXXX`.
 
 ## Techniques
 
