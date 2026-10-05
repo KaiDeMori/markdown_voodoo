@@ -95,7 +95,7 @@ These follow from the decisions and have no viable alternative.
 
 - **Grapheme clusters:** the `regex` module's `\X`.
 - **Presentation rule:** U+FE0F means emoji, U+FE0E means text. Skin tone modifiers, flags and tag sequences mean emoji. Otherwise the first codepoint's `Emoji_Presentation` property decides. The property data comes from `regex`.
-- **Font catalog:** adding a font means adding one line. The kind (text or emoji) is read from the file.
+- **Font catalog:** adding a font means one line in the catalog and one in `deploy.bat`. The kind (text or emoji) is read from the file.
   Why a catalog instead of scanning `fonts/`: fonts change only here, in the workshop, by our own hands.
 - **Coverage:** if no font covers the whole grapheme cluster, the cluster is split per codepoint.
 - **Last Resort:** never covers a whole grapheme cluster; it only provides stand-ins.
@@ -116,6 +116,9 @@ These follow from the decisions and have no viable alternative.
 - **`platform_notes.md`:** verified library and font facts, one per entry: the claim in bold, the explanation, the source in brackets. It holds every library and font fact; the plan holds only this feature's facts.
 - **SKILL.md:** rewritten for the new options. Its description says when to use the noema, not only what the commands do.
 - **`deploy.bat`:** following the repo's convention, for the end-to-end test loop.
+  It copies SKILL.md, `render_glyph.py`, `requirements.txt` and every catalog font, each named explicitly; Segoe UI Emoji only when present.
+  The first deploy creates the deployed venv with the repo venv's Python, which bases it on the same base interpreter; every deploy runs `pip install -r requirements.txt`.
+  Why a fresh venv instead of a copy: copying a venv caused trouble before.
 
 ## Not now
 
@@ -162,6 +165,7 @@ Proposed implementation order:
 2. Font catalog, kinds and a provisional default stack; the `fonts` subcommand: done.
 3. Grapheme clusters, presentation and coverage; the `coverage` subcommand: done.
 4. The unified rendering pipeline: font stack, fallback, strict mode, gaps, JSON: done.
-5. Dev test cases, `platform_notes.md`, SKILL.md, `deploy.bat`.
+5. Dev test cases, `platform_notes.md`, SKILL.md, `deploy.bat`: done.
+6. Deploy, then the end-to-end test in another workspace, in a fresh session.
 
 Details whose behavior only shows in practice get settled by trying them on tricky test cases.
