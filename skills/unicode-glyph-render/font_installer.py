@@ -10,8 +10,6 @@ GO_NOTO_FILENAMES = (
     "GoNotoCurrent-Regular.ttf",
     "GoNotoAncient.ttf",
     "GoNotoEuropeAmericas.ttf",
-    "GoNotoAfricaMiddleEast.ttf",
-    "GoNotoSouthAsia.ttf",
     "GoNotoAsiaHistorical.ttf",
     "GoNotoEastAsia.ttf",
     "GoNotoCJKCore.ttf",

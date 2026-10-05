@@ -29,8 +29,6 @@ GAP_BLACK = (0, 0, 0, 255)
 FONT_CATALOG = {
     "Go Noto Current-Regular": "GoNotoCurrent-Regular.ttf",
     "Go Noto Europe Americas": "GoNotoEuropeAmericas.ttf",
-    "Go Noto Africa Middle East": "GoNotoAfricaMiddleEast.ttf",
-    "Go Noto South Asia": "GoNotoSouthAsia.ttf",
     "Go Noto East Asia": "GoNotoEastAsia.ttf",
     "Go Noto CJKCore": "GoNotoCJKCore.ttf",
     "Go Noto Asia Historical": "GoNotoAsiaHistorical.ttf",

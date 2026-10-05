@@ -69,7 +69,7 @@ Letters match the decision tour.
   BYOF fonts are never on the list.
   Why: adding a font never changes existing renders, and a fresh clone without BYOF fonts has a complete default stack.
   The order: Go Noto Current-Regular, Go Noto CJKCore, Go Noto Ancient, Go Noto Europe Americas, Go Noto East Asia, Go Noto Asia Historical, Noto Color Emoji.
-  Each Go Noto adds the most codepoints the ones before it lack. Go Noto Africa Middle East and Go Noto South Asia add none; they stay in the catalog only.
+  Each Go Noto adds the most codepoints the ones before it lack. Go Noto Africa Middle East and Go Noto South Asia add none, so the repo does not bundle them.
 - **L. A gap is drawn as a magenta/black checkerboard.**
   The JSON lists every gap under `gaps`.
   Why: the checkerboard is unmistakable in the image, and the facts are in the JSON.
@@ -138,7 +138,7 @@ These follow from the decisions and have no viable alternative.
 Library and font behavior lives in [platform_notes.md](platform_notes.md).
 The facts below describe this feature's implementation.
 
-- The font catalog lists 12 families; every key matches its file's nameID 1. No catalog font is variable.
+- The font catalog lists 10 families; every key matches its file's nameID 1. No catalog font is variable.
 - `font_installer.py` extracts `ttf/FiraCode-Retina.ttf` from Fira Code's release 6.2 zip.
 - `pick_font_for_codepoint` serves split clusters only: the given font stack, then the default stack, then Last Resort.
 - U+200D (ZWJ) and U+20E3 (keycap) resolve to Go Noto Current-Regular at codepoint level.

@@ -11,8 +11,6 @@ call :copy_file requirements.txt
 
 call :copy_file fonts\GoNotoCurrent-Regular.ttf
 call :copy_file fonts\GoNotoEuropeAmericas.ttf
-call :copy_file fonts\GoNotoAfricaMiddleEast.ttf
-call :copy_file fonts\GoNotoSouthAsia.ttf
 call :copy_file fonts\GoNotoEastAsia.ttf
 call :copy_file fonts\GoNotoCJKCore.ttf
 call :copy_file fonts\GoNotoAsiaHistorical.ttf
