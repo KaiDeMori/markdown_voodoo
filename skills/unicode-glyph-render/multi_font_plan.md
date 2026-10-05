@@ -23,6 +23,7 @@ The leading use case is fidelity: rendering text the way a specific environment 
 
 - **Grapheme cluster:** a user-perceived character, as defined by Unicode (UAX #29). 👨‍👩‍👧, 🇩🇪 and 1️⃣ are one grapheme cluster each.
 - **Family name:** the font's family name from nameID 1, as classic Windows apps show it in their font menus. Example: "Fira Code Retina".
+- **BYOF font:** a font the repo never ships and never fetches. Everyone brings their own copy into `fonts/BYOF/`, which is git-ignored.
 - **Text font / emoji font:** a font with color glyph tables (CBDT, COLR, SVG, sbix) is an emoji font; every other font is a text font.
 - **Font stack:** an ordered list of family names.
 - **Default stack:** the font stack used when none is given, and the fallback for every given font stack.
@@ -63,7 +64,8 @@ Letters match the decision tour.
   Why: every style is reachable by name alone, without a weight option. It is the name Notepad++ shows.
 - **J. The default stack is an explicit list of family names in `render_glyph.py`.**
   A font in `fonts/` that is not on the list is used only when `--font-stack` names it.
-  Why: adding a font never changes existing renders.
+  BYOF fonts are never on the list.
+  Why: adding a font never changes existing renders, and a fresh clone without BYOF fonts has a complete default stack.
 - **L. A gap is drawn as a magenta/black checkerboard.**
   The JSON lists every gap under `gaps`.
   Why: the checkerboard is unmistakable in the image, and the facts are in the JSON.
@@ -76,7 +78,9 @@ Letters match the decision tour.
 - **P. The fonts to bring: Fira Code first, then Segoe UI Emoji.**
   Fira Code tests font stacks and ligatures.
   Segoe UI Emoji is what VS Code shows on Windows 10; it is COLRv0, so it needs no new drawing engine.
-  Proprietary fonts live in `fonts/proprietary/`, with a note that the repo's MIT license does not cover them.
+  Segoe UI Emoji is a BYOF font: its license permits use, not redistribution.
+  Nothing is ever taken out of the Windows folder.
+  Proprietary material we deliberately redistribute, such as a future Apple emoji set, lives in `fonts/proprietary/`, with a note that the repo's MIT license does not cover it.
 
 ## Implementation notes
 
@@ -84,7 +88,7 @@ These follow from the decisions and have no viable alternative.
 
 - **Grapheme clusters:** the `regex` module's `\X`. New dependency; verify its behavior once installed.
 - **Presentation rule:** U+FE0F means emoji, U+FE0E means text. Skin tone modifiers, flags and tag sequences mean emoji. Otherwise the first codepoint's `Emoji_Presentation` property decides. The property data comes from `regex` if it has it, otherwise from Unicode's `emoji-data.txt`, bundled.
-- **Registry:** scans `fonts/`, including `fonts/proprietary/`.
+- **Registry:** scans `fonts/`, `fonts/proprietary/` and `fonts/BYOF/`. Other subfolders, such as `fonts/tmp/`, are not scanned.
 - **Coverage:** if no font covers the whole grapheme cluster, the cluster is split per codepoint.
 - **Last Resort:** never covers a whole grapheme cluster; it only provides stand-ins.
 - **Rendering:** one pipeline for `glyph` and `string`: HarfBuzz shaping, FreeType rasterization. The Pillow `ImageFont` path and the CBDT special case go away.
@@ -138,6 +142,11 @@ Fira Code:
 - Its ligatures live in `calt`; there is no `liga` feature.
 - `shape_run` passes no features to HarfBuzz, and the default `calt` draws the ligatures: `->`, `!=`, `=>`, `===`, `<=`, `www` render as ligatures.
 
+Segoe UI Emoji:
+
+- `fonts/BYOF/seguiemj.ttf`: nameID 1 "Segoe UI Emoji", version 1.29, COLR version 0 with CPAL, 12189 glyphs.
+- Its license string (nameID 13) permits creating, displaying and printing content; it says nothing about redistribution.
+
 ## To confirm
 
 - FreeType renders COLRv0 glyphs in color with `FT_LOAD_COLOR`.
@@ -153,7 +162,7 @@ Fira Code:
 
 Proposed implementation order:
 
-1. Bring the fonts: Fira Code Retina is done. Segoe UI Emoji needs a source; nothing is ever taken out of the Windows folder.
+1. Bring the fonts: done. Fira Code Retina via `font_installer.py`; Segoe UI Emoji as a BYOF font in `fonts/BYOF/`.
 2. Registry: family names, kinds, the comma rule; the `fonts` subcommand.
 3. Grapheme clusters, presentation and coverage; the `coverage` subcommand.
 4. The unified rendering pipeline: font stack, fallback, strict mode, gaps, JSON.
