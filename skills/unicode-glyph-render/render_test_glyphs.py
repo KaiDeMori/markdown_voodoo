@@ -22,7 +22,9 @@ OUTPUT_DIRECTORY = Path(__file__).parent / "test_images"
 def describe_fonts(assignments):
     family_names = []
     for assignment in assignments:
-        if assignment.is_gap:
+        if assignment.is_invisible:
+            family_names.append("invisible")
+        elif assignment.is_gap:
             family_names.append("gap")
         elif assignment.family_name is not None:
             family_names.append(assignment.family_name)

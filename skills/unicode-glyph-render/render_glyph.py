@@ -58,6 +58,7 @@ LAST_RESORT_FAMILY = "Last Resort"
 TEXT_PRESENTATION_SELECTOR = "︎"
 EMOJI_PRESENTATION_SELECTOR = "️"
 GRAPHEME_CLUSTER_PATTERN = regex.compile(r"\X")
+INVISIBLE_CLUSTER_PATTERN = regex.compile(r"\p{Default_Ignorable_Code_Point}+")
 EMOJI_PRESENTATION_PATTERN = regex.compile(r"\p{Emoji_Presentation}")
 EMOJI_SEQUENCE_COMPONENT_PATTERN = regex.compile(
     r"[\p{Emoji_Modifier}\p{Regional_Indicator}\U000E0020-\U000E007F]"
@@ -82,6 +83,7 @@ class Cluster_assignment:
     codepoint_families: tuple = ()
     fallback: bool = False
     is_gap: bool = False
+    is_invisible: bool = False
 
 
 def open_font(path):
@@ -176,6 +178,10 @@ def split_into_grapheme_clusters(text):
     return GRAPHEME_CLUSTER_PATTERN.findall(text)
 
 
+def is_invisible_cluster(cluster):
+    return INVISIBLE_CLUSTER_PATTERN.fullmatch(cluster) is not None
+
+
 def determine_presentation(cluster):
     if EMOJI_PRESENTATION_SELECTOR in cluster:
         return "emoji"
@@ -240,6 +246,8 @@ def select_family_for_cluster(cluster, font_stack):
 
 
 def assign_cluster(cluster, font_stack, strict):
+    if is_invisible_cluster(cluster):
+        return Cluster_assignment(cluster, None, is_invisible=True)
     if strict:
         family_name = pick_family_for_cluster(cluster, font_stack)
         return Cluster_assignment(cluster, family_name, is_gap=family_name is None)
@@ -263,6 +271,8 @@ def assign_cluster(cluster, font_stack, strict):
 def split_into_runs(assignments):
     runs = []
     for assignment in assignments:
+        if assignment.is_invisible:
+            continue
         if assignment.is_gap:
             runs.append((None, assignment.cluster))
             continue
@@ -488,10 +498,11 @@ def describe_cluster_assignment(assignment):
     description = {
         "text": assignment.cluster,
         "codepoints": [format_codepoint_label(ord(character)) for character in assignment.cluster],
-        "presentation": determine_presentation(assignment.cluster),
+        "presentation": None if assignment.is_invisible else determine_presentation(assignment.cluster),
         "font": assignment.family_name,
         "fallback": assignment.fallback,
         "covered": not assignment.is_gap,
+        "invisible": assignment.is_invisible,
     }
     if assignment.codepoint_families:
         description["codepoint_fonts"] = list(assignment.codepoint_families)
@@ -500,7 +511,9 @@ def describe_cluster_assignment(assignment):
 
 def describe_cluster_coverage(cluster, font_stack):
     description = describe_cluster_assignment(assign_cluster(cluster, font_stack, strict=False))
-    description["covering_families"] = list_covering_families(cluster)
+    description["covering_families"] = (
+        [] if description["invisible"] else list_covering_families(cluster)
+    )
     return description
 
 
