@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 import freetype
+import regex
 import uharfbuzz as harfbuzz
 from fontTools.ttLib import TTFont
 from PIL import Image, ImageDraw, ImageFont
@@ -47,6 +48,14 @@ DEFAULT_STACK = (
 )
 
 LAST_RESORT_FAMILY = "Last Resort"
+
+TEXT_PRESENTATION_SELECTOR = "︎"
+EMOJI_PRESENTATION_SELECTOR = "️"
+GRAPHEME_CLUSTER_PATTERN = regex.compile(r"\X")
+EMOJI_PRESENTATION_PATTERN = regex.compile(r"\p{Emoji_Presentation}")
+EMOJI_SEQUENCE_COMPONENT_PATTERN = regex.compile(
+    r"[\p{Emoji_Modifier}\p{Regional_Indicator}\U000E0020-\U000E007F]"
+)
 
 
 @dataclass(frozen=True)
@@ -122,17 +131,105 @@ def load_font_spec(family_name):
     )
 
 
+def font_file_is_present(family_name):
+    return (FONT_DIRECTORY / FONT_CATALOG[family_name]).exists()
+
+
+def font_kind(spec):
+    return "emoji" if spec.has_color else "text"
+
+
+def parse_font_stack(argument):
+    family_names = tuple(name.strip() for name in argument.split(","))
+    if "" in family_names:
+        raise ValueError(f"--font-stack '{argument}' contains an empty family name")
+    for family_name in family_names:
+        load_font_spec(family_name)
+    return family_names
+
+
 @lru_cache(maxsize=None)
 def load_cmap(path):
     return open_font(path).getBestCmap()
 
 
-def pick_font_for_codepoint(codepoint):
-    for family_name in DEFAULT_STACK:
+def pick_font_for_codepoint(codepoint, font_stack=DEFAULT_STACK):
+    for family_name in dict.fromkeys(font_stack + DEFAULT_STACK):
         spec = load_font_spec(family_name)
         if codepoint in load_cmap(spec.path):
             return spec
     return load_font_spec(LAST_RESORT_FAMILY)
+
+
+def split_into_grapheme_clusters(text):
+    return GRAPHEME_CLUSTER_PATTERN.findall(text)
+
+
+def determine_presentation(cluster):
+    if EMOJI_PRESENTATION_SELECTOR in cluster:
+        return "emoji"
+    if TEXT_PRESENTATION_SELECTOR in cluster:
+        return "text"
+    if EMOJI_SEQUENCE_COMPONENT_PATTERN.search(cluster):
+        return "emoji"
+    if EMOJI_PRESENTATION_PATTERN.match(cluster):
+        return "emoji"
+    return "text"
+
+
+@lru_cache(maxsize=None)
+def font_covers_cluster(family_name, cluster):
+    hb_font, _ = load_hb_font(load_font_spec(family_name).path)
+    buffer = harfbuzz.Buffer()
+    buffer.add_str(cluster)
+    buffer.guess_segment_properties()
+    harfbuzz.shape(hb_font, buffer)
+    return all(info.codepoint != 0 for info in buffer.glyph_infos)
+
+
+def pick_family_for_cluster(cluster, font_stack):
+    covering_families = [
+        family_name
+        for family_name in font_stack
+        if font_covers_cluster(family_name, cluster)
+    ]
+    presentation = determine_presentation(cluster)
+    for family_name in covering_families:
+        if font_kind(load_font_spec(family_name)) == presentation:
+            return family_name
+    return covering_families[0] if covering_families else None
+
+
+def select_family_for_cluster(cluster, font_stack):
+    family_name = pick_family_for_cluster(cluster, font_stack)
+    if family_name is not None or font_stack == DEFAULT_STACK:
+        return family_name, False
+    family_name = pick_family_for_cluster(cluster, DEFAULT_STACK)
+    return family_name, family_name is not None
+
+
+def describe_cluster_coverage(cluster, font_stack):
+    family_name, fallback = select_family_for_cluster(cluster, font_stack)
+    description = {
+        "text": cluster,
+        "codepoints": [format_codepoint_label(ord(character)) for character in cluster],
+        "presentation": determine_presentation(cluster),
+        "covering_families": [
+            covering_family_name
+            for covering_family_name in FONT_CATALOG
+            if covering_family_name != LAST_RESORT_FAMILY
+            and font_file_is_present(covering_family_name)
+            and font_covers_cluster(covering_family_name, cluster)
+        ],
+        "font": family_name,
+        "fallback": fallback,
+    }
+    if family_name is None:
+        description["codepoint_fonts"] = [
+            pick_font_for_codepoint(ord(character), font_stack).family_name
+            for character in cluster
+        ]
+    return description
 
 
 @lru_cache(maxsize=None)
@@ -368,6 +465,14 @@ def build_argument_parser():
 
     subparsers.add_parser("fonts", help="list the fonts of the font catalog")
 
+    coverage_parser = subparsers.add_parser(
+        "coverage", help="report which fonts cover each grapheme cluster"
+    )
+    coverage_parser.add_argument("text", help="the text to analyze")
+    coverage_parser.add_argument(
+        "--font-stack", help="family names separated by commas"
+    )
+
     return parser
 
 
@@ -403,12 +508,12 @@ def describe_font(family_name):
     description = {
         "family": family_name,
         "file": relative_path,
-        "present": (FONT_DIRECTORY / relative_path).exists(),
+        "present": font_file_is_present(family_name),
         "in_default_stack": family_name in DEFAULT_STACK,
         "kind": None,
     }
     if description["present"]:
-        description["kind"] = "emoji" if load_font_spec(family_name).has_color else "text"
+        description["kind"] = font_kind(load_font_spec(family_name))
     return description
 
 
@@ -416,10 +521,24 @@ def run_fonts_command(arguments):
     return {"fonts": [describe_font(family_name) for family_name in FONT_CATALOG]}
 
 
+def run_coverage_command(arguments):
+    font_stack = DEFAULT_STACK
+    if arguments.font_stack is not None:
+        font_stack = parse_font_stack(arguments.font_stack)
+    return {
+        "text": arguments.text,
+        "font_stack": list(font_stack),
+        "clusters": [
+            describe_cluster_coverage(cluster, font_stack)
+            for cluster in split_into_grapheme_clusters(arguments.text)
+        ],
+    }
+
+
 def describe_command_argument(arguments):
     if arguments.command == "glyph":
         return arguments.codepoint
-    if arguments.command == "string":
+    if arguments.command in ("string", "coverage"):
         return arguments.text
     return arguments.command
 
@@ -431,6 +550,7 @@ def main():
         "glyph": run_glyph_command,
         "string": run_string_command,
         "fonts": run_fonts_command,
+        "coverage": run_coverage_command,
     }
 
     try:

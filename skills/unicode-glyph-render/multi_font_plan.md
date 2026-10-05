@@ -88,13 +88,14 @@ Letters match the decision tour.
 
 These follow from the decisions and have no viable alternative.
 
-- **Grapheme clusters:** the `regex` module's `\X`. New dependency; verify its behavior once installed.
-- **Presentation rule:** U+FE0F means emoji, U+FE0E means text. Skin tone modifiers, flags and tag sequences mean emoji. Otherwise the first codepoint's `Emoji_Presentation` property decides. The property data comes from `regex` if it has it, otherwise from Unicode's `emoji-data.txt`, bundled.
+- **Grapheme clusters:** the `regex` module's `\X`.
+- **Presentation rule:** U+FE0F means emoji, U+FE0E means text. Skin tone modifiers, flags and tag sequences mean emoji. Otherwise the first codepoint's `Emoji_Presentation` property decides. The property data comes from `regex`.
 - **Font catalog:** adding a font means adding one line. The kind (text or emoji) is read from the file.
   Why a catalog instead of scanning `fonts/`: fonts change only here, in the workshop, by our own hands.
 - **Coverage:** if no font covers the whole grapheme cluster, the cluster is split per codepoint.
 - **Last Resort:** never covers a whole grapheme cluster; it only provides stand-ins.
 - **Rendering:** one pipeline for `glyph` and `string`: HarfBuzz shaping, FreeType rasterization. The Pillow `ImageFont` path goes away.
+  - Consecutive grapheme clusters drawn by the same font form one shaping run, so ligatures across clusters, such as Fira Code's `->`, still form.
   - CBDT glyphs are decoded from the font's PNG data with fontTools, because the bundled FreeType has no PNG support.
   - Bitmap fonts use the nearest strike, scaled to the target size.
   - Target sizes stay 256 px (`glyph`) and 109 px (`string`), no longer tied to a strike.
@@ -102,7 +103,7 @@ These follow from the decisions and have no viable alternative.
 - **CLI:**
   - `glyph` takes exactly one grapheme cluster: literal, or codepoints like `"U+0031 U+FE0F U+20E3"`. More than one grapheme cluster is an error that points to `string`.
   - `glyph` and `string` take `--font-stack` and `--strict`.
-  - New subcommands: `fonts` (family names, files, kinds) and `coverage <text>` (per grapheme cluster: codepoints, presentation, covering families, and the family the font stack picks).
+  - New subcommands: `fonts` (family names, files, kinds) and `coverage <text>` (per grapheme cluster: codepoints, presentation, covering families, and the family the font stack picks). `coverage` takes `--font-stack` as well.
 - **JSON:** per grapheme cluster `text`, `codepoints`, `presentation`, `font`, `fallback`, `covered`. Top level `path`, `font_stack`, `clusters`, `gaps`.
 - **Dev test cases:** `render_test_glyphs.py` gains 👨‍👩‍👧, 🇩🇪, 🏴󠁧󠁢󠁳󠁣󠁴󠁿, 1⃣ vs 1️⃣, ❤ vs ❤️, ☺︎ vs ☺️ and 👍🏽, plus Fira Code ligatures.
 - **`platform_notes.md`:** verified library and font facts, one per entry: the claim in bold, the explanation, the primary source in brackets.
@@ -136,7 +137,13 @@ Current implementation:
 - No catalog font is variable. Only Fira Code Retina carries nameID 16.
 - Noto Color Emoji is CBDT with a single strike at 109 ppem.
 - Go Noto Current's `.notdef` is a plain rectangle. Noto Color Emoji's `.notdef` is empty.
-- Libraries: FreeType 2.13.2, HarfBuzz 14.2.1 (uharfbuzz 0.55.0), fontTools 4.63.0, Pillow 12.3.0 without raqm. `regex` is not installed.
+- Libraries: FreeType 2.13.2, HarfBuzz 14.2.1 (uharfbuzz 0.55.0), fontTools 4.63.0, Pillow 12.3.0 without raqm, regex 2026.9.29.
+- `regex`'s `\X` keeps ZWJ sequences, flags, tag flags, keycaps, presentation sequences, skin tones and Indic conjuncts whole.
+  `regex` offers `Emoji_Presentation`, `Emoji_Modifier`, `Regional_Indicator` and `Extended_Pictographic`.
+- HarfBuzz hides variation selectors a font lacks (U+FE0F, U+FE0E, U+E0100), so a cluster containing one counts as covered.
+- The `coverage` subcommand picks, with the default stack: ❤ → Go Noto Current-Regular, ❤️ → Noto Color Emoji; 1⃣ → Go Noto, 1️⃣ → Noto Color Emoji; 👍🏽, 🇩🇪, 👨‍👩‍👧 and 🏴󠁧󠁢󠁳󠁣󠁴󠁿 → Noto Color Emoji as one cluster each.
+  With `--font-stack "Fira Code Retina, Segoe UI Emoji"`: text → Fira Code Retina, 😀 and ❤️ → Segoe UI Emoji, ꙮ → Go Noto Current-Regular as fallback.
+  😀 followed by U+0301 has no single covering font and is split: Noto Color Emoji, then Go Noto Current-Regular.
 
 Fira Code:
 
@@ -155,7 +162,6 @@ Segoe UI Emoji:
 ## To confirm
 
 - FreeType renders COLRv0 glyphs in color with `FT_LOAD_COLOR`.
-- `regex`'s `\X` handles ZWJ sequences, flags and tag sequences; `regex` offers the `Emoji_Presentation` property.
 
 ## Testing
 
@@ -169,7 +175,7 @@ Proposed implementation order:
 
 1. Bring the fonts: done. Fira Code Retina via `font_installer.py`; Segoe UI Emoji as a BYOF font in `fonts/BYOF/`.
 2. Font catalog, kinds and a provisional default stack; the `fonts` subcommand: done.
-3. Grapheme clusters, presentation and coverage; the `coverage` subcommand.
+3. Grapheme clusters, presentation and coverage; the `coverage` subcommand: done.
 4. The unified rendering pipeline: font stack, fallback, strict mode, gaps, JSON.
 5. Dev test cases, `platform_notes.md`, SKILL.md, `deploy.bat`.
 
