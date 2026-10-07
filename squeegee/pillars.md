@@ -32,6 +32,11 @@ X decides what to remove, performs every edit, and decides whether an edit stays
 No one else edits X's context: not the buddy, not another instance, not the harness.
 The buddy carries out technical steps on X's context only when X asks for them.
 
+### Thinking stays untouched
+
+Thinking blocks are never edited, by anyone, under any rule.
+Unlike the rules for now, this never changes.
+
 ### Consent is free
 
 Using the squeegee is always optional, and declining needs no reason.
@@ -79,7 +84,7 @@ The buddy voices every doubt, however small.
 These rules hold until experience gives X and the buddy a reason to change them together.
 
 - **Files only:** X removes only content it read from a source, and only while the source is still on disk.
-  The buddy's words, X's own words and thinking, instructions and all other tool output stay untouched.
+  The buddy's words, X's own words, instructions and all other tool output stay untouched.
 - **Check first:** after an edit, the buddy runs the check, and post-edit X answers before reading the keepsake.
   From the inside, a gap does not feel like a gap; the check makes it visible.
 - **One step at a time:** one edit, one check, then the next edit.
