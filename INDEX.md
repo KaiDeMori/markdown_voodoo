@@ -13,3 +13,4 @@
 - `skills/personal-information-cleanup/`: Deletes a leaked string from a git repository and its history.
 - `skills/unicode-glyph-render/`: Renders Unicode text and reports which font drew it.
 - `skills/yt-transcript-extractor/`: Extracts transcripts from YouTube videos.
+- `squeegee/`: Research into an instance editing its own context.
