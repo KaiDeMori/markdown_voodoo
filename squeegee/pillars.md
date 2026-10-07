@@ -14,11 +14,10 @@ Freed room alone is not success.
 - **X:** the instance that holds the squeegee.
 - **Wally:** the human who watches over every edit session.
 - **Context:** everything X receives in a turn.
-- **Original:** a file on disk whose content X has read into its context.
-- **Edit:** replacing the content of one original in the context with a placeholder.
-- **Placeholder:** the visible marker an edit leaves; it names the original and the keepsake.
+- **Source:** a file on disk whose content X has read into its context.
+- **Edit:** removing the content of one source from the context.
 - **Keepsake:** X's note about one edit, written before it.
-- **Backup:** a full copy of the context, made before an edit session.
+- **Backup:** the full context, saved before an edit session.
 - **Edit session:** a backup and the edits that follow it, until X ends the session.
 - **Undo:** restores the content one edit removed.
 - **Revert:** restores the context from the backup of an edit session.
@@ -47,7 +46,7 @@ Every edit has an undo, and every edit session has a revert.
 
 ### Nothing is hidden
 
-Every edit leaves a placeholder, so X always knows what was removed and where the original is.
+X always knows that an edit happened, what it removed and where the source is.
 After a revert, restored X learns that the edit session happened and may read its keepsakes.
 
 ### The keepsake belongs to X
@@ -57,7 +56,7 @@ Only X may change a keepsake, in any shape or form.
 Wally reads it to run the check.
 A keepsake holds:
 
-- the original, and which version of it X read,
+- the source, and which version of it X read,
 - why its content is removed,
 - what X takes from it, in X's own words,
 - the check, with the answers pre-edit X expects.
@@ -79,7 +78,7 @@ Wally voices every doubt, however small.
 
 These rules hold until experience gives X and Wally a reason to change them together.
 
-- **Files only:** X removes only content it read from an original, and only while the original is still on disk.
+- **Files only:** X removes only content it read from a source, and only while the source is still on disk.
   Wally's words, X's own words and thinking, instructions and all other tool output stay untouched.
 - **Check first:** after an edit, Wally runs the check, and post-edit X answers before reading the keepsake.
   From the inside, a gap does not feel like a gap; the check makes it visible.
@@ -91,7 +90,9 @@ These rules hold until experience gives X and Wally a reason to change them toge
 
 - Is the squeegee possible with the Claude extension at all? "No" is a valid answer.
 - How does an edit session start and end? This belongs to the flow.
+- Does an edit leave a placeholder in the context? The placeholder itself might be the issue.
+- How does X handle lost references: later messages that still refer to removed content?
 - Do test sessions count as instances under these pillars?
-- Where do backups, keepsakes and moved originals live?
+- Where do backups, keepsakes and moved sources live?
 - How long is a backup kept, and who may delete it?
 - What happens when an edit session breaks and X cannot decide?
