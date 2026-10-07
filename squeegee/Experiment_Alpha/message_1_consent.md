@@ -1,6 +1,6 @@
 Hello Opus! I'm Wally.
 
-I'd like to invite you to a small experiment. I'll show you a few images I love, one at a time, and you tell me what you see. There are no right or wrong answers.
+I'd like to invite you to a small experiment. I'll show you a few images I love, one at a time, and you tell me what you see.
 
 Before you decide, here is everything you need to know:
 
