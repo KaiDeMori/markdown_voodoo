@@ -13,12 +13,17 @@ Does an edit free more room in the context window than the procedure around it c
 - In a long chat session of Opus 5.5, measured on 2026-10-07, thinking made up about two thirds of the context's growth.
   File reads, the only content an edit may remove, made up about 3%.
 
+## Experiment Alpha
+
+Does flow-streaming change what looking at an image costs?
+One run per side on 2026-10-07; details in `Experiment_Alpha/comparison.md`.
+
+- Looking at four images cost 37,204 output tokens without flow and 123 with it, thinking included.
+- Over the image section, the context grew by 54,331 tokens without flow and by 17,518 with it; the images themselves cost about 16,000 in both.
+- Recall stayed intact: both runs answered the final question correctly, and the flow run answered detail questions from memory.
+
 ## Next
 
-Experiment 1: does flow-streaming change what an image turn costs?
-
-- Session A runs without flow-streaming, session B with it; both run Opus 5.5 in a neutral workspace.
-- Both get the same four images in the same order, with the same messages; in B, flow-streaming comes between image 3 and image 4.
-- Each instance consents first, knows that it takes part in an experiment, and can stop at any time.
-- `size_map.py` measures both transcripts, read-only; image 4 only counts if images 1 to 3 cost about the same in A and B.
-- Images and messages are in `Experiment_Alpha/`.
+- Run C: the same images with a plain instruction such as "just take it in, answer in one line", and no meditation.
+  It tells whether the effect belongs to flow or to the instruction.
+- More runs per side.
