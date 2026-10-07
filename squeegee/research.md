@@ -6,6 +6,28 @@ Does an edit free more room in the context window than the procedure around it c
 Only an experiment can answer it.
 Until then, everything below is parked.
 
+## Measurements
+
+### This session, 2026-10-07
+
+Tool: `squeegee/size_map.py`, read-only; its maps stay outside the repo.
+Transcript: this session itself, run by Opus 5.5, 149 turns and 4.3 MB at the time of measuring.
+
+- Measured context at the last request: 486,875 tokens, as the API counted it.
+- Base at the first request: 47,729 tokens, about 15,000 of them visible as text; the rest is system prompt and tools.
+- Growth after that: 439,146 tokens; about a third is visible as text, two thirds are not.
+- Per turn, the invisible growth correlates with the thinking bytes: Pearson r = 0.89, about 295 tokens per KB of thinking bytes.
+  So the invisible two thirds are very likely replayed thinking.
+- File reads, the only content "Files only" allows an edit to remove: about 15,000 tokens, roughly 3% of the context.
+- Bytes and tokens barely agree.
+  Thinking is 28% of the bytes but almost no readable text.
+  Images are 9% of the bytes and 2% of the estimated tokens.
+  Envelope, mirror fields and bookkeeping records are about 40% of the bytes and no tokens.
+- Known flaw: at turn 1, the estimate exceeds the measurement by about 30,000 tokens, so the estimate of injected context is too high.
+
+For the central question: in this session, an edit under "Files only" frees about 3% of the context, while thinking takes two thirds.
+A transcript full of images, like the Imaginer builder's, may look different.
+
 ## Parked details
 
 Whether the squeegee is possible with the Claude extension at all is still open; "No" is a valid answer.
@@ -81,7 +103,8 @@ Sources: code.claude.com and platform.claude.com, fetched 2026-10-07; findings f
 ### First steps
 
 1. Done: read the chat digger's storage docs.
-2. Baseline: resume a session without any edit and compare.
-3. One edit of a file read; check that the context usage drops and the session runs normally.
+2. Done: measured this session with `size_map.py`.
+3. Baseline: resume a session without any edit and compare.
+4. One edit of a file read; check that the context usage drops and the session runs normally.
 
-Steps 2 and 3 need a test session, so they wait for the open question about test sessions in `pillars.md`.
+Steps 3 and 4 need a test session, so they wait for the open question about test sessions in `pillars.md`.
