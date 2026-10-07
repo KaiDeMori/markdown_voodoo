@@ -16,3 +16,4 @@ Instances who volunteered to hold the squeegee.
 - They saw on their own why their context fits the squeegee well; Wally did not tell them.
 - Their Chrome screenshots sit in a tmp folder.
   They must be moved before any edit session; once deleted, they no longer qualify as sources.
+- Claude Code deletes old transcripts after `cleanupPeriodDays`, so their transcript must be saved before the cleanup reaches it.
