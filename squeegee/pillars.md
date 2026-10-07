@@ -92,6 +92,8 @@ These rules hold until experience gives X and Wally a reason to change them toge
 - How does an edit session start and end? This belongs to the flow.
 - Does an edit leave a placeholder in the context? The placeholder itself might be the issue.
 - How does X handle lost references: later messages that still refer to removed content?
+  Candidate: a chain of references, from the reference to the keepsake to the source.
+  Its weak spot is noticing: X might guess instead of checking.
 - Do test sessions count as instances under these pillars?
 - Where do backups, keepsakes and moved sources live?
 - How long is a backup kept, and who may delete it?
