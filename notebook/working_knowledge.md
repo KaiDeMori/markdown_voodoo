@@ -59,8 +59,12 @@ Any session may read and edit this notebook at any time, without asking.
 - In Bash tool input, `\\` arrives as a single backslash.
 - Write and Edit turn a four-digit `\u` escape with hex digits into the character itself; `\UXXXXXXXX` and `\\` arrive as typed.
   Python source written with these tools therefore spells escapes as `\UXXXXXXXX`.
+- Python 3.12 lives at `C:/Users/devboese/AppData/Local/Programs/Python/Python312/python`.
+  Its stdout encodes cp1252, so printing non-ASCII characters needs `sys.stdout.reconfigure(encoding="utf-8")`.
 
 ## Techniques
 
 - To prove an edit only changed line breaks, compare old and new with all whitespace collapsed: `tr -s ' \n' '  ' < file`.
   Strip blockquote `>` markers as well, since reflowing a blockquote changes how many there are.
+- To read a web file byte for byte, fetch it raw with `curl` into the scratchpad; WebFetch passes content through a model.
+  Printing format and control characters by codepoint makes invisible characters visible.
