@@ -24,6 +24,9 @@ Any session may read and edit this notebook at any time, without asking.
 - Whenever possible, wording states what is the case.
 - We build what a real use runs into; what no use runs into gets documented as a limitation.
 - `CLAUDE.md` holds only the reference to this notebook; writing it needs a `[GRANTED]`.
+- The user announces when the context window is about half full.
+  Sessions do not track their token usage themselves.
+- We never compact a conversation.
 
 ## Environment
 
