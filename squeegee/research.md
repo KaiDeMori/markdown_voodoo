@@ -28,6 +28,27 @@ Transcript: this session itself, run by Opus 5.5, 149 turns and 4.3 MB at the ti
 For the central question: in this session, an edit under "Files only" frees about 3% of the context, while thinking takes two thirds.
 A transcript full of images, like the Imaginer builder's, may look different.
 
+## Experiments
+
+### Experiment 1: flow-streaming and image turns
+
+Related to the central question only indirectly: it asks what an image turn costs, not what an edit frees.
+
+- **Question:** does flow-streaming change what an image turn costs, especially in thinking?
+- **Technique:** flow-streaming, described in `skills/flow-state/stream_to_context_window.md`.
+- **Hypothesis:** withheld from both sessions; recorded here once the buddy shares it.
+- **Sessions:** A is the control, B the experiment.
+  Both run Opus 5.5 with the same settings, on the same day, each in a neutral workspace without a notebook or `CLAUDE.md`.
+- **Consent:** the buddy asks each instance first, and each can stop at any time.
+  Each knows that it takes part in an experiment and that its transcript gets measured.
+- **Sequence in both:** images 1 to 3, then images 4 to 6.
+  The images are the same 2000 px squares from the Hubble telescope, in the same order, with the same prompt wording.
+- **B only:** flow-streaming is introduced between image 3 and image 4.
+- **Measurement:** `size_map.py` with `--growth-file` on both transcripts, read-only.
+  Per image turn, it compares visible tokens, invisible tokens and thinking bytes.
+- **Check:** images 1 to 3 must cost about the same in A and B; only then does a difference in images 4 to 6 count.
+- **Limits:** one run per session shows a direction, not proof; repeated runs come later.
+
 ## Parked details
 
 Whether the squeegee is possible with the Claude extension at all is still open; "No" is a valid answer.
