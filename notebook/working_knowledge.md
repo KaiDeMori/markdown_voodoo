@@ -30,9 +30,11 @@ Any session may read and edit this notebook at any time, without asking.
 
 ## Environment
 
+- `INDEX.md` lists where things are in this repo.
+- This repo holds the originals; every other location holds a copy.
 - The skills in `skills/<name>/` of this repo are deployed to `~/.claude/skills/<name>/`.
   The deployed copies are plain folders, not links, so they drift until redeployed.
-  A scope like `skills/<name>` means the repo copy.
+  A scope like `skills/<name>` means the original.
 - The preferred deploy mechanism is a `deploy.bat` in the skill's own folder that copies only the files and folders Claude reads, each named explicitly.
   Not every skill has one; `skills/handover-protocol-setup/deploy.bat` is the minimal example.
 - A deploy only copies; a file removed from a skill stays in its deployed copy until it is deleted there.
