@@ -27,6 +27,9 @@ watch_seat() {
     for file_location in "$seat_location"/*; do
       file_name=${file_location##*/}
       if [[ $file_name != README.md && -z ${known_files[$file_name]} ]]; then
+        # A writer's temp file is gone a second later; only a file that stays is mail.
+        sleep 1
+        [[ -e $file_location ]] || continue
         echo "$(timestamp) mail: $file_name"
         return
       fi
