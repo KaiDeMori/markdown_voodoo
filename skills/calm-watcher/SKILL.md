@@ -19,7 +19,7 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 
 | Command | Does |
 |---|---|
-| `on <seat_name>` | writes `watching.md`, waits for the first new mail or the timer, and exits |
+| `on <seat_name> [short]` | writes `watching.md`, waits for the first new mail or the timer, and exits; the long watcher by default |
 | `off <seat_name>` | deletes `watching.md` |
 | `overview` | lists every seat with its `watching.md`, or `-` without one |
 
@@ -35,6 +35,7 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 - On a wake-up, look into the seat: a new file is mail, and no new file means the timer ran out.
 - To keep watching, run `on` again.
   Nothing re-arms on its own, so a raven has time to think and react between mails.
+- The short watcher suits hall meetings, and a polite goodbye: wake up, see nobody's there, and don't re-arm.
 
 ## watching.md
 
@@ -47,7 +48,7 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 
 - Quoth the raven: check first.
   Run `overview` instead of assuming who is watching.
-- The timer runs 45 minutes; the watcher looks every 5 seconds.
+- The minutes of the long and short watcher, and how often the watcher looks, are the variables at the top of `calm_watcher.sh`.
 - A file counts as mail once it stays: a writer's temp file is gone a second later.
 - `README.md` and `watching.md` are never mail.
 - `off` does not stop a running watcher; stop its task instead.

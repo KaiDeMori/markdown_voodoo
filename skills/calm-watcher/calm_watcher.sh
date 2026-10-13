@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
 # calm_watcher: watches a raven's Hrafnsmál seat.
-# on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the timer runs out.
+# on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
-# Usage: calm_watcher.sh on|off <seat_name>, or calm_watcher.sh overview
+# Usage: calm_watcher.sh on <seat_name> [long|short]
+#        calm_watcher.sh off <seat_name>
+#        calm_watcher.sh overview
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hǫll/þing/Hrafnsmál"
 poll_interval_seconds=5
-timer_minutes=45
+long_watcher_minutes=45
+short_watcher_minutes=4
 
 verb=$1
 seat_name=$2
+watcher_length=${3:-long}
 seat_location="$hrafnsmal_location/$seat_name"
 watching_marker_file_location="$seat_location/watching.md"
 
@@ -65,6 +69,11 @@ show_overview() {
 case $verb in
   on)
     check_seat
+    case $watcher_length in
+      long) timer_minutes=$long_watcher_minutes ;;
+      short) timer_minutes=$short_watcher_minutes ;;
+      *) echo 'Long or short?'; exit 1 ;;
+    esac
     echo "until $(timestamp "+$timer_minutes minutes")" > "$watching_marker_file_location"
     # watching.md lives exactly as long as this watcher.
     trap 'rm -f "$watching_marker_file_location"' EXIT
