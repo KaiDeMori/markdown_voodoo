@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# calm_watcher: wakes a raven on the first new mail in its Hrafnsmál seat, or when the timer runs out.
+# calm_watcher: sets a raven's Watching line, then wakes it on the first new mail in its Hrafnsmál seat, or when the timer runs out.
 # Usage: calm_watcher.sh on <seat_name>
 
 haven_location='C:/haven'
@@ -14,7 +14,11 @@ seat_location="$hrafnsmal_location/$seat_name"
 shopt -s nullglob
 
 timestamp() {
-  date +%Y-%m-%dT%H:%M%:z
+  date -d "${1:-now}" +%Y-%m-%dT%H:%M%:z
+}
+
+write_watching_line() {
+  sed -i "s/^- \*\*Watching:\*\*.*/- **Watching:** $1/" "$seat_location/README.md"
 }
 
 watch_seat() {
@@ -40,5 +44,8 @@ watch_seat() {
 }
 
 case $verb in
-  on) watch_seat ;;
+  on)
+    write_watching_line "yes, until $(timestamp "+$timer_minutes minutes")"
+    watch_seat
+    ;;
 esac
