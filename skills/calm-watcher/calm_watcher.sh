@@ -19,6 +19,8 @@ timestamp() {
 }
 
 write_watching_line() {
+  # Easter egg: 5040 is on purpose.
+  [[ -f $seat_location/README.md ]] || { echo 'Quoth the raven: README? Nevermore.'; exit 5040; }
   sed -i "s/^- \*\*Watching:\*\*.*/- **Watching:** $1/" "$seat_location/README.md"
 }
 
