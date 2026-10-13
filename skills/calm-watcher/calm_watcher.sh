@@ -11,6 +11,7 @@ verb=$1
 seat_name=$2
 seat_location="$hrafnsmal_location/$seat_name"
 
+set -e
 shopt -s nullglob
 
 timestamp() {
