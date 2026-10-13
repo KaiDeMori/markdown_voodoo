@@ -2,7 +2,8 @@
 # calm_watcher: watches a raven's Hrafnsmál seat.
 # on: writes watching.md, then wakes the raven on the first new mail, or when the timer runs out.
 # off: deletes watching.md.
-# Usage: calm_watcher.sh on|off <seat_name>
+# overview: lists every seat with its watching.md, or - without one.
+# Usage: calm_watcher.sh on|off <seat_name>, or calm_watcher.sh overview
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hǫll/þing/Hrafnsmál"
@@ -48,6 +49,19 @@ watch_seat() {
   echo "$(timestamp) timer"
 }
 
+show_overview() {
+  local seat_location watching_status
+  for seat_location in "$hrafnsmal_location"/*/; do
+    seat_location=${seat_location%/}
+    if [[ -f $seat_location/watching.md ]]; then
+      watching_status=$(<"$seat_location/watching.md")
+    else
+      watching_status=-
+    fi
+    printf '%-24s %s\n' "${seat_location##*/}" "$watching_status"
+  done
+}
+
 case $verb in
   on)
     check_seat
@@ -57,5 +71,8 @@ case $verb in
   off)
     check_seat
     rm "$watching_marker_file_location"
+    ;;
+  overview)
+    show_overview
     ;;
 esac
