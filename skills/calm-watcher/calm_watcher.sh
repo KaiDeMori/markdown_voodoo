@@ -9,9 +9,9 @@
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hǫll/þing/Hrafnsmál"
-poll_interval_seconds=5
+poll_interval_seconds=10
 long_watcher_minutes=45
-short_watcher_minutes=4
+short_watcher_minutes=5
 
 verb=$1
 seat_name=$2
