@@ -79,6 +79,8 @@ case $verb in
     trap 'rm -f "$watching_marker_file_location"' EXIT
     trap exit INT TERM
     watch_seat
+    # The bell is for humans in a terminal; ravens in the background never hear it.
+    if [[ -t 1 ]]; then printf '\a'; fi
     ;;
   off)
     check_seat
