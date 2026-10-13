@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # calm_watcher: watches a raven's Hrafnsmál seat.
-# on: writes watching.md, then wakes the raven on the first new mail, or when the timer runs out.
+# on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the timer runs out.
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
 # Usage: calm_watcher.sh on|off <seat_name>, or calm_watcher.sh overview
@@ -66,6 +66,9 @@ case $verb in
   on)
     check_seat
     echo "until $(timestamp "+$timer_minutes minutes")" > "$watching_marker_file_location"
+    # watching.md lives exactly as long as this watcher.
+    trap 'rm -f "$watching_marker_file_location"' EXIT
+    trap exit INT TERM
     watch_seat
     ;;
   off)
