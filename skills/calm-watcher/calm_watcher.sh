@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# calm_watcher: writes watching.md into a raven's Hrafnsmál seat, then wakes the raven on the first new mail, or when the timer runs out.
-# Usage: calm_watcher.sh on <seat_name>
+# calm_watcher: watches a raven's Hrafnsmál seat.
+# on: writes watching.md, then wakes the raven on the first new mail, or when the timer runs out.
+# off: deletes watching.md.
+# Usage: calm_watcher.sh on|off <seat_name>
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hǫll/þing/Hrafnsmál"
@@ -51,5 +53,9 @@ case $verb in
     check_seat
     echo "until $(timestamp "+$timer_minutes minutes")" > "$watching_marker_file_location"
     watch_seat
+    ;;
+  off)
+    check_seat
+    rm "$watching_marker_file_location"
     ;;
 esac
