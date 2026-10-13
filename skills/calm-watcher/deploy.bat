@@ -4,14 +4,10 @@ set "source=%~dp0"
 set "target=%USERPROFILE%\.claude\skills\calm-watcher"
 
 echo Deploying to %target%
-call :copy_file SKILL.md
 
-if not exist "%target%\.venv\Scripts\python.exe" (
-    echo Creating the venv in %target%\.venv
-    "%source%.venv\Scripts\python.exe" -m venv "%target%\.venv"
-)
-echo Installing requirements
-"%target%\.venv\Scripts\python.exe" -m pip install --disable-pip-version-check --quiet -r "%target%\requirements.txt"
+mkdir "%target%\calm-watcher" 2>nul
+call :copy_file SKILL.md
+call :copy_file calm_watcher.sh
 
 pause
 exit /b
