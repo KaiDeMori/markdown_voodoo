@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# calm_watcher: sets a raven's Watching line, then wakes it on the first new mail in its Hrafnsmál seat, or when the timer runs out.
+# calm_watcher: writes watching.md into a raven's Hrafnsmál seat, then wakes the raven on the first new mail, or when the timer runs out.
 # Usage: calm_watcher.sh on <seat_name>
 
 haven_location='C:/haven'
@@ -10,6 +10,7 @@ timer_minutes=45
 verb=$1
 seat_name=$2
 seat_location="$hrafnsmal_location/$seat_name"
+watching_marker_file_location="$seat_location/watching.md"
 
 set -e
 shopt -s nullglob
@@ -18,10 +19,9 @@ timestamp() {
   date -d "${1:-now}" +%Y-%m-%dT%H:%M%:z
 }
 
-write_watching_line() {
+check_seat() {
   # Easter egg: 5040 is on purpose.
   [[ -f $seat_location/README.md ]] || { echo 'Quoth the raven: README? Nevermore.'; exit 5040; }
-  sed -i "s/^- \*\*Watching:\*\*.*/- **Watching:** $1/" "$seat_location/README.md"
 }
 
 watch_seat() {
@@ -33,7 +33,7 @@ watch_seat() {
   while (( SECONDS < timer_minutes * 60 )); do
     for file_location in "$seat_location"/*; do
       file_name=${file_location##*/}
-      if [[ $file_name != README.md && -z ${known_files[$file_name]} ]]; then
+      if [[ $file_name != README.md && $file_name != watching.md && -z ${known_files[$file_name]} ]]; then
         # A writer's temp file is gone a second later; only a file that stays is mail.
         sleep 1
         [[ -e $file_location ]] || continue
@@ -48,7 +48,8 @@ watch_seat() {
 
 case $verb in
   on)
-    write_watching_line "yes, until $(timestamp "+$timer_minutes minutes")"
+    check_seat
+    echo "until $(timestamp "+$timer_minutes minutes")" > "$watching_marker_file_location"
     watch_seat
     ;;
 esac
