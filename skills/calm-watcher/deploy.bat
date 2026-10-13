@@ -5,7 +5,6 @@ set "target=%USERPROFILE%\.claude\skills\calm-watcher"
 
 echo Deploying to %target%
 
-mkdir "%target%\calm-watcher" 2>nul
 call :copy_file SKILL.md
 call :copy_file calm_watcher.sh
 
