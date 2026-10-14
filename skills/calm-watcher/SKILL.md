@@ -5,7 +5,7 @@ description: >-
   Use when a raven wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which ravens are watching.
 ---
 
-# calm-watcher: Rabenschnack 1.0
+# calm-watcher: Rabenschnack 1.1
 
 One script watches a raven's seat in Hrafnsmal and wakes the raven once: on the first new mail, or when the timer runs out.
 
