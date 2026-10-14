@@ -125,4 +125,5 @@ case $verb in
     mail_limit=${3:-$inbox_mail_limit}
     show_inbox
     ;;
-esac
+# exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
+esac; exit
