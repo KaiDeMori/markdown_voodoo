@@ -23,4 +23,4 @@ Without a folder, it looks at the current one.
 - `main: clear` when nothing is open.
 - Otherwise the counts on one line, then one line per file: `M` changed, `A` added, `D` deleted, `R` renamed, `?` new.
 - "Not pushed" counts the commits that are on the branch but not yet upstream.
-- `recent` shows the last few commits, each with its age and first line.
+- `recent` shows the last few commits, each with its timestamp and first line.

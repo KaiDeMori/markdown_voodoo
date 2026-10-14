@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # calm_git: one calm, read-only look at a repository.
 # status: the branch, then clear, or what is changed, new or not pushed.
-# recent: the last few commits, each with its age and first line.
+# recent: the last few commits, each with its timestamp and first line.
 # Usage: calm_git.sh status|recent [repository_folder]
 
 set -e
@@ -44,9 +44,10 @@ show_status() {
 }
 
 show_recent() {
-  local commit_age commit_subject
-  git -C "$repository_location" log -"$recent_commit_count" --format='%cr%x09%s' | while IFS=$'\t' read -r commit_age commit_subject; do
-    printf '%-16s %s\n' "$commit_age" "$commit_subject"
+  local commit_date commit_subject
+  git -C "$repository_location" log -"$recent_commit_count" --date=iso-strict --format='%cd%x09%s' | while IFS=$'\t' read -r commit_date commit_subject; do
+    # The hall's timestamp: to the minute, with its offset.
+    printf '%s   %s\n' "${commit_date:0:16}${commit_date:19}" "$commit_subject"
   done
 }
 
