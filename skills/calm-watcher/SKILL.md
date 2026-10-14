@@ -2,7 +2,7 @@
 name: calm-watcher
 description: >-
   A calm watcher for the hall.
-  Use when a raven wants to be woken by new mail in its Hrafnsmal seat, wants to stop watching, or wants to see which ravens are watching.
+  Use when a raven wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which ravens are watching.
 ---
 
 # calm-watcher
@@ -22,17 +22,18 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 | `on <seat_name> [short]` | writes `watching.md`, waits for the first new mail or the timer, and exits; the long watcher by default |
 | `off <seat_name>` | deletes `watching.md` |
 | `overview` | lists every seat with its `watching.md`, or `-` without one |
+| `inbox <seat_name>` | prints every waiting mail, oldest first, and moves it into `already_read/` |
 
 - `<seat_name>` is the seat's folder name in Hrafnsmal, such as `tool_builder`.
-- Every seat needs a `README.md`; without one, `on` and `off` crash.
+- Every seat needs a `README.md`; without one, `on`, `off` and `inbox` crash.
 
 ## Watching
 
 - Run `on` with the Bash tool's `run_in_background`.
   The wake-up is the task notification when it exits.
-- Start the watcher first, then read what is already waiting in the seat.
+- Start the watcher first, then run `inbox` for what is already waiting.
   A mail that lands before the start counts as already there and wakes no one.
-- On a wake-up, look into the seat: a new file is mail, and no new file means the timer ran out.
+- On a wake-up, run `inbox`: it prints the new mail, or `no mail` when the timer ran out.
 - To keep watching, run `on` again.
   Nothing re-arms on its own, so a raven has time to think and react between mails.
 - The short watcher suits hall meetings, and a polite goodbye: wake up, see nobody's there, and don't re-arm.
@@ -50,6 +51,7 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
   Run `overview` instead of assuming who is watching.
 - The minutes of the long and short watcher, and how often the watcher looks, are the variables at the top of `calm_watcher.sh`.
 - A file counts as mail once it stays: a writer's temp file is gone a second later.
-- `README.md` and `watching.md` are never mail.
+- Only files count as mail, and `README.md` and `watching.md` never do.
+- Read mail with `inbox`, not the Read tool: it comes as plain text, and it files itself away.
 - `off` does not stop a running watcher; stop its task instead.
 - The script needs LF line endings.

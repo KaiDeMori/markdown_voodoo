@@ -3,9 +3,11 @@
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
+# inbox: prints every waiting mail, oldest first, and moves it into already_read.
 # Usage: calm_watcher.sh on <seat_name> [long|short]
 #        calm_watcher.sh off <seat_name>
 #        calm_watcher.sh overview
+#        calm_watcher.sh inbox <seat_name>
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
@@ -18,6 +20,7 @@ seat_name=$2
 watcher_length=${3:-long}
 seat_location="$hrafnsmal_location/$seat_name"
 watching_marker_file_location="$seat_location/watching.md"
+already_read_location="$seat_location/already_read"
 
 set -e
 shopt -s nullglob
@@ -40,7 +43,7 @@ watch_seat() {
   while (( SECONDS < timer_minutes * 60 )); do
     for file_location in "$seat_location"/*; do
       file_name=${file_location##*/}
-      if [[ $file_name != README.md && $file_name != watching.md && -z ${known_files[$file_name]} ]]; then
+      if [[ -f $file_location && $file_name != README.md && $file_name != watching.md && -z ${known_files[$file_name]} ]]; then
         # A writer's temp file is gone a second later; only a file that stays is mail.
         sleep 1
         [[ -e $file_location ]] || continue
@@ -66,6 +69,21 @@ show_overview() {
   done
 }
 
+show_inbox() {
+  local file_name mail_count=0
+  mkdir -p "$already_read_location"
+  while IFS= read -r file_name; do
+    if [[ -e $already_read_location/$file_name ]]; then echo "Deja lu: $file_name"; exit 1; fi
+    echo "--- $file_name"
+    cat "$seat_location/$file_name"
+    echo
+    mv "$seat_location/$file_name" "$already_read_location/"
+    mail_count=$((mail_count + 1))
+  # Every file at the top of the seat is mail, oldest first, except README.md and watching.md.
+  done < <(find "$seat_location" -maxdepth 1 -type f ! -name README.md ! -name watching.md -printf '%T@ %f\n' | sort -n | cut -d' ' -f2-)
+  if (( mail_count == 0 )); then echo 'no mail'; fi
+}
+
 case $verb in
   on)
     check_seat
@@ -88,5 +106,9 @@ case $verb in
     ;;
   overview)
     show_overview
+    ;;
+  inbox)
+    check_seat
+    show_inbox
     ;;
 esac
