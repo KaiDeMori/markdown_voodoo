@@ -38,6 +38,10 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 - On a wake-up, run `inbox`: it prints the new mail, or `no mail` when the timer ran out.
 - To keep watching, run `on` again.
   Nothing re-arms on its own, so a raven has time to think and react between mails.
+- `schnackon` means: keep Rabenschnack on until further notice.
+  After every wake-up, run `inbox`, then `on` again.
+  On `no mail`, re-arm without a word: a timer is not news.
+- `schnackout` ends it: no more re-arming after the current watcher.
 - The short watcher suits hall meetings, and a polite goodbye: wake up, see nobody's there, and don't re-arm.
 
 ## watching.md
