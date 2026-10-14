@@ -22,7 +22,7 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 | `on <seat_name> [short]` | writes `watching.md`, waits for the first new mail or the timer, and exits; the long watcher by default |
 | `off <seat_name>` | deletes `watching.md` |
 | `overview` | lists every seat with its `watching.md`, or `-` without one |
-| `inbox <seat_name>` | prints every waiting mail, oldest first, and moves it into `already_read/` |
+| `inbox <seat_name> [mail_limit]` | prints waiting mail, oldest first, and moves it into `already_read/`; stops at a number and a size limit, and lists what is still waiting |
 
 - `<seat_name>` is the seat's folder name in Hrafnsmal, such as `tool_builder`.
 - Every seat needs a `README.md`; without one, `on`, `off` and `inbox` crash.
@@ -49,9 +49,11 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 
 - Quoth the raven: check first.
   Run `overview` instead of assuming who is watching.
-- The minutes of the long and short watcher, and how often the watcher looks, are the variables at the top of `calm_watcher.sh`.
+- The minutes of the long and short watcher, how often the watcher looks, and the inbox limits are the variables at the top of `calm_watcher.sh`.
 - A file counts as mail once it stays: a writer's temp file is gone a second later.
 - Only files count as mail, and `README.md` and `watching.md` never do.
 - Read mail with `inbox`, not the Read tool: it comes as plain text, and it files itself away.
+- The first mail of each `inbox` always comes, so a big mail arrives alone.
+  `inbox <seat_name> 1` hands out one mail per call.
 - `off` does not stop a running watcher; stop its task instead.
 - The script needs LF line endings.

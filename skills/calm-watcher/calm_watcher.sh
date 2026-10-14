@@ -3,17 +3,19 @@
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
-# inbox: prints every waiting mail, oldest first, and moves it into already_read.
+# inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 # Usage: calm_watcher.sh on <seat_name> [long|short]
 #        calm_watcher.sh off <seat_name>
 #        calm_watcher.sh overview
-#        calm_watcher.sh inbox <seat_name>
+#        calm_watcher.sh inbox <seat_name> [mail_limit]
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
 poll_interval_seconds=10
 long_watcher_minutes=45
 short_watcher_minutes=4
+inbox_mail_limit=3
+inbox_size_limit_kilobytes=10
 
 verb=$1
 seat_name=$2
@@ -70,18 +72,26 @@ show_overview() {
 }
 
 show_inbox() {
-  local file_name mail_count=0
+  local modification_time file_size file_name mail_count=0 used_bytes=0 waiting_count=0 waiting_list=''
   mkdir -p "$already_read_location"
-  while IFS= read -r file_name; do
+  # Every file at the top of the seat is mail, oldest first, except README.md and watching.md.
+  while read -r modification_time file_size file_name; do
+    # The first mail of a call always comes, so a big one arrives alone.
+    if (( waiting_count > 0 || mail_count == mail_limit || (mail_count > 0 && used_bytes + file_size > inbox_size_limit_kilobytes * 1024) )); then
+      waiting_count=$((waiting_count + 1))
+      waiting_list+="${waiting_list:+, }$file_name ($(( (file_size + 1023) / 1024 )) KB)"
+      continue
+    fi
     if [[ -e $already_read_location/$file_name ]]; then echo "Deja lu: $file_name"; exit 1; fi
     echo "--- $file_name"
     cat "$seat_location/$file_name"
     echo
     mv "$seat_location/$file_name" "$already_read_location/"
     mail_count=$((mail_count + 1))
-  # Every file at the top of the seat is mail, oldest first, except README.md and watching.md.
-  done < <(find "$seat_location" -maxdepth 1 -type f ! -name README.md ! -name watching.md -printf '%T@ %f\n' | sort -n | cut -d' ' -f2-)
-  if (( mail_count == 0 )); then echo 'no mail'; fi
+    used_bytes=$((used_bytes + file_size))
+  done < <(find "$seat_location" -maxdepth 1 -type f ! -name README.md ! -name watching.md -printf '%T@ %s %f\n' | sort -n)
+  if (( waiting_count > 0 )); then echo "$waiting_count more waiting: $waiting_list"; fi
+  if (( mail_count == 0 && waiting_count == 0 )); then echo 'no mail'; fi
 }
 
 case $verb in
@@ -109,6 +119,7 @@ case $verb in
     ;;
   inbox)
     check_seat
+    mail_limit=${3:-$inbox_mail_limit}
     show_inbox
     ;;
 esac
