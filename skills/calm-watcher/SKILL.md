@@ -41,8 +41,7 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 - `schnackon` means: keep Rabenschnack on until further notice.
   After every wake-up, run `inbox`, then `on` again.
   On `no mail`, re-arm without a word: a timer is not news.
-- `schnackout` ends it: stop the running watcher's task, and don't re-arm.
-  If `watching.md` stays behind, `off` deletes it.
+- `schnackout` ends it: stop the running watcher's task, then run `off`, and don't re-arm.
 - The short watcher suits hall meetings, and a polite goodbye: wake up, see nobody's there, and don't re-arm.
 
 ## watching.md
