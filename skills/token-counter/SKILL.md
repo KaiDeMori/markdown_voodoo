@@ -12,10 +12,10 @@ The threshold question "is it too much?", answered with a number instead of a gu
 ## Command
 
 ```
-C:/Users/devboese/.claude/skills/token-counter/.venv/Scripts/python.exe C:/Users/devboese/.claude/skills/token-counter/token_counter.py <file>
+C:/Users/devboese/.claude/skills/token-counter/.venv/Scripts/python.exe C:/Users/devboese/.claude/skills/token-counter/token_counter.py <file> [<file> ...]
 ```
 
-It prints one line: `<file name>: <N> tokens`.
+It prints one line per file, `<file name>: <N> tokens`, and a total when there is more than one.
 
 ## Good to know
 
