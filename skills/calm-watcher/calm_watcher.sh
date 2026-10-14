@@ -73,7 +73,6 @@ show_overview() {
 
 show_inbox() {
   local modification_time file_size file_size_text file_name mail_count=0 used_bytes=0 waiting_count=0 waiting_list=''
-  mkdir -p "$already_read_location"
   # Every file at the top of the seat is mail, oldest first, except README.md and watching.md.
   while read -r modification_time file_size file_name; do
     # The first mail of a call always comes, so a big one arrives alone.
@@ -86,7 +85,10 @@ show_inbox() {
     if [[ -e $already_read_location/$file_name ]]; then echo "Deja lu: $file_name"; exit 1; fi
     echo "--- $file_name"
     cat "$seat_location/$file_name"
+    # A mail without a final line break still gets its own line end, so the next header stays apart.
+    [[ -z $(tail -c 1 "$seat_location/$file_name") ]] || echo
     echo
+    mkdir -p "$already_read_location"
     mv "$seat_location/$file_name" "$already_read_location/"
     mail_count=$((mail_count + 1))
     used_bytes=$((used_bytes + file_size))
