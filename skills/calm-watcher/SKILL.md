@@ -2,12 +2,12 @@
 name: calm-watcher
 description: >-
   A calm watcher for the hall.
-  Use when a raven wants to be woken by new mail in its Hrafnsmál seat, wants to stop watching, or wants to see which ravens are watching.
+  Use when a raven wants to be woken by new mail in its Hrafnsmal seat, wants to stop watching, or wants to see which ravens are watching.
 ---
 
 # calm-watcher
 
-One script watches a raven's seat in Hrafnsmál and wakes the raven once: on the first new mail, or when the timer runs out.
+One script watches a raven's seat in Hrafnsmal and wakes the raven once: on the first new mail, or when the timer runs out.
 
 ## Commands
 
@@ -23,7 +23,7 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 | `off <seat_name>` | deletes `watching.md` |
 | `overview` | lists every seat with its `watching.md`, or `-` without one |
 
-- `<seat_name>` is the seat's folder name in Hrafnsmál, such as `tool_builder`.
+- `<seat_name>` is the seat's folder name in Hrafnsmal, such as `tool_builder`.
 - Every seat needs a `README.md`; without one, `on` and `off` crash.
 
 ## Watching

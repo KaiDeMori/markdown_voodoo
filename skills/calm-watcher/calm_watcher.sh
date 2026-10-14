@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# calm_watcher: watches a raven's Hrafnsmál seat.
+# calm_watcher: watches a raven's Hrafnsmal seat.
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
@@ -8,7 +8,7 @@
 #        calm_watcher.sh overview
 
 haven_location='C:/haven'
-hrafnsmal_location="$haven_location/Hǫll/þing/Hrafnsmál"
+hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
 poll_interval_seconds=10
 long_watcher_minutes=45
 short_watcher_minutes=4
