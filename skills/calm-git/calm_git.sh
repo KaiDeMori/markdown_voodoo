@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # calm_git: one calm, read-only look at a repository.
 # status: the branch, then clear, or what is changed, new or not pushed.
-# Usage: calm_git.sh status [repository_folder]
+# recent: the last few commits, each with its age and first line.
+# Usage: calm_git.sh status|recent [repository_folder]
 
 set -e
+
+recent_commit_count=3
 
 verb=$1
 repository_location=${2:-.}
@@ -40,6 +43,14 @@ show_status() {
   fi
 }
 
+show_recent() {
+  local commit_age commit_subject
+  git -C "$repository_location" log -"$recent_commit_count" --format='%cr%x09%s' | while IFS=$'\t' read -r commit_age commit_subject; do
+    printf '%-16s %s\n' "$commit_age" "$commit_subject"
+  done
+}
+
 case $verb in
   status) show_status ;;
+  recent) show_recent ;;
 esac
