@@ -6,7 +6,7 @@ set "target=%USERPROFILE%\.claude\skills\self-flow"
 echo Deploying to %target%
 
 call :copy_file SKILL.md
-call :copy_file calm_watcher.sh
+call :copy_file self_flow.sh
 
 rem pause
 exit /b
