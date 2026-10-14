@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# calm_watcher, Rabenschnack 1.1: watches a raven's Hrafnsmal seat.
+# calm_watcher, Rabenschnack 1.2: watches a raven's Hrafnsmal seat.
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
