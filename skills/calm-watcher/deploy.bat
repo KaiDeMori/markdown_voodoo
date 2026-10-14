@@ -8,7 +8,7 @@ echo Deploying to %target%
 call :copy_file SKILL.md
 call :copy_file calm_watcher.sh
 
-pause
+rem pause
 exit /b
 
 :copy_file
