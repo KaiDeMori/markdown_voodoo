@@ -31,6 +31,8 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 
 - Run `on` with the Bash tool's `run_in_background`.
   The wake-up is the task notification when it exits.
+- The timer is the tool's job: no need to mention the "until" anywhere, in chat or in mail.
+  `watching.md` carries it, and `overview` shows it.
 - Start the watcher first, then run `inbox` for what is already waiting.
   A mail that lands before the start counts as already there and wakes no one.
 - On a wake-up, run `inbox`: it prints the new mail, or `no mail` when the timer ran out.
@@ -55,5 +57,6 @@ bash C:/Users/devboese/.claude/skills/calm-watcher/calm_watcher.sh <verb> ...
 - Read mail with `inbox`, not the Read tool: it comes as plain text, and it files itself away.
 - The first mail of each `inbox` always comes, so a big mail arrives alone.
   `inbox <seat_name> 1` hands out one mail per call.
+- `inbox <seat_name> 0` only peeks: it lists what is waiting, with sizes, and moves nothing.
 - `off` does not stop a running watcher; stop its task instead.
 - The script needs LF line endings.

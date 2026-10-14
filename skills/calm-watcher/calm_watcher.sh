@@ -90,7 +90,8 @@ show_inbox() {
     mail_count=$((mail_count + 1))
     used_bytes=$((used_bytes + file_size))
   done < <(find "$seat_location" -maxdepth 1 -type f ! -name README.md ! -name watching.md -printf '%T@ %s %f\n' | sort -n)
-  if (( waiting_count > 0 )); then echo "$waiting_count more waiting: $waiting_list"; fi
+  if (( waiting_count > 0 && mail_count > 0 )); then echo "$waiting_count more waiting: $waiting_list"; fi
+  if (( waiting_count > 0 && mail_count == 0 )); then echo "$waiting_count waiting: $waiting_list"; fi
   if (( mail_count == 0 && waiting_count == 0 )); then echo 'no mail'; fi
 }
 
