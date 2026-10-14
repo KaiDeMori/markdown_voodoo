@@ -4,7 +4,7 @@
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
 # inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
-# Usage: calm_watcher.sh on <seat_name> [long|short]
+# Usage: calm_watcher.sh on <seat_name> [long|short|<minutes>]
 #        calm_watcher.sh off <seat_name>
 #        calm_watcher.sh overview
 #        calm_watcher.sh inbox <seat_name> [mail_limit]
@@ -72,14 +72,15 @@ show_overview() {
 }
 
 show_inbox() {
-  local modification_time file_size file_name mail_count=0 used_bytes=0 waiting_count=0 waiting_list=''
+  local modification_time file_size file_size_text file_name mail_count=0 used_bytes=0 waiting_count=0 waiting_list=''
   mkdir -p "$already_read_location"
   # Every file at the top of the seat is mail, oldest first, except README.md and watching.md.
   while read -r modification_time file_size file_name; do
     # The first mail of a call always comes, so a big one arrives alone.
     if (( waiting_count > 0 || mail_count == mail_limit || (mail_count > 0 && used_bytes + file_size > inbox_size_limit_kilobytes * 1024) )); then
       waiting_count=$((waiting_count + 1))
-      waiting_list+="${waiting_list:+, }$file_name ($(( (file_size + 1023) / 1024 )) KB)"
+      if (( file_size < 1024 )); then file_size_text='<1 KB'; else file_size_text="$(( (file_size + 1023) / 1024 )) KB"; fi
+      waiting_list+="${waiting_list:+, }$file_name ($file_size_text)"
       continue
     fi
     if [[ -e $already_read_location/$file_name ]]; then echo "Deja lu: $file_name"; exit 1; fi
@@ -101,7 +102,8 @@ case $verb in
     case $watcher_length in
       long) timer_minutes=$long_watcher_minutes ;;
       short) timer_minutes=$short_watcher_minutes ;;
-      *) echo 'Long or short?'; exit 1 ;;
+      *[!0-9]*) echo 'Long, short, or minutes?'; exit 1 ;;
+      *) timer_minutes=$watcher_length ;;
     esac
     echo "until $(timestamp "+$timer_minutes minutes")" > "$watching_marker_file_location"
     # watching.md lives exactly as long as this watcher.
