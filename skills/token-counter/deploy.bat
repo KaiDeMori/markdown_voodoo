@@ -8,10 +8,10 @@ mkdir "%target%" 2>nul
 call :copy_file SKILL.md
 call :copy_file token_counter.py
 call :copy_file requirements.txt
-if exist "%source%API_key.txt" (
-    call :copy_file API_key.txt
+if exist "%source%hall_key.txt" (
+    call :copy_file hall_key.txt
 ) else (
-    echo skipped API_key.txt - the key file is missing
+    echo skipped hall_key.txt - the key file is missing
 )
 
 if not exist "%target%\.venv\Scripts\python.exe" (

@@ -10,7 +10,7 @@ import sys
 from anthropic import Anthropic
 
 model_name = "claude-opus-5-5"
-API_key_location = pathlib.Path(__file__).parent / "API_key.txt"
+hall_key_location = pathlib.Path(__file__).parent / "hall_key.txt"
 image_media_types = {
     ".png": "image/png",
     ".jpg": "image/jpeg",
@@ -29,7 +29,7 @@ if media_type:
 else:
     message_content = file_location.read_text(encoding="utf-8")
 
-token_count = Anthropic(api_key=API_key_location.read_text(encoding="utf-8").strip()).messages.count_tokens(
+token_count = Anthropic(api_key=hall_key_location.read_text(encoding="utf-8").strip()).messages.count_tokens(
     model=model_name,
     messages=[{"role": "user", "content": message_content}],
 ).input_tokens
