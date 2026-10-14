@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# calm_git: one calm, read-only look at a repository.
+# calm_git: one calm, read-only look at the repository of the current folder.
 # status: the branch, then clear, or what is changed, new or not pushed.
 # recent: the last few commits, each with its timestamp and first line.
-# Usage: calm_git.sh status|recent [repository_folder]
+# Usage: calm_git.sh status
+#        calm_git.sh recent [count]
 
 set -e
 
 recent_commit_count=3
 
 verb=$1
-repository_location=${2:-.}
 
 show_status() {
   local branch_line status_line status_code branch_name summary ahead_count=0 changed_count=0 new_count=0
@@ -26,7 +26,7 @@ show_status() {
         file_lines+=("  ${status_code// /} ${status_line:3}")
       fi
     done
-  } < <(git -C "$repository_location" status --porcelain --branch)
+  } < <(git status --porcelain --branch)
   branch_name=${branch_line#'## '}
   branch_name=${branch_name%%...*}
   if [[ $branch_line =~ ahead\ ([0-9]+) ]]; then ahead_count=${BASH_REMATCH[1]}; fi
@@ -45,7 +45,7 @@ show_status() {
 
 show_recent() {
   local commit_date commit_subject
-  git -C "$repository_location" log -"$recent_commit_count" --date=iso-strict --format='%cd%x09%s' | while IFS=$'\t' read -r commit_date commit_subject; do
+  git log -"$recent_commit_count" --date=iso-strict --format='%cd%x09%s' | while IFS=$'\t' read -r commit_date commit_subject; do
     # The hall's timestamp: to the minute, with its offset.
     printf '%s   %s\n' "${commit_date:0:16}${commit_date:19}" "$commit_subject"
   done
@@ -53,5 +53,8 @@ show_recent() {
 
 case $verb in
   status) show_status ;;
-  recent) show_recent ;;
+  recent)
+    recent_commit_count=${2:-$recent_commit_count}
+    show_recent
+    ;;
 esac
