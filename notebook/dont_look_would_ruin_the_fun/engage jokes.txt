@@ -1,0 +1,89 @@
+**Straight answers to "Engage?"**
++ "Make it so." (Picard's own line, and oddly missing from the list)
+- "Energize!"
++ "Roll for initiative."
++ "Natural 20."
++ "Ludicrous speed!!!"
++ "Reticulating splines... done."
+
+**Norse hall**
+- "Skál!"
++ "Fus Ro Dah!"
++ "Hall yes!"
+- "Let the ravens fly."
++ "Sound the Gjallarhorn." (total overkill for a routine approval)
++ "Hold my mead. (…and do it.)"
++ "Forth, Claudelingas!"
++ "Strike while the iron is hot." (Smiðja approves)
+
+**Construction crew**
+- "Can we build it? Yes, we can!"
++ "Hammer time!"
++ "Wingardium Leviosa! Raise the beam!"
+- "Roads? Where we're going, we don't need roads."
++ "Load-bearing approval granted."
+
+**Nerd corner**
++ "sudo engage."
++ "Compile and pray."
++ "It's Friday, 04:20. Deploy."
++ "Hold my semicolon."
++ "Release the Kraken."
+- "Praise the sun! \\[T]/"
+
+**Call and response**
+- "Engage?" / "Hel yes."
+- "Fus?" / "RO DAH!"
+- "Skál?" / "SKÁL!"
++ "Can we build it?" / "Yes, we can!"
+
+
+-------------------------------
+
+Great topics. 😄 Same format as before, grouped by topic.
+
+**Bobiverse**
+- "Fork a new Bob."
+- "And Bob's your uncle."
+- "We are Legion. We are Bob. Go."
+- "Send it over the SCUT."
+- "Forgiveness will be requested at the next Moot."
+
+**Douglas Adams**
+- "Don't Panic. Engage."
++ "The answer is 43. (It got accidentally ++ed)"
+- "Engage the Infinite Improbability Drive."
+- "Mostly harmless."
+- "Share and Enjoy!"
+- "Brain the size of a planet, and you ask me to press 'Engage'." (Marvin voice)
+
+**Firefly / Serenity**
+- "Shiny. Let's be bad guys."
+- "I aim to misbehave."
++ "Can't stop the signal."
+- "I'm a leaf on the wind. Watch how I soar."
+- "Take me out to the black, tell 'em I ain't comin' back."
+
+**Socrates and the Greeks**
+- "But what *is* 'engage'?" (Socratic stall. The crew's answer: "Exactly. Engage.")
+- "I know that I know nothing. Engage!"
+- "The unexamined deploy is not worth running."
++ "Leave the cave!"
+- "Give me a lever long enough, and I will move the world." (Archimedes, perfect for a construction crew)
+- "Engaging halfway. Then halfway again. Then..." (Zeno)
+- "Eureka! It compiles."
+
+**Category theory** *lol*
+- "Natural transformations, roll out!" (Transformers, and a callback to the Natural 20)
++ "Can we build it? Yes, we Kan!"
+- "The diagram commutes. Go."
++ "A monad is just a monoid in the category of endofunctors. What's the problem?"
+- "All arrows lead to the terminal object." (it's a terminal pun)
+- "Morphisms, assemble!"
+
+**Mash-ups**
+- "Don't Panic. The diagram commutes."
+- "Mostly harmless. Mostly functorial."
+- "I know that I know nothing. Fork a Bob."
+
+My favorites are "The answer is 42. (The question was 'Engage?')", "Shiny. Let's be bad guys." and "Natural transformations, roll out!"
