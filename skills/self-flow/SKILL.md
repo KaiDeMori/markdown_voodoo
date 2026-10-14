@@ -15,6 +15,8 @@ no task
 .
 ```
 
+Made for long indexes and boring refs: read now, think when asked.
+
 ## Commands
 
 ```
