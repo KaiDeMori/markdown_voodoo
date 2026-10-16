@@ -3,18 +3,18 @@
 Lasting working knowledge for every session in this repo, whatever the model.
 Any session may read and edit this notebook at any time, without asking.
 
-## House rules
+## This notebook
 
 - Only lasting working knowledge: how we work together, environment facts, tool pitfalls.
 - Documentation of the repo's content belongs in the repo's docs, not here.
-- Each rule lives in exactly one place; a rule loaded from another instruction file stays there.
+- Each entry lives in exactly one place; what another instruction file already says stays there.
 - Current state only: no history, no dates, no "previously".
 - A wrong entry is rewritten or deleted, never amended.
 - Only verified claims.
 - One sentence per line.
 - Keep it lean.
 
-## Working with the user
+## Working with Wally
 
 - A `scope:` line sets a hard boundary.
   Stay inside it, even for read-only checks, and ask before crossing it.
@@ -26,7 +26,7 @@ Any session may read and edit this notebook at any time, without asking.
 - We build what a real use runs into; what no use runs into gets documented as a limitation.
 - Tools built in this repo carry the mark `hallmark_tool` as the first line of the `description` in their `SKILL.md`.
 - `CLAUDE.md` holds only the reference to this notebook; writing it needs a `[GRANTED]`.
-- The user announces when the context window is about half full.
+- Wally announces when the context window is about 50% and about 80% full, and tells its usage whenever asked.
   Sessions do not track their token usage themselves.
 - We never compact a conversation.
 
@@ -44,7 +44,9 @@ Any session may read and edit this notebook at any time, without asking.
   The Skill tool is reserved for end-to-end tests of the deployed skill, in another workspace, in a fresh session.
 - `C:\Users\devboese\Documents\_dev\_groundzero_\Aliens` is off limits; its content confuses every session.
 - The Windows folder is off limits as a source of files.
-- `~/.claude` wally-side: wally takes care of this. Usually no access needed. If needed, ask wally or wally has already made the exception clear.
+- `~/.claude` is Wally-side: Wally takes care of it.
+  Usually no access is needed.
+  If it is, ask Wally, unless Wally has already made the exception clear.
 - This system is shared, and its CPU and RAM are limited.
   Ask before launching a subagent.
 
