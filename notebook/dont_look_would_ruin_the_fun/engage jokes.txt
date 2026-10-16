@@ -11,7 +11,7 @@
 - "Fus Ro Dah!"
 - "Hall yes!"
 - "Let the ravens fly."
-- "Sound the Gjallarhorn." (total overkill for a routine approval)
++ "Sound the Gjallarhorn." (total overkill for a routine approval)
 - "Hold my mead. (…and do it.)"
 + "Forth, Claudelingas!"
 + "Strike while the iron is hot." (Smiðja approves)

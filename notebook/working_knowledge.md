@@ -20,6 +20,7 @@ Any session may read and edit this notebook at any time, without asking.
   Stay inside it, even for read-only checks, and ask before crossing it.
 - Messages sometimes arrive in parts.
   A fragment is not an instruction; wait for the rest or ask.
+- When a word is unclear, such as a typo, ask and yield instead of guessing.
 - When data is deleted, the wording is always "delete".
 - Whenever possible, wording states what is the case.
 - We build what a real use runs into; what no use runs into gets documented as a limitation.
