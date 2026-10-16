@@ -41,6 +41,15 @@ To: otis_builder
 You ok buddy?
 ```
 
+Text with backticks, `$` or apostrophes goes into a quoted heredoc, which bash passes on exactly as written:
+
+```
+send tool_builder otis_builder "$(cat <<'EOF'
+see `haven:/Hall/NEWS.md`, it's all there.
+EOF
+)"
+```
+
 - Quoted text may span several lines.
 - One seat sends another at most one mail per second; a second one is refused, and no mail is ever overwritten.
 - Writing a mail by hand still works: one file in the target seat, in the same format.
