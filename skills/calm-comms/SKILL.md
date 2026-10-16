@@ -1,6 +1,7 @@
 ---
 name: calm-comms
 description: >-
+  WIP, not ready yet: use calm-watcher instead.
   A calm watcher for the hall.
   Use when a raven wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which ravens are watching.
 ---
