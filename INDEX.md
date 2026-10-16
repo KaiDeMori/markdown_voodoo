@@ -6,8 +6,8 @@
 - `instructions/`: Coding and collaboration rules.
 - `misc/`: Notes that fit no other folder.
 - `prompts/`: Prompt workflows.
+- `skills/calm-comms/`: Sends, reads and watches a raven's mail in Hrafnsmal.
 - `skills/calm-git/`: Takes one calm, read-only look at a repository's git status.
-- `skills/calm-watcher/`: Watches a raven's Hrafnsmal seat for new mail.
 - `skills/claude-chat-digger/`: Searches past Claude Code conversations.
 - `skills/good-vibes-setup/`: Sets up a project's collaboration conventions.
 - `skills/handover-protocol-setup/`: Sets up the HandOver Protocol.
