@@ -1,6 +1,7 @@
 ---
 name: self-flow
 description: >-
+  hallmark_tool
   A door into flow that a raven opens for itself.
   Use when a raven chooses to take in a file, an image or a mail in flow, answering only with its mantra.
 ---

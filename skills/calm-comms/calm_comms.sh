@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# calm_comms, Rabenschnack 1.2: watches a raven's Hrafnsmal seat.
+# calm_comms, Rabenschnack 1.2: watches a raven's Hrafnsmal seat and sends its mail.
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
 # inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
+# send: writes a mail from one seat into another, and never overwrites a mail.
 # Usage: calm_comms.sh on <seat_name> [long|short|<minutes>]
 #        calm_comms.sh off <seat_name>
 #        calm_comms.sh overview
 #        calm_comms.sh inbox <seat_name> [mail_limit]
+#        calm_comms.sh send <seat_name> <target_seat_name> <text>
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
@@ -33,7 +35,7 @@ timestamp() {
 
 check_seat() {
   # Easter egg: 5040 is on purpose.
-  [[ -f $seat_location/README.md ]] || { echo 'Quoth the raven: README? Nevermore.'; exit 5040; }
+  [[ -n $1 && -f $hrafnsmal_location/$1/README.md ]] || { echo "Quoth the raven: README in $1? Nevermore."; exit 5040; }
 }
 
 watch_seat() {
@@ -98,9 +100,16 @@ show_inbox() {
   if (( mail_count == 0 && waiting_count == 0 )); then echo 'no mail'; fi
 }
 
+send_mail() {
+  [[ -n $mail_text ]] || { echo 'Nothing to send.'; exit 1; }
+  # noclobber: an existing mail is never overwritten.
+  set -o noclobber
+  printf 'From: %s\n%s\n' "$seat_name" "$mail_text" > "$hrafnsmal_location/$target_seat_name/from_${seat_name}_$(date +%Y-%m-%d_%H%M%S).md"
+}
+
 case $verb in
   on)
-    check_seat
+    check_seat "$seat_name"
     case $watcher_length in
       long) timer_minutes=$long_watcher_minutes ;;
       short) timer_minutes=$short_watcher_minutes ;;
@@ -116,16 +125,24 @@ case $verb in
     if [[ -t 1 ]]; then printf '\a'; fi
     ;;
   off)
-    check_seat
+    check_seat "$seat_name"
     rm "$watching_marker_file_location"
     ;;
   overview)
     show_overview
     ;;
   inbox)
-    check_seat
+    check_seat "$seat_name"
     mail_limit=${3:-$inbox_mail_limit}
     show_inbox
+    ;;
+  send)
+    target_seat_name=$3
+    check_seat "$seat_name"
+    check_seat "$target_seat_name"
+    shift 3
+    mail_text=$*
+    send_mail
     ;;
 # exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
 esac; exit

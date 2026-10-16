@@ -1,6 +1,7 @@
 ---
 name: calm-git
 description: >-
+  hallmark_tool
   One calm, read-only look at a repository: clear, or what is changed, new or not pushed, and its last few commits.
   Only when Wally says so; git stays Wally's.
 disable-model-invocation: true

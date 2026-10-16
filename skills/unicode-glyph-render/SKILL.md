@@ -1,6 +1,7 @@
 ---
 name: unicode-glyph-render
 description: >-
+  hallmark_tool
   Renders Unicode text to a PNG and reports, as JSON, which font drew each grapheme cluster.
   Use it to see what a character, emoji or string actually looks like: an unfamiliar or
   ambiguous codepoint, text versus emoji presentation (❤ vs ❤️), an emoji sequence,

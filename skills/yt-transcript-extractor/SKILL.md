@@ -1,6 +1,8 @@
 ---
 name: yt-transcript-extractor
-description: Pull a clean, de-duplicated transcript from a YouTube video, then optionally fact-check its claims. Use when the user wants the transcript or captions of a YouTube video, wants a video turned into readable text/markdown, or wants to verify or fact-check the claims made in a video, or hands over a `.ytx.zip` bundle. Wraps the local `ytx` Python toolchain (yt-dlp, with optional PO-token and cookie escalation) that lists the source tracks, probes the candidates you pick, and cleans the chosen one into a markdown transcript saved in the user's current workspace. A relay fetch keeps this machine off YouTube entirely.
+description: >-
+  hallmark_tool
+  Pull a clean, de-duplicated transcript from a YouTube video, then optionally fact-check its claims. Use when the user wants the transcript or captions of a YouTube video, wants a video turned into readable text/markdown, or wants to verify or fact-check the claims made in a video, or hands over a `.ytx.zip` bundle. Wraps the local `ytx` Python toolchain (yt-dlp, with optional PO-token and cookie escalation) that lists the source tracks, probes the candidates you pick, and cleans the chosen one into a markdown transcript saved in the user's current workspace. A relay fetch keeps this machine off YouTube entirely.
 ---
 
 # YouTube Transcript Extractor (ytx)

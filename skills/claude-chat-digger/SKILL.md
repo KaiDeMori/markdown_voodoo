@@ -1,6 +1,8 @@
 ---
 name: claude-chat-digger
-description: Search, recall, and trace past Claude Code conversations. Use when the user wants to find whether a topic, decision, error, or code snippet came up in an earlier Claude Code session; recall what an earlier chat said; find which past conversation created, edited, or read a given file; browse or list prior conversations; visualize a conversation's fork tree; check a message's metadata (which model answered, token usage, git branch); list which models answered in a conversation; or restrict a search to answers by one model. Wraps the CCD command-line tool over the local ~/.claude/projects conversation logs.
+description: >-
+  hallmark_tool
+  Search, recall, and trace past Claude Code conversations. Use when the user wants to find whether a topic, decision, error, or code snippet came up in an earlier Claude Code session; recall what an earlier chat said; find which past conversation created, edited, or read a given file; browse or list prior conversations; visualize a conversation's fork tree; check a message's metadata (which model answered, token usage, git branch); list which models answered in a conversation; or restrict a search to answers by one model. Wraps the CCD command-line tool over the local ~/.claude/projects conversation logs.
 ---
 
 # Claude Chat Digger (CCD)

@@ -1,6 +1,7 @@
 ---
 name: token-counter
 description: >-
+  hallmark_tool
   Counts how many tokens a file takes up for a Claude model, before it enters a window.
   Use when a raven wants to know whether a file or an image is too much, before reading it.
 ---
