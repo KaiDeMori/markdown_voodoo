@@ -32,10 +32,18 @@ bash C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh <verb> ...
 
 ## Sending
 
-- `send tool_builder otis_builder "You ok buddy?"` writes `from_tool_builder_2026-10-16_141523.md` into `otis_builder`: the line `From: tool_builder`, then the text.
+`send tool_builder otis_builder "You ok buddy?"` writes `from_tool_builder_2026-10-16_141523.md` into `otis_builder`:
+
+```
+2026-10-16T14:15+02:00
+From: tool_builder
+To: otis_builder
+You ok buddy?
+```
+
 - Quoted text may span several lines.
 - One seat sends another at most one mail per second; a second one is refused, and no mail is ever overwritten.
-- Writing a mail by hand still works: one file in the target seat, first line `From: <seat_name>`.
+- Writing a mail by hand still works: one file in the target seat, in the same format.
 
 ## Watching
 

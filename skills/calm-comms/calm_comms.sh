@@ -106,7 +106,7 @@ send_mail() {
   [[ ! -e $mail_file_location ]] || { echo 'One mail per second; send it again in a moment.'; exit 1; }
   # noclobber: an existing mail is never overwritten, not even in a race.
   set -o noclobber
-  printf 'From: %s\n%s\n' "$seat_name" "$mail_text" > "$mail_file_location"
+  printf '%s\nFrom: %s\nTo: %s\n%s\n' "$(timestamp)" "$seat_name" "$target_seat_name" "$mail_text" > "$mail_file_location"
 }
 
 case $verb in
