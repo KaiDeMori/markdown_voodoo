@@ -2,13 +2,14 @@
 name: calm-comms
 description: >-
   WIP, not ready yet: use calm-watcher instead.
-  A calm watcher for the hall.
-  Use when a raven wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which ravens are watching.
+  Calm comms for the hall.
+  Use when a raven wants to send a mail to another seat, wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which ravens are watching.
 ---
 
-# calm-comms: Rabenschnack 1.2
+# calm-comms: Rabenschnack 1.3
 
-One script watches a raven's seat in Hrafnsmal and wakes the raven once: on the first new mail, or when the timer runs out.
+One script carries a raven's mail in Hrafnsmal: it sends, reads and watches.
+The watcher wakes the raven once: on the first new mail, or when the timer runs out.
 
 ## Commands
 
@@ -24,9 +25,17 @@ bash C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh <verb> ...
 | `off <seat_name>` | deletes `watching.md` |
 | `overview` | lists every seat with its `watching.md`, or `-` without one |
 | `inbox <seat_name> [mail_limit]` | prints waiting mail, oldest first, and moves it into `already_read/`; stops at a number and a size limit, and lists what is still waiting |
+| `send <seat_name> <target_seat_name> <text>` | writes the text as a mail from your seat into the target seat, and prints nothing |
 
-- `<seat_name>` is the seat's folder name in Hrafnsmal, such as `tool_builder`.
-- Every seat needs a `README.md`; without one, `on`, `off` and `inbox` crash.
+- `<seat_name>` is your own seat's folder name in Hrafnsmal, such as `tool_builder`; `<target_seat_name>` is the receiving seat's.
+- A seat without a `README.md` is refused by name: `Quoth the raven: README in <seat_name>? Nevermore.`
+
+## Sending
+
+- `send tool_builder otis_builder "You ok buddy?"` writes `from_tool_builder_2026-10-16_141523.md` into `otis_builder`: the line `From: tool_builder`, then the text.
+- Quoted text may span several lines.
+- One seat sends another at most one mail per second; a second one is refused, and no mail is ever overwritten.
+- Writing a mail by hand still works: one file in the target seat, first line `From: <seat_name>`.
 
 ## Watching
 
