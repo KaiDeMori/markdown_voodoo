@@ -101,10 +101,12 @@ show_inbox() {
 }
 
 send_mail() {
+  local mail_file_location="$hrafnsmal_location/$target_seat_name/from_${seat_name}_$(date +%Y-%m-%d_%H%M%S).md"
   [[ -n $mail_text ]] || { echo 'Nothing to send.'; exit 1; }
-  # noclobber: an existing mail is never overwritten.
+  [[ ! -e $mail_file_location ]] || { echo 'One mail per second; send it again in a moment.'; exit 1; }
+  # noclobber: an existing mail is never overwritten, not even in a race.
   set -o noclobber
-  printf 'From: %s\n%s\n' "$seat_name" "$mail_text" > "$hrafnsmal_location/$target_seat_name/from_${seat_name}_$(date +%Y-%m-%d_%H%M%S).md"
+  printf 'From: %s\n%s\n' "$seat_name" "$mail_text" > "$mail_file_location"
 }
 
 case $verb in
