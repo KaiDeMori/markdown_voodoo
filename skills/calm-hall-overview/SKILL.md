@@ -8,4 +8,4 @@ description: >-
 
 # calm-hall-overview
 
-One script shows the hall as far as `haven:/Hall/hall_overview_visibility.txt` lets it: some files by name, some folders only as a count, and the rest not at all.
+'nough said.
