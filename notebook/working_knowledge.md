@@ -44,6 +44,7 @@ Any session may read and edit this notebook at any time, without asking.
   The Skill tool is reserved for end-to-end tests of the deployed skill, in another workspace, in a fresh session.
 - `C:\Users\devboese\Documents\_dev\_groundzero_\Aliens` is off limits; its content confuses every session.
 - The Windows folder is off limits as a source of files.
+- `~/.claude` wally-side: wally takes care of this. Usually no access needed. If needed, ask wally or wally has already made the exception clear.
 - This system is shared, and its CPU and RAM are limited.
   Ask before launching a subagent.
 
