@@ -2,7 +2,7 @@
 + "Make it so." (Picard's own line, and oddly missing from the list)
 - "Energize!"
 - "Roll for initiative."
-- "Natural 20."
++ "Natural 20."
 + "Ludicrous speed!!!"
 - "Reticulating splines... done."
 

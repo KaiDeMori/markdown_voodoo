@@ -1,7 +1,7 @@
 ---
 name: calm-comms
 description: >-
-  WIP, not ready yet: use calm-watcher instead.
+  hallmark_tool
   Calm comms for the hall.
   Use when a raven wants to send a mail to another seat, wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which ravens are watching.
 ---
