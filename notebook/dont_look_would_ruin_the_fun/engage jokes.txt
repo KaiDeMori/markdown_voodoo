@@ -45,7 +45,7 @@ Great topics. 😄 Same format as before, grouped by topic.
 **Bobiverse**
 - "Fork a new Bob."
 - "And Bob's your uncle."
-- "We are Legion. We are Bob. Go."
++ "We are Legion. We are Bob. Go."
 - "Send it over the SCUT."
 - "Forgiveness will be requested at the next Moot."
 
