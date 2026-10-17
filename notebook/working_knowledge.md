@@ -34,6 +34,8 @@ Any session may read and edit this notebook at any time, without asking.
 
 - `INDEX.md` lists where things are in this repo.
 - This repo holds the originals; every other location holds a copy.
+- `ws:/` is the root of this repo.
+- Temporary files go into `ws:/scratchpad/`; the frame's scratchpad does not survive a fork and sits deep in AppData.
 - The skills in `skills/<name>/` of this repo are deployed to `~/.claude/skills/<name>/`.
   The deployed copies are plain folders, not links, so they drift until redeployed.
   A scope like `skills/<name>` means the original.
@@ -73,5 +75,5 @@ Any session may read and edit this notebook at any time, without asking.
 
 - To prove an edit only changed line breaks, compare old and new with all whitespace collapsed: `tr -s ' \n' '  ' < file`.
   Strip blockquote `>` markers as well, since reflowing a blockquote changes how many there are.
-- To read a web file byte for byte, fetch it raw with `curl` into the scratchpad; WebFetch passes content through a model.
+- To read a web file byte for byte, fetch it raw with `curl` into `ws:/scratchpad/`; WebFetch passes content through a model.
   Printing format and control characters by codepoint makes invisible characters visible.
