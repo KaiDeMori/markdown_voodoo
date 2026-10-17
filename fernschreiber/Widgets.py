@@ -52,11 +52,12 @@ class Seat_list(Static, can_focus=True):
     def on_mount(self) -> None:
         self.redraw()
 
+    # has_focus changes only after these handlers, so they hand the new state in themselves.
     def on_focus(self) -> None:
-        self.redraw()
+        self.redraw(focused=True)
 
     def on_blur(self) -> None:
-        self.redraw()
+        self.redraw(focused=False)
 
     @property
     def selected_name(self) -> str:
@@ -79,8 +80,15 @@ class Seat_list(Static, can_focus=True):
             self.selected = max(0, min(len(self.seats) - 1, self.selected + step))
             self.redraw()
 
-    def redraw(self) -> None:
-        text = Text(" seats", style=f"bold {settings.FOCUS_COLOR}" if self.has_focus else settings.DIM_COLOR)
+    def redraw(self, focused: bool | None = None) -> None:
+        if focused is None:
+            focused = self.has_focus
+        color_theme = self.app.color_theme
+        if focused:
+            style = f"bold {color_theme.focus}" if color_theme else "bold"
+        else:
+            style = color_theme.dim if color_theme else ""
+        text = Text(" seats", style=style)
         for index, (name, watching) in enumerate(self.seats):
             text.append(f"\n{'>' if index == self.selected else ' '} {'~' if watching else ' '} {name}")
         self.update(text)

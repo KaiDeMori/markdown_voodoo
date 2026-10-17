@@ -1,8 +1,10 @@
 """fernschreiber: a calm terminal for Wally's Rabenschnack mail."""
 
+import argparse
 import subprocess
 import threading
 from datetime import datetime
+from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -11,8 +13,51 @@ from textual.widgets import Static, TextArea
 
 import settings
 from calm_comms import read_seats, run_calm_comms, send_mail, start_calm_comms
+from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail
 from Widgets import Help_screen, Message_area, Rule_line, Seat_list
+
+
+def build_css(color_theme: Color_theme | None) -> str:
+    """The layout always; colors only from a theme file, so without one, Textual's own defaults show."""
+    css = f"""
+    .rule {{ height: 1; }}
+    #main {{ height: 1fr; }}
+    #seats {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
+    #inbox {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
+    #inbox:focus #inbox_title {{ text-style: bold; }}
+    .mail_head {{ margin-top: 1; }}
+    .mail_body {{ padding-left: 2; }}
+    #input_row {{ height: {settings.INPUT_LINES}; border-left: ascii; border-right: ascii; }}
+    #prompt {{ width: auto; height: {settings.INPUT_LINES}; }}
+    #prompt.focused {{ text-style: bold; }}
+    #message {{ width: 1fr; height: {settings.INPUT_LINES}; padding: 0; border: none; }}
+    #message:focus {{ border: none; }}
+    #message.-read-only {{ color: $text-muted; }}
+    #message.-read-only .text-area--cursor {{ background: transparent; color: $text-muted; text-style: none; }}
+    #help_screen {{ align: center middle; }}
+    #help {{ width: auto; height: auto; padding: 0 1; border: ascii; background: $surface; }}
+    """
+    if color_theme is None:
+        return css
+    background, text, dim, frame, focus = color_theme.background, color_theme.text, color_theme.dim, color_theme.frame, color_theme.focus
+    return css + f"""
+    Screen {{ background: {background}; color: {text}; }}
+    .rule {{ color: {frame}; }}
+    #seats {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #inbox {{ border-right: ascii {frame}; }}
+    #inbox_title {{ color: {dim}; }}
+    #inbox:focus #inbox_title {{ color: {focus}; }}
+    .mail_head {{ color: {dim}; }}
+    .sent {{ color: {dim}; }}
+    #input_row {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #prompt {{ color: {dim}; }}
+    #prompt.focused {{ color: {focus}; }}
+    #message {{ background: {background}; color: {text}; }}
+    #message.-read-only {{ color: {dim}; }}
+    #message.-read-only .text-area--cursor {{ color: {dim}; }}
+    #help {{ border: ascii {frame}; background: {background}; color: {text}; }}
+    """
 
 
 class Fernschreiber(App):
@@ -28,30 +73,11 @@ class Fernschreiber(App):
         Binding("escape", "focus_input", show=False),
         Binding("f1", "help", show=False),
     ]
-    CSS = f"""
-    Screen {{ background: {settings.BACKGROUND_COLOR}; color: {settings.TEXT_COLOR}; }}
-    .rule {{ height: 1; color: {settings.FRAME_COLOR}; }}
-    #main {{ height: 1fr; }}
-    #seats {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii {settings.FRAME_COLOR}; border-right: ascii {settings.FRAME_COLOR}; }}
-    #inbox {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii {settings.FRAME_COLOR}; scrollbar-size: 0 0; }}
-    #inbox_title {{ color: {settings.DIM_COLOR}; }}
-    #inbox:focus #inbox_title {{ color: {settings.FOCUS_COLOR}; text-style: bold; }}
-    .mail_head {{ color: {settings.DIM_COLOR}; margin-top: 1; }}
-    .mail_body {{ padding-left: 2; }}
-    .sent {{ color: {settings.DIM_COLOR}; }}
-    #input_row {{ height: {settings.INPUT_LINES}; border-left: ascii {settings.FRAME_COLOR}; border-right: ascii {settings.FRAME_COLOR}; }}
-    #prompt {{ width: auto; height: {settings.INPUT_LINES}; color: {settings.DIM_COLOR}; }}
-    #prompt.focused {{ color: {settings.FOCUS_COLOR}; text-style: bold; }}
-    #message {{ width: 1fr; height: {settings.INPUT_LINES}; padding: 0; border: none; background: {settings.BACKGROUND_COLOR}; color: {settings.TEXT_COLOR}; }}
-    #message:focus {{ border: none; }}
-    #message.-read-only {{ color: {settings.DIM_COLOR}; }}
-    #message.-read-only .text-area--cursor {{ background: {settings.BACKGROUND_COLOR}; color: {settings.DIM_COLOR}; text-style: none; }}
-    #help_screen {{ align: center middle; }}
-    #help {{ width: auto; height: auto; padding: 0 1; border: ascii {settings.FRAME_COLOR}; background: {settings.BACKGROUND_COLOR}; color: {settings.TEXT_COLOR}; }}
-    """
-
-    def __init__(self) -> None:
+    def __init__(self, color_theme: Color_theme | None = None) -> None:
         super().__init__()
+        self.color_theme = color_theme
+        # Textual reads CSS only at startup, so each instance can bring its own.
+        self.CSS = build_css(color_theme)
         self.watcher: subprocess.Popen | None = None
         self.watcher_lock = threading.Lock()
         self.stopping = False
@@ -70,6 +96,8 @@ class Fernschreiber(App):
         yield Rule_line(left=settings.KEY_HINTS, id="bottom_rule", classes="rule")
 
     def on_mount(self) -> None:
+        if self.color_theme is not None:
+            self.theme = self.color_theme.base
         # Kept at hand, so mail and seats still find their panes while the help is open.
         self.top_rule = self.query_one("#top_rule", Rule_line)
         self.seat_list = self.query_one(Seat_list)
@@ -246,5 +274,13 @@ class Fernschreiber(App):
             self.add_note(f"{self.clock_text()}  fernschreiber", f"not sent to {target}: {output or 'calm-comms gave no reason'}")
 
 
+def main() -> None:
+    parser = argparse.ArgumentParser(description="fernschreiber: a calm terminal for Wally's Rabenschnack mail.")
+    parser.add_argument("theme_file", nargs="?", type=Path, help="a color theme, such as themes/paper.toml; without one, Textual's defaults show")
+    arguments = parser.parse_args()
+    color_theme = load_color_theme(arguments.theme_file) if arguments.theme_file else None
+    Fernschreiber(color_theme).run()
+
+
 if __name__ == "__main__":
-    Fernschreiber().run()
+    main()

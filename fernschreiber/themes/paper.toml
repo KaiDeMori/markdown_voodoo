@@ -1,0 +1,7 @@
+# paper: dark ink on warm off-white, like a fernschreiber's paper roll
+base = "textual-light"
+background = "#f4efe3"
+text = "#2b2b2b"
+dim = "#6b6b6b"
+frame = "#8c8577"
+focus = "#000000"

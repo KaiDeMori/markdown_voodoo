@@ -25,12 +25,6 @@ WATCH_MINUTES = 15
 HISTORY_MAIL_COUNT = 20
 INBOX_MAIL_LIMIT = 100
 
-FRAME_COLOR = "#6c6c6c"
-TEXT_COLOR = "#c8c8c8"
-DIM_COLOR = "#8a8a8a"
-FOCUS_COLOR = "#f0f0f0"
-BACKGROUND_COLOR = "#0c0c0c"
-
 GIT_USR_BIN = r"C:\Program Files\Git\usr\bin"
 BASH = GIT_USR_BIN + r"\bash.exe"
 CALM_COMMS = "C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh"

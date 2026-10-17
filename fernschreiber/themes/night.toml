@@ -1,0 +1,7 @@
+# night: light grey on near-black, fernschreiber's first colors
+base = "textual-dark"
+background = "#0c0c0c"
+text = "#c8c8c8"
+dim = "#8a8a8a"
+frame = "#6c6c6c"
+focus = "#f0f0f0"
