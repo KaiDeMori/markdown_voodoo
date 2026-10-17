@@ -20,7 +20,7 @@ application/pdf, 16.2 MB: over the limit of 5 MB, not fetched
 404 from the server, not fetched
 ```
 
-- The limit is 5 MB by default; a raven who still wants a bigger file raises it for that one call.
+- The limit is a whole number of megabytes, 5 by default; a raven who still wants a bigger file raises it for that one call.
 - It reads the server's headers first, so an announced size over the limit stops the fetch before any content arrives.
   Without an announced size, it checks after the fetch, and a file over the limit is not kept.
 - `file` checks the bytes that arrived.
