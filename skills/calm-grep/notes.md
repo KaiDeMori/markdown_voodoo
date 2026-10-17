@@ -2,7 +2,7 @@
 
 ## The idea
 
-Grep is sometimes fine-ish and sometimes a nuke: nobody knows how much comes back.
+Grep is sometimes fine-ish and sometimes really loud: nobody knows how much comes back.
 calm-grep starts zoomed out, and zooms in only when the answer asks for it.
 
 ## Real uses
