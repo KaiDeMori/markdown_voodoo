@@ -1,6 +1,7 @@
 # Index
 
 - `agents/`: Custom agent modes.
+- `calm_email/`: The postmaster's email program.
 - `commit_instructions/`: Commit message guidance.
 - `docs/`: External documentation.
 - `fernschreiber/`: A calm terminal for Wally's Rabenschnack mail.
