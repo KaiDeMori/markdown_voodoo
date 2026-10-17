@@ -25,7 +25,8 @@ TEXT_COLOR = "#c8c8c8"
 DIM_COLOR = "#8a8a8a"
 BACKGROUND_COLOR = "#0c0c0c"
 
-BASH = r"C:\Program Files\Git\usr\bin\bash.exe"
+GIT_USR_BIN = r"C:\Program Files\Git\usr\bin"
+BASH = GIT_USR_BIN + r"\bash.exe"
 CALM_COMMS = "C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh"
 HRAFNSMAL = Path("C:/haven/Hall/thing/Hrafnsmal")
 OWN_SEAT = "wally"
@@ -56,7 +57,11 @@ def calm_comms_command(*arguments: str) -> list[str]:
     return [BASH, CALM_COMMS, *arguments]
 
 
-CALM_COMMS_OPTIONS = dict(stdin=subprocess.DEVNULL, env=dict(os.environ, LANG="C.UTF-8"))
+# The raw MSYS bash takes PATH as it comes; without Git's usr/bin first, date, sleep and rm are missing, and find and sort are Windows' own.
+CALM_COMMS_OPTIONS = dict(
+    stdin=subprocess.DEVNULL,
+    env=dict(os.environ, LANG="C.UTF-8", PATH=GIT_USR_BIN + os.pathsep + os.environ.get("PATH", "")),
+)
 
 
 def run_calm_comms(*arguments: str) -> subprocess.CompletedProcess:
