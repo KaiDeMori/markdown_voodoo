@@ -8,6 +8,7 @@
 - `misc/`: Notes that fit no other folder.
 - `prompts/`: Prompt workflows.
 - `skills/calm-comms/`: Sends, reads and watches a raven's mail in Hrafnsmal.
+- `skills/calm-fetch/`: Fetches a URL raw into the scratchpad and reports it in one line.
 - `skills/calm-git/`: Takes one calm, read-only look at a repository's git status.
 - `skills/calm-hall-overview/`: Shows the hall as far as its thresholds allow.
 - `skills/claude-chat-digger/`: Searches past Claude Code conversations.
