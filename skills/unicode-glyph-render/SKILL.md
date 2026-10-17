@@ -86,4 +86,5 @@ Every glyph is listed, so long texts produce long JSON; use it only when the gly
 - **No bidi reordering.** A line entirely in a right-to-left script, such as Hebrew or Arabic, renders correctly.
   In a line that mixes directions, the parts in the other direction appear in typing order, even digits inside Hebrew: "שלום 123" shows the number as 321.
   To see such text, render each direction's part as its own `string`.
+- Not every cluster comes out right, even with `covered: true`; only the PNG shows what the font really draws. That's life.
 - Noto Color Emoji stores 109 px bitmaps; at `glyph` size they are scaled up and their edges are slightly soft. Segoe UI Emoji is vector-based and stays crisp.
