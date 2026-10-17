@@ -23,6 +23,6 @@ application/pdf, 16.2 MB: over the limit of 5 MB, not fetched
 - Token counting: calm-fetch asks the token counter, so the hall keeps one counter.
 - Markdown: a local step of its own, once a real use asks for it.
 
-## Open
+## Decided
 
-- Ravens outside this repo have no `ws:/scratchpad/`; where do their fetches land?
+- Fetches land in the current workspace's `scratchpad/`, created when it is missing.
