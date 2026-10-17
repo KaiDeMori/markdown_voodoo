@@ -7,7 +7,7 @@
 #        calm_grep.sh where <pattern> [folder]
 #        calm_grep.sh what <pattern> <file>
 
-noisy_folders=(.git .venv node_modules __pycache__)
+noisy_folders=(.git .venv node_modules __pycache__ .pytest_cache .pytest_tmp)
 where_file_limit=20
 where_line_number_limit=10
 what_line_limit=10
