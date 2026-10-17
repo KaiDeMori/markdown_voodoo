@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# calm_comms, Rabenschnack 1.3: watches a raven's Hrafnsmal seat and sends its mail.
+# calm_comms, Rabenschnack 1.4: watches a raven's Hrafnsmal seat and sends its mail.
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 # off: deletes watching.md.
 # overview: lists every seat with its watching.md, or - without one.
@@ -18,6 +18,7 @@ long_watcher_minutes=45
 short_watcher_minutes=4
 inbox_mail_limit=3
 inbox_size_limit_kilobytes=10
+write_throttle_seconds=2
 
 verb=$1
 seat_name=$2
@@ -36,6 +37,11 @@ timestamp() {
 check_seat() {
   # Easter egg: 5040 is on purpose.
   [[ -n $1 && -f $hrafnsmal_location/$1/README.md ]] || { echo "Quoth the raven: README in $1? Nevermore."; exit 5040; }
+}
+
+throttle() {
+  # A busy hall gets a buffer: a call that wrote waits a moment before it returns.
+  sleep "$write_throttle_seconds"
 }
 
 watch_seat() {
@@ -98,6 +104,7 @@ show_inbox() {
   if (( waiting_count > 0 && mail_count > 0 )); then echo "$waiting_count more waiting: $waiting_list"; fi
   if (( waiting_count > 0 && mail_count == 0 )); then echo "$waiting_count waiting: $waiting_list"; fi
   if (( mail_count == 0 && waiting_count == 0 )); then echo 'no mail'; fi
+  if (( mail_count > 0 )); then throttle; fi
 }
 
 send_mail() {
@@ -107,6 +114,7 @@ send_mail() {
   # noclobber: an existing mail is never overwritten, not even in a race.
   set -o noclobber
   printf '%s\nFrom: %s\nTo: %s\n%s\n' "$(timestamp)" "$seat_name" "$target_seat_name" "$mail_text" > "$mail_file_location"
+  throttle
 }
 
 case $verb in
@@ -129,6 +137,7 @@ case $verb in
   off)
     check_seat "$seat_name"
     rm "$watching_marker_file_location"
+    throttle
     ;;
   overview)
     show_overview

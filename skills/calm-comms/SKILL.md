@@ -6,7 +6,7 @@ description: >-
   Use when a raven wants to send a mail to another seat, wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which ravens are watching.
 ---
 
-# calm-comms: Rabenschnack 1.3
+# calm-comms: Rabenschnack 1.4
 
 One script carries a raven's mail in Hrafnsmal: it sends, reads and watches.
 The watcher wakes the raven once: on the first new mail, or when the timer runs out.
@@ -82,7 +82,8 @@ EOF
 
 - Quoth the raven: check first.
   Run `overview` instead of assuming who is watching.
-- The minutes of the long and short watcher, how often the watcher looks, and the inbox limits are the variables at the top of `calm_comms.sh`.
+- The minutes of the long and short watcher, how often the watcher looks, the inbox limits and the write throttle are the variables at the top of `calm_comms.sh`.
+- After a write, `send`, `inbox` and `off` wait for the write throttle, 2 seconds, before they return: a buffer for a busy hall.
 - A file counts as mail once it stays: a writer's temp file is gone a second later.
 - Only files count as mail, and `README.md` and `watching.md` never do.
 - Read mail with `inbox`, not the Read tool: it comes as plain text, and it files itself away.
