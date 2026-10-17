@@ -66,7 +66,7 @@ Great topics. 😄 Same format as before, grouped by topic.
 
 **Socrates and the Greeks**
 - "But what *is* 'engage'?" (Socratic stall. The crew's answer: "Exactly. Engage.")
-- "I know that I know nothing. Engage!"
++ "I know that I know nothing. Engage!"
 - "The unexamined deploy is not worth running."
 - "Leave the cave!"
 - "Give me a lever long enough, and I will move the world." (Archimedes, perfect for a construction crew)
