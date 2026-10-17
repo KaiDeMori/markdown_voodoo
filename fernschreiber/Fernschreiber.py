@@ -184,6 +184,8 @@ class Fernschreiber(App):
     BINDINGS = [
         Binding("up", "move_seat(-1)", show=False, priority=True),
         Binding("down", "move_seat(1)", show=False, priority=True),
+        Binding("pageup", "scroll_inbox(-1)", show=False, priority=True),
+        Binding("pagedown", "scroll_inbox(1)", show=False, priority=True),
     ]
     CSS = f"""
     Screen {{ background: {BACKGROUND_COLOR}; color: {TEXT_COLOR}; }}
@@ -220,6 +222,8 @@ class Fernschreiber(App):
     def on_mount(self) -> None:
         self.update_prompt()
         self.query_one(Input).focus()
+        # Anchored, the inbox stays at the bottom as mail comes in, until Wally scrolls up.
+        self.query_one("#inbox", VerticalScroll).anchor()
         self.set_interval(5, self.tick)
         self.refresh_seats()
         self.set_interval(SEAT_REFRESH_SECONDS, self.refresh_seats)
@@ -306,9 +310,17 @@ class Fernschreiber(App):
             widgets.append(Static(f"{mail.time}  {mail.sender}", markup=False, classes="mail_head"))
             widgets.append(Static(mail.text, markup=False, classes="mail_body"))
         inbox.mount_all(widgets)
-        self.call_after_refresh(inbox.scroll_end, animate=False)
         if ring:
+            # New mail brings the view back down, even when Wally was reading further up.
+            inbox.scroll_end(animate=False)
             self.bell()
+
+    def action_scroll_inbox(self, step: int) -> None:
+        inbox = self.query_one("#inbox", VerticalScroll)
+        if step < 0:
+            inbox.scroll_page_up(animate=False)
+        else:
+            inbox.scroll_page_down(animate=False)
 
     def stop_watching(self) -> None:
         """Stops the running watcher and deletes watching.md, which a stopped watcher leaves behind."""
