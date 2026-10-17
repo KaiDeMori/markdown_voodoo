@@ -263,6 +263,8 @@ class Fernschreiber(App):
     #prompt.focused {{ color: {FOCUS_COLOR}; text-style: bold; }}
     #message {{ width: 1fr; height: {INPUT_LINES}; padding: 0; border: none; background: {BACKGROUND_COLOR}; color: {TEXT_COLOR}; }}
     #message:focus {{ border: none; }}
+    #message.-read-only {{ color: {DIM_COLOR}; }}
+    #message.-read-only .text-area--cursor {{ background: {BACKGROUND_COLOR}; color: {DIM_COLOR}; text-style: none; }}
     #help_screen {{ align: center middle; }}
     #help {{ width: auto; height: auto; padding: 0 1; border: ascii {FRAME_COLOR}; background: {BACKGROUND_COLOR}; color: {TEXT_COLOR}; }}
     """
@@ -443,6 +445,8 @@ class Fernschreiber(App):
         if self.help_is_open or self.sending or not text or not target:
             return
         self.sending = True
+        # Locked until calm-comms comes back, so the lock lasts exactly as long as its write throttle.
+        self.message_area.read_only = True
         self.run_worker(lambda: self.send_in_background(target, text), thread=True, group="send")
 
     def send_in_background(self, target: str, text: str) -> None:
@@ -451,12 +455,12 @@ class Fernschreiber(App):
         self.post(self.finish_send, target, text, result.returncode == 0, output)
 
     def finish_send(self, target: str, text: str, sent: bool, output: str) -> None:
-        """Echoes a sent mail and clears the input, unless Wally kept typing; a failed send keeps the text and shows why."""
+        """Echoes a sent mail and clears the input; a failed send keeps the text and shows why."""
         self.sending = False
+        self.message_area.read_only = False
         if sent:
             self.add_note(f"{self.clock_text()}  -> {target}", text, sent=True)
-            if self.message_area.text.strip() == text:
-                self.message_area.clear()
+            self.message_area.clear()
         else:
             self.add_note(f"{self.clock_text()}  fernschreiber", f"not sent to {target}: {output or 'calm-comms gave no reason'}")
 
