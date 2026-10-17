@@ -38,6 +38,12 @@ what       skills/calm-comms/SKILL.md:17  .../calm-comms/calm_comms.sh <verb>...
 - Endless lines, such as minified code, JSON and captions: each line is cut to the part around the match.
 - Noisy folders, such as `.venv`, `node_modules` and `.git`: they stay out unless asked for.
 
+## Decided
+
+- `count`, `where` and `what`, verb first, like calm-comms.
+- grep counts inside itself, and only the files that get shown are searched again; `where e` over the whole repo takes about a second and a half.
+- The pytest leftovers joined the noisy folders after a real use: they held 19 of the first 20 files for `json3`.
+
 ## Later
 
 - In the hall: a search that honors `hall_overview_visibility.txt` and looks only into the open rooms.
