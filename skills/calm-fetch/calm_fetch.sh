@@ -41,6 +41,32 @@ read_announcement() {
   [[ $announced_length =~ ^[0-9]+$ ]] || announced_length=''
 }
 
+is_text_type() {
+  case $1 in
+    text/*|application/json|application/xml|application/javascript|application/x-javascript|*+json|*+xml) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+check_type() {
+  # file reads the bytes themselves; it only speaks up when text and binary disagree with the server,
+  # because among text types its guesses are looser than the server's.
+  local detected_type bytes_are_text=1 announced_as_text=1
+  reported_type=$fetched_type
+  true_type=$fetched_type
+  if (( fetched_size == 0 )); then return; fi
+  detected_type=$(file --brief --mime-type "$part_location")
+  if ! is_text_type "$detected_type"; then bytes_are_text=0; fi
+  if ! is_text_type "$fetched_type"; then announced_as_text=0; fi
+  if [[ -z $fetched_type ]]; then
+    reported_type="$detected_type (not announced)"
+    true_type=$detected_type
+  elif (( bytes_are_text != announced_as_text )); then
+    reported_type="$detected_type (announced as $fetched_type)"
+    true_type=$detected_type
+  fi
+}
+
 choose_file_name() {
   local address=${url#*://} last_part extension='' stem number=1
   address=${address%%[?#]*}
@@ -106,6 +132,7 @@ if (( fetched_size > limit_bytes )); then
   exit 1
 fi
 
-choose_file_name "$fetched_type"
+check_type
+choose_file_name "$true_type"
 mv "$part_location" "$fetched_location/$file_name"
-echo "${fetched_type:-unknown type}, $(describe_size "$fetched_size") -> $fetched_location/$file_name"
+echo "${reported_type:-unknown type}, $(describe_size "$fetched_size") -> $fetched_location/$file_name"
