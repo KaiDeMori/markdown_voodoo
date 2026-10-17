@@ -54,35 +54,56 @@ ask_mailbox() {
 }
 
 list_mails() {
-  local mail_count
+  local mail_lines
   read_password
-  mail_count=$(ask_mailbox "$imap_location" --request 'EXAMINE INBOX' | tr -d '\r' | awk '/ EXISTS$/ { print $2 }')
-  if [[ -z $mail_count || $mail_count == 0 ]]; then echo 'no mail'; return; fi
-  # BODY.PEEK reads the headers without marking a mail as read.
+  # One login and one request: ENVELOPE answers on a single line, and reading it marks nothing as read.
   # Only the sender's domain is shown, so no address enters a window.
-  ask_mailbox "$imap_location" --request 'FETCH 1:* (RFC822.SIZE BODY.PEEK[HEADER.FIELDS (DATE FROM SUBJECT)])' \
-    | tr -d '\r' | awk '
-      function emit() {
-        size_text = (size < 1024) ? "<1 KB" : int((size + 1023) / 1024) " KB"
-        print number "  " date "  " domain "  " subject "  (" size_text ")"
+  mail_lines=$(ask_mailbox "$imap_location" --request 'FETCH 1:* (RFC822.SIZE ENVELOPE)' | tr -d '\r' | awk '
+    function tokenize(line,    i, c, n, token) {
+      n = 0; i = 1
+      while (i <= length(line)) {
+        c = substr(line, i, 1)
+        if (c == "(" || c == ")") { tokens[++n] = c; i++ }
+        else if (c == " ") { i++ }
+        else if (c == "\"") {
+          token = "\""; i++
+          while (i <= length(line)) {
+            c = substr(line, i, 1)
+            if (c == "\\") { token = token substr(line, i + 1, 1); i += 2; continue }
+            if (c == "\"") { i++; break }
+            token = token c; i++
+          }
+          tokens[++n] = token
+        } else {
+          token = ""
+          while (i <= length(line)) { c = substr(line, i, 1); if (c == " " || c == "(" || c == ")") break; token = token c; i++ }
+          tokens[++n] = token
+        }
       }
-      /^\* [0-9]+ FETCH/ {
-        if (number != "") emit()
-        number = $2; date = ""; domain = "?"; subject = ""; size = 0; field = ""
-        if (match($0, /RFC822\.SIZE [0-9]+/)) size = substr($0, RSTART + 12, RLENGTH - 12) + 0
-        next
+      return n
+    }
+    function text(token) { return (substr(token, 1, 1) == "\"") ? substr(token, 2) : "" }
+    /^\* [0-9]+ FETCH/ {
+      delete tokens
+      count = tokenize($0)
+      size = 0; date = ""; subject = ""; domain = "?"
+      for (k = 1; k <= count; k++) {
+        if (tokens[k] == "RFC822.SIZE") size = tokens[k + 1] + 0
+        if (tokens[k] == "ENVELOPE") {
+          date = text(tokens[k + 2]); subject = text(tokens[k + 3])
+          # From is a list of addresses (name route mailbox host); only the host is kept.
+          if (tokens[k + 4] == "(" && tokens[k + 5] == "(") domain = "@" text(tokens[k + 9])
+        }
       }
-      /^[ \t]/ { if (field == "subject") subject = subject $0; next }
-      tolower($0) ~ /^date:/ { date = substr($0, 7); field = "date"; next }
-      tolower($0) ~ /^subject:/ { subject = substr($0, 10); field = "subject"; next }
-      tolower($0) ~ /^from:/ { if (match($0, /@[A-Za-z0-9.-]+/)) domain = substr($0, RSTART, RLENGTH); field = "from"; next }
-      END { if (number != "") emit() }
-    '
+      size_text = (size < 1024) ? "<1 KB" : int((size + 1023) / 1024) " KB"
+      print $2 "  " date "  " domain "  " subject "  (" size_text ")"
+    }
+  ')
+  if [[ -z $mail_lines ]]; then echo 'no mail'; else echo "$mail_lines"; fi
 }
 
 case $verb in
   setup) setup_password ;;
   list) list_mails ;;
-  debug_raw) read_password; ask_mailbox "$imap_location" --request 'FETCH 1 (RFC822.SIZE BODY.PEEK[HEADER.FIELDS (DATE FROM SUBJECT)])' | sed -E 's/[A-Za-z0-9._%+-]+@/...@/g' | sed -n l | head -n 20 ;;
   *) echo 'setup or list?'; exit 1 ;;
 esac
