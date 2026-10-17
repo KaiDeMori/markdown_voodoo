@@ -19,7 +19,6 @@ application/pdf, 16.2 MB: over the limit of 5 MB, not fetched
 
 ## Later
 
-- MIME detection: `file` reads the bytes that arrived, and catches a server that announces one type and delivers another.
 - Token counting: calm-fetch asks the token counter, so the hall keeps one counter.
 - Markdown: a local step of its own, once a real use asks for it.
 
@@ -27,3 +26,4 @@ application/pdf, 16.2 MB: over the limit of 5 MB, not fetched
 
 - Fetches land in the current workspace's `scratchpad/fetched/`, created when it is missing.
 - The whole path names the file, slashes turned into underscores: `example.org_docs_index.html`.
+- `file` checks the bytes; when text and binary don't match the announced type, the line names the real type, and the file gets its extension.

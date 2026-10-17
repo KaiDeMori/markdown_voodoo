@@ -23,6 +23,9 @@ application/pdf, 16.2 MB: over the limit of 5 MB, not fetched
 - The limit is 5 MB by default; a raven who still wants a bigger file raises it for that one call.
 - It reads the server's headers first, so an announced size over the limit stops the fetch before any content arrives.
   Without an announced size, it checks after the fetch, and a file over the limit is not kept.
+- `file` checks the bytes that arrived.
+  When text and binary don't match what the server announced, the line names the real type, such as `application/pdf (announced as text/html)`, and the file gets that type's extension.
+  A type the server didn't announce comes with `(not announced)`.
 - The whole path names the file, with slashes turned into underscores; a second fetch of the same name gets a number, and nothing is overwritten.
 - The line shows the file's full path, ready for Read or self-flow.
 - Exit 0 means the file is there.
