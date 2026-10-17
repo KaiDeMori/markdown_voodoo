@@ -1,5 +1,7 @@
 """fernschreiber: a calm terminal for Wally's Rabenschnack mail."""
 
+import os
+import subprocess
 from datetime import datetime
 
 from textual.app import App, ComposeResult
@@ -10,20 +12,18 @@ from textual.widgets import Input, Static
 TITLE = "RABENSCHNACK"
 KEY_HINTS = "[Up/Down] seat   [Enter] send   [Ctrl+Q] quit"
 SEAT_PANE_WIDTH = 22
+SEAT_REFRESH_SECONDS = 30
 
 FRAME_COLOR = "#6c6c6c"
 TEXT_COLOR = "#c8c8c8"
 DIM_COLOR = "#8a8a8a"
 BACKGROUND_COLOR = "#0c0c0c"
 
-# Dummy data for the first look; calm-comms replaces it later.
-DUMMY_SEATS = [
-    ("hallmaster", True),
-    ("librarian", False),
-    ("otis_builder", True),
-    ("test_pilot", True),
-    ("tool_builder", True),
-]
+BASH = r"C:\Program Files\Git\usr\bin\bash.exe"
+CALM_COMMS = "C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh"
+OWN_SEAT = "wally"
+
+# Dummy data for the first look; step 3 replaces it with Wally's inbox.
 DUMMY_MAILS = [
     ("08:05", "tool_builder", "Hi Wally! The red cardinal was a black bird all along."),
     ("09:48", "test_pilot", "Your \U0001F970 landed whole: U+1F970, f0 9f a5 b0."),
@@ -42,6 +42,39 @@ def ascii_rule(width: int, left: str = "", right: str = "", junction: int | None
     if right and len(right) + 6 <= width:
         cells[width - 5 - len(right):width - 3] = f" {right} "
     return "".join(cells)
+
+
+def run_calm_comms(*arguments: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [BASH, CALM_COMMS, *arguments],
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        env=dict(os.environ, LANG="C.UTF-8"),
+    )
+
+
+def is_watching(state: list[str], now: datetime) -> bool:
+    """Whether an overview state such as `until 2026-10-17T12:09+02:00` names a watcher whose time has not run out."""
+    if len(state) != 2 or state[0] != "until":
+        return False
+    try:
+        return datetime.fromisoformat(state[1]) > now
+    except ValueError:
+        return False
+
+
+def read_seats() -> list[tuple[str, bool]] | None:
+    """The seats from calm-comms `overview`, without Wally's own, each with whether it is watching; None when overview fails."""
+    result = run_calm_comms("overview")
+    if result.returncode != 0:
+        return None
+    now = datetime.now().astimezone()
+    seats = []
+    for line in result.stdout.decode("utf-8", "replace").splitlines():
+        parts = line.split()
+        if parts and parts[0] != OWN_SEAT:
+            seats.append((parts[0], is_watching(parts[1:], now)))
+    return seats
 
 
 class Rule_line(Static):
@@ -65,21 +98,34 @@ class Rule_line(Static):
 class Seat_list(Static):
     """The seats, with "~" for the ones watching and ">" for the one Wally writes to."""
 
-    def __init__(self, seats: list[tuple[str, bool]], **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         super().__init__(markup=False, **kwargs)
-        self.seats = seats
-        self.selected = len(seats) - 1
+        self.seats: list[tuple[str, bool]] = []
+        self.selected = 0
 
     def on_mount(self) -> None:
         self.redraw()
 
     @property
     def selected_name(self) -> str:
-        return self.seats[self.selected][0]
+        return self.seats[self.selected][0] if self.seats else ""
+
+    def set_seats(self, seats: list[tuple[str, bool]]) -> None:
+        """Takes a fresh list and keeps the selection on the same seat; a new selection starts at the first watching seat."""
+        previous = self.selected_name
+        self.seats = seats
+        names = [name for name, _ in seats]
+        if previous in names:
+            self.selected = names.index(previous)
+        else:
+            watching = [index for index, (_, is_watching) in enumerate(seats) if is_watching]
+            self.selected = watching[0] if watching else 0
+        self.redraw()
 
     def move(self, step: int) -> None:
-        self.selected = max(0, min(len(self.seats) - 1, self.selected + step))
-        self.redraw()
+        if self.seats:
+            self.selected = max(0, min(len(self.seats) - 1, self.selected + step))
+            self.redraw()
 
     def redraw(self) -> None:
         lines = [" seats"]
@@ -112,9 +158,9 @@ class Fernschreiber(App):
     def compose(self) -> ComposeResult:
         yield Rule_line(left=TITLE, right=self.clock_text(), id="top_rule", classes="rule")
         with Horizontal(id="main"):
-            yield Seat_list(DUMMY_SEATS, id="seats")
+            yield Seat_list(id="seats")
             with VerticalScroll(id="inbox"):
-                yield Static("wally", markup=False)
+                yield Static(OWN_SEAT, markup=False)
                 for time, sender, text in DUMMY_MAILS:
                     yield Static(f"{time}  {sender}", markup=False, classes="mail_head")
                     yield Static(text, markup=False, classes="mail_body")
@@ -128,6 +174,8 @@ class Fernschreiber(App):
         self.update_prompt()
         self.query_one(Input).focus()
         self.set_interval(5, self.tick)
+        self.refresh_seats()
+        self.set_interval(SEAT_REFRESH_SECONDS, self.refresh_seats)
 
     def clock_text(self) -> str:
         return datetime.now().strftime("%H:%M")
@@ -139,8 +187,20 @@ class Fernschreiber(App):
             top_rule.right = clock
             top_rule.redraw()
 
+    def refresh_seats(self) -> None:
+        self.run_worker(self.load_seats, thread=True, exclusive=True, group="seats")
+
+    def load_seats(self) -> None:
+        seats = read_seats()
+        if seats is not None:
+            self.call_from_thread(self.show_seats, seats)
+
+    def show_seats(self, seats: list[tuple[str, bool]]) -> None:
+        self.query_one(Seat_list).set_seats(seats)
+        self.update_prompt()
+
     def update_prompt(self) -> None:
-        self.query_one("#prompt", Static).update(f" to {self.query_one(Seat_list).selected_name}: ")
+        self.query_one("#prompt", Static).update(f" to {self.query_one(Seat_list).selected_name or '...'}: ")
 
     def action_move_seat(self, step: int) -> None:
         self.query_one(Seat_list).move(step)
