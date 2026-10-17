@@ -3,6 +3,7 @@
 - `agents/`: Custom agent modes.
 - `commit_instructions/`: Commit message guidance.
 - `docs/`: External documentation.
+- `fernschreiber/`: A calm terminal for Wally's Rabenschnack mail.
 - `instructions/`: Coding and collaboration rules.
 - `misc/`: Notes that fit no other folder.
 - `prompts/`: Prompt workflows.
