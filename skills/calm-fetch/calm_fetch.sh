@@ -68,7 +68,17 @@ check_type() {
 }
 
 choose_file_name() {
-  local address=${url#*://} last_part extension='' stem number=1
+  local address=${url#*://} last_part extension='' type_extension='' stem number=1
+  case $1 in
+    text/html) type_extension=.html ;;
+    text/plain) type_extension=.txt ;;
+    application/json) type_extension=.json ;;
+    application/pdf) type_extension=.pdf ;;
+    application/zip) type_extension=.zip ;;
+    image/png) type_extension=.png ;;
+    image/jpeg) type_extension=.jpg ;;
+    image/gif) type_extension=.gif ;;
+  esac
   address=${address%%[?#]*}
   if [[ $address != */* ]]; then address+=/; fi
   if [[ $address == */ ]]; then address+=index; fi
@@ -76,13 +86,12 @@ choose_file_name() {
   if [[ $last_part == *.* ]]; then
     extension=.${last_part##*.}
     address=${address%.*}
-  else
-    case $1 in
-      text/html) extension=.html ;;
-      text/plain) extension=.txt ;;
-      application/json) extension=.json ;;
-      application/pdf) extension=.pdf ;;
-    esac
+  fi
+  # When the server got the type wrong, the bytes name the extension.
+  if [[ -n $fetched_type && $1 != "$fetched_type" && -n $type_extension ]]; then
+    extension=$type_extension
+  elif [[ -z $extension ]]; then
+    extension=$type_extension
   fi
   # The whole path names the file, and without slashes no URL can place it outside the folder.
   stem=${address//\//_}
