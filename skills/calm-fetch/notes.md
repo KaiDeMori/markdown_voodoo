@@ -25,4 +25,5 @@ application/pdf, 16.2 MB: over the limit of 5 MB, not fetched
 
 ## Decided
 
-- Fetches land in the current workspace's `scratchpad/`, created when it is missing.
+- Fetches land in the current workspace's `scratchpad/fetched/`, created when it is missing.
+- The whole path names the file, slashes turned into underscores: `example.org_docs_index.html`.

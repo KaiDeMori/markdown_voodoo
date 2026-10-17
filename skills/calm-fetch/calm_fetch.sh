@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# calm_fetch: fetches a URL raw into the workspace's scratchpad, and reports it in one line.
+# calm_fetch: fetches a URL raw into the workspace's scratchpad/fetched/, and reports it in one line.
 # It reads the server's headers first, and a file over the limit is not fetched.
 # Usage: calm_fetch.sh <url> [limit_in_megabytes]
 
@@ -9,8 +9,8 @@ fetch_timeout_seconds=120
 url=$1
 limit_megabytes=${2:-$default_limit_megabytes}
 workspace_location=$(pwd -W 2>/dev/null || pwd)
-scratchpad_location="$workspace_location/scratchpad"
-part_location="$scratchpad_location/calm_fetch_$$.part"
+fetched_location="$workspace_location/scratchpad/fetched"
+part_location="$fetched_location/calm_fetch_$$.part"
 
 set -e
 
@@ -42,15 +42,14 @@ read_announcement() {
 }
 
 choose_file_name() {
-  local address=${url#*://} host base extension='' stem number=1
+  local address=${url#*://} last_part extension='' stem number=1
   address=${address%%[?#]*}
-  host=${address%%/*}
-  base=${address#"$host"}
-  base=${base##*/}
-  if [[ -z $base ]]; then base=index; fi
-  if [[ $base == *.* ]]; then
-    extension=.${base##*.}
-    base=${base%.*}
+  if [[ $address != */* ]]; then address+=/; fi
+  if [[ $address == */ ]]; then address+=index; fi
+  last_part=${address##*/}
+  if [[ $last_part == *.* ]]; then
+    extension=.${last_part##*.}
+    address=${address%.*}
   else
     case $1 in
       text/html) extension=.html ;;
@@ -59,12 +58,13 @@ choose_file_name() {
       application/pdf) extension=.pdf ;;
     esac
   fi
-  stem=${host}_$base
+  # The whole path names the file, and without slashes no URL can place it outside the folder.
+  stem=${address//\//_}
   stem=${stem//[^A-Za-z0-9._-]/_}
   extension=${extension//[^A-Za-z0-9.]/_}
   file_name=$stem$extension
   # A fetched file is never overwritten; the next fetch of the same name gets a number.
-  while [[ -e $scratchpad_location/$file_name ]]; do
+  while [[ -e $fetched_location/$file_name ]]; do
     number=$((number + 1))
     file_name=${stem}_$number$extension
   done
@@ -85,7 +85,7 @@ if [[ -n $announced_length ]] && (( announced_length > limit_bytes )); then
   exit 1
 fi
 
-mkdir -p "$scratchpad_location"
+mkdir -p "$fetched_location"
 trap 'rm -f "$part_location" "$part_location.error"' EXIT
 curl_exit=0
 fetch_result=$(curl --silent --show-error --location --fail --max-time "$fetch_timeout_seconds" --max-filesize "$limit_bytes" \
@@ -107,5 +107,5 @@ if (( fetched_size > limit_bytes )); then
 fi
 
 choose_file_name "$fetched_type"
-mv "$part_location" "$scratchpad_location/$file_name"
-echo "${fetched_type:-unknown type}, $(describe_size "$fetched_size") -> $scratchpad_location/$file_name"
+mv "$part_location" "$fetched_location/$file_name"
+echo "${fetched_type:-unknown type}, $(describe_size "$fetched_size") -> $fetched_location/$file_name"
