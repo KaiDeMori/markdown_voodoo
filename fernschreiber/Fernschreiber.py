@@ -2,7 +2,10 @@
 
 import os
 import subprocess
+import threading
+from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -13,6 +16,9 @@ TITLE = "RABENSCHNACK"
 KEY_HINTS = "[Up/Down] seat   [Enter] send   [Ctrl+Q] quit"
 SEAT_PANE_WIDTH = 22
 SEAT_REFRESH_SECONDS = 30
+WATCH_MINUTES = 15
+HISTORY_MAIL_COUNT = 20
+INBOX_MAIL_LIMIT = 100
 
 FRAME_COLOR = "#6c6c6c"
 TEXT_COLOR = "#c8c8c8"
@@ -21,13 +27,15 @@ BACKGROUND_COLOR = "#0c0c0c"
 
 BASH = r"C:\Program Files\Git\usr\bin\bash.exe"
 CALM_COMMS = "C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh"
+HRAFNSMAL = Path("C:/haven/Hall/thing/Hrafnsmal")
 OWN_SEAT = "wally"
 
-# Dummy data for the first look; step 3 replaces it with Wally's inbox.
-DUMMY_MAILS = [
-    ("08:05", "tool_builder", "Hi Wally! The red cardinal was a black bird all along."),
-    ("09:48", "test_pilot", "Your \U0001F970 landed whole: U+1F970, f0 9f a5 b0."),
-]
+
+@dataclass
+class Mail:
+    time: str
+    sender: str
+    text: str
 
 
 def ascii_rule(width: int, left: str = "", right: str = "", junction: int | None = None) -> str:
@@ -44,13 +52,15 @@ def ascii_rule(width: int, left: str = "", right: str = "", junction: int | None
     return "".join(cells)
 
 
+def calm_comms_command(*arguments: str) -> list[str]:
+    return [BASH, CALM_COMMS, *arguments]
+
+
+CALM_COMMS_OPTIONS = dict(stdin=subprocess.DEVNULL, env=dict(os.environ, LANG="C.UTF-8"))
+
+
 def run_calm_comms(*arguments: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [BASH, CALM_COMMS, *arguments],
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-        env=dict(os.environ, LANG="C.UTF-8"),
-    )
+    return subprocess.run(calm_comms_command(*arguments), capture_output=True, **CALM_COMMS_OPTIONS)
 
 
 def is_watching(state: list[str], now: datetime) -> bool:
@@ -75,6 +85,35 @@ def read_seats() -> list[tuple[str, bool]] | None:
         if parts and parts[0] != OWN_SEAT:
             seats.append((parts[0], is_watching(parts[1:], now)))
     return seats
+
+
+def display_time(moment: datetime) -> str:
+    """The time alone for today, the date and time for earlier days."""
+    moment = moment.astimezone()
+    if moment.date() == datetime.now().astimezone().date():
+        return moment.strftime("%H:%M")
+    return moment.strftime("%Y-%m-%d %H:%M")
+
+
+def read_mail(file_location: Path) -> Mail:
+    """A mail file in the Hrafnsmal format: timestamp, From, To, then the text; anything else shows whole, under its file name."""
+    content = file_location.read_text(encoding="utf-8", errors="replace")
+    lines = content.splitlines()
+    try:
+        moment = datetime.fromisoformat(lines[0].strip())
+    except (IndexError, ValueError):
+        moment = datetime.fromtimestamp(file_location.stat().st_mtime)
+    if len(lines) >= 3 and lines[1].startswith("From: ") and lines[2].startswith("To: "):
+        return Mail(display_time(moment), lines[1].removeprefix("From: ").strip(), "\n".join(lines[3:]).strip("\n"))
+    return Mail(display_time(moment), file_location.name, content.strip("\n"))
+
+
+def already_read_files() -> list[Path]:
+    """The files in the own seat's already_read folder, oldest first."""
+    folder = HRAFNSMAL / OWN_SEAT / "already_read"
+    if not folder.is_dir():
+        return []
+    return sorted((file for file in folder.iterdir() if file.is_file()), key=lambda file: file.stat().st_mtime)
 
 
 class Rule_line(Static):
@@ -155,15 +194,18 @@ class Fernschreiber(App):
     Input:focus {{ border: none; }}
     """
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.watcher: subprocess.Popen | None = None
+        self.watcher_lock = threading.Lock()
+        self.stopping = False
+
     def compose(self) -> ComposeResult:
         yield Rule_line(left=TITLE, right=self.clock_text(), id="top_rule", classes="rule")
         with Horizontal(id="main"):
             yield Seat_list(id="seats")
             with VerticalScroll(id="inbox"):
                 yield Static(OWN_SEAT, markup=False)
-                for time, sender, text in DUMMY_MAILS:
-                    yield Static(f"{time}  {sender}", markup=False, classes="mail_head")
-                    yield Static(text, markup=False, classes="mail_body")
         yield Rule_line(junction=SEAT_PANE_WIDTH - 1, id="middle_rule", classes="rule")
         with Horizontal(id="input_row"):
             yield Static("", markup=False, id="prompt")
@@ -176,6 +218,16 @@ class Fernschreiber(App):
         self.set_interval(5, self.tick)
         self.refresh_seats()
         self.set_interval(SEAT_REFRESH_SECONDS, self.refresh_seats)
+        self.run_worker(self.watch_loop, thread=True, group="watch")
+
+    def on_unmount(self) -> None:
+        self.stop_watching()
+
+    async def action_quit(self) -> None:
+        self.stop_watching()
+        self.exit()
+
+    # The clock
 
     def clock_text(self) -> str:
         return datetime.now().strftime("%H:%M")
@@ -187,13 +239,15 @@ class Fernschreiber(App):
             top_rule.right = clock
             top_rule.redraw()
 
+    # The seats
+
     def refresh_seats(self) -> None:
         self.run_worker(self.load_seats, thread=True, exclusive=True, group="seats")
 
     def load_seats(self) -> None:
         seats = read_seats()
         if seats is not None:
-            self.call_from_thread(self.show_seats, seats)
+            self.post(self.show_seats, seats)
 
     def show_seats(self, seats: list[tuple[str, bool]]) -> None:
         self.query_one(Seat_list).set_seats(seats)
@@ -205,6 +259,72 @@ class Fernschreiber(App):
     def action_move_seat(self, step: int) -> None:
         self.query_one(Seat_list).move(step)
         self.update_prompt()
+
+    # The inbox
+
+    def watch_loop(self) -> None:
+        """Shows the history, then keeps the own seat watched: start `on`, deliver what is waiting, wait for the watcher, again."""
+        self.post(self.add_mails, [read_mail(file) for file in already_read_files()[-HISTORY_MAIL_COUNT:]], False)
+        while True:
+            with self.watcher_lock:
+                if self.stopping:
+                    return
+                self.watcher = subprocess.Popen(calm_comms_command("on", OWN_SEAT, str(WATCH_MINUTES)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **CALM_COMMS_OPTIONS)
+            self.deliver_mail()
+            return_code = self.watcher.wait()
+            if self.stopping:
+                return
+            if return_code != 0:
+                self.post(self.add_mails, [Mail(self.clock_text(), "fernschreiber", f"The watcher stopped with exit code {return_code}; fernschreiber no longer watches.")], True)
+                return
+
+    def deliver_mail(self) -> None:
+        """Runs `inbox` until nothing more is waiting, and shows the mails it moved into already_read."""
+        for _ in range(50):
+            before = {file.name for file in already_read_files()}
+            result = run_calm_comms("inbox", OWN_SEAT, str(INBOX_MAIL_LIMIT))
+            output = result.stdout.decode("utf-8", "replace")
+            mails = [read_mail(file) for file in already_read_files() if file.name not in before]
+            if result.returncode != 0:
+                mails.append(Mail(self.clock_text(), "fernschreiber", output.strip() or f"inbox stopped with exit code {result.returncode}"))
+            if mails:
+                self.post(self.add_mails, mails, True)
+            if result.returncode != 0 or " more waiting: " not in output:
+                return
+
+    def add_mails(self, mails: list[Mail], ring: bool) -> None:
+        if not mails:
+            return
+        inbox = self.query_one("#inbox", VerticalScroll)
+        widgets = []
+        for mail in mails:
+            widgets.append(Static(f"{mail.time}  {mail.sender}", markup=False, classes="mail_head"))
+            widgets.append(Static(mail.text, markup=False, classes="mail_body"))
+        inbox.mount_all(widgets)
+        self.call_after_refresh(inbox.scroll_end, animate=False)
+        if ring:
+            self.bell()
+
+    def stop_watching(self) -> None:
+        """Stops the running watcher and deletes watching.md, which a stopped watcher leaves behind."""
+        with self.watcher_lock:
+            if self.stopping:
+                return
+            self.stopping = True
+            if self.watcher is not None and self.watcher.poll() is None:
+                self.watcher.terminate()
+        subprocess.Popen(calm_comms_command("off", OWN_SEAT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **CALM_COMMS_OPTIONS)
+
+    def post(self, callback, *arguments) -> None:
+        """Hands a call from a worker thread to the app, unless the app is already on its way out."""
+        if self.stopping:
+            return
+        try:
+            self.call_from_thread(callback, *arguments)
+        except RuntimeError:
+            pass
+
+    # Sending
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         event.input.value = ""
