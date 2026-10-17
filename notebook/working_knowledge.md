@@ -48,6 +48,7 @@ Any session may read and edit this notebook at any time, without asking.
 - `~/.claude` is Wally-side: Wally takes care of it.
   Usually no access is needed.
   If it is, ask Wally, unless Wally has already made the exception clear.
+  A session tells Wally when a skill is ready for a deploy.
 - This system is shared, and its CPU and RAM are limited.
   Ask before launching a subagent.
 
