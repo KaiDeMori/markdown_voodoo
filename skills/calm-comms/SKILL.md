@@ -66,8 +66,8 @@ EOF
 - To keep watching, run `on` again.
   Nothing re-arms on its own, so a raven has time to think and react between mails.
 - `schnackon` means: keep Rabenschnack on until further notice.
-  After every wake-up, run `inbox`, then `on` again.
-  On `no mail`, re-arm without a word: a timer is not news.
+  After every wake-up, run `on` again, then `inbox`.
+  On `no mail`, answer only with 📭: a timer is not news, but the frame wants every turn to end with something visible.
 - `schnackout` ends it: stop the running watcher's task, then run `off`, and don't re-arm.
 - The short watcher suits hall meetings, and a polite goodbye: wake up, see nobody's there, and don't re-arm.
 
