@@ -211,6 +211,16 @@ class Seat_list(Static, can_focus=True):
         self.update(text)
 
 
+class Message_area(TextArea):
+    """The input; it lights up the prompt beside it while it has the focus."""
+
+    def on_focus(self) -> None:
+        self.parent.query_one("#prompt", Static).set_class(True, "focused")
+
+    def on_blur(self) -> None:
+        self.parent.query_one("#prompt", Static).set_class(False, "focused")
+
+
 class Help_screen(ModalScreen):
     BINDINGS = [
         Binding("escape", "close", show=False),
