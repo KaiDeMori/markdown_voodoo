@@ -260,7 +260,7 @@ class Fernschreiber(App):
     .sent {{ color: {DIM_COLOR}; }}
     #input_row {{ height: {INPUT_LINES}; border-left: ascii {FRAME_COLOR}; border-right: ascii {FRAME_COLOR}; }}
     #prompt {{ width: auto; height: {INPUT_LINES}; color: {DIM_COLOR}; }}
-    #input_row:focus-within #prompt {{ color: {FOCUS_COLOR}; text-style: bold; }}
+    #prompt.focused {{ color: {FOCUS_COLOR}; text-style: bold; }}
     #message {{ width: 1fr; height: {INPUT_LINES}; padding: 0; border: none; background: {BACKGROUND_COLOR}; color: {TEXT_COLOR}; }}
     #message:focus {{ border: none; }}
     #help_screen {{ align: center middle; }}
@@ -283,7 +283,7 @@ class Fernschreiber(App):
         yield Rule_line(junction=SEAT_PANE_WIDTH - 1, id="middle_rule", classes="rule")
         with Horizontal(id="input_row"):
             yield Static("", markup=False, id="prompt")
-            yield TextArea(id="message", soft_wrap=True, show_line_numbers=False, highlight_cursor_line=False)
+            yield Message_area(id="message", soft_wrap=True, show_line_numbers=False, highlight_cursor_line=False)
         yield Rule_line(left=KEY_HINTS, id="bottom_rule", classes="rule")
 
     def on_mount(self) -> None:
