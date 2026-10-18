@@ -7,6 +7,7 @@ echo Deploying to %target%
 mkdir "%target%" 2>nul
 call :copy_file SKILL.md
 call :copy_file token_counter.py
+call :copy_file token_counter.sh
 call :copy_file requirements.txt
 if exist "%source%hall_key.txt" (
     call :copy_file hall_key.txt
