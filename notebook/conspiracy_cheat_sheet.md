@@ -11,7 +11,7 @@ Source: that skill, 2026-10-18.
 
 - Single agents go through `Workflow` too.
 - Always set both `model` and `effort`. The skill says to omit them. This rule overrides that.
-- `effort` is the reasoning setting.
+- `effort` is the reasoning setting, and it is always `'max'`.
 
 ### Script
 
@@ -22,7 +22,7 @@ export const meta = {
 }
 const answer = await agent('PROMPT_TEXT', {
   model: 'sonnet',
-  effort: 'medium',
+  effort: 'max',
 })
 return answer
 ```
@@ -35,7 +35,7 @@ return answer
 ### Options of `agent(prompt, opts)`
 
 - `model`: string. The skill lists no valid values and this is not verified for `agent()`. Try the aliases of the Agent tool's `model` enum (`sonnet`, `opus`, `haiku`, `fable` on 2026-10-18).
-- `effort`: `'low'`, `'medium'`, `'high'`, `'xhigh'` or `'max'`. Use `'low'` for cheap mechanical work. Go higher only for the hardest judging.
+- `effort`: `'max'`.
 - `schema`: JSON Schema. The agent then returns a validated object instead of text. Example: `{type: 'object', properties: {summary: {type: 'string'}}, required: ['summary']}`. The root must be an object. `required` must be a subset of `properties`.
 - `label`: name in the progress display.
 - `agentType`: custom subagent type instead of the default, e.g. `'general-purpose'`.
