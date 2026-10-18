@@ -8,4 +8,10 @@ for /d %%d in ("%~dp0calm-*") do (
   )
 )
 
+rem The token counter and the glyph renderer carry no calm- name, so they are named here.
+echo.
+call "%~dp0token-counter\deploy.bat"
+echo.
+call "%~dp0unicode-glyph-render\deploy.bat"
+
 rem pause

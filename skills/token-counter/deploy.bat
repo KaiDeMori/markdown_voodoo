@@ -22,7 +22,7 @@ if not exist "%target%\.venv\Scripts\python.exe" (
 echo Installing requirements
 "%target%\.venv\Scripts\python.exe" -m pip install --disable-pip-version-check --quiet -r "%target%\requirements.txt"
 
-pause
+rem pause
 exit /b
 
 :copy_file
