@@ -2,8 +2,12 @@
 # calm_email: the postmaster's door between the hall and the world, through the haven's mailbox.
 # setup: asks for the mailbox password in a real terminal, and writes scratchpad/pwd.txt next to the script.
 # list: one line per mail in the mailbox, without marking anything as read.
+# catalog: the letters in the catalog, never the addresses.
+# catalog add: asks Wally in a real terminal for the address a letter stands for.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
+#        calm_email.sh catalog
+#        calm_email.sh catalog add <letter>
 
 mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
@@ -14,6 +18,7 @@ verb=$1
 script_folder=$(cd "$(dirname "${BASH_SOURCE[0]}")" && { pwd -W 2>/dev/null || pwd; })
 # Every folder named scratchpad stays out of git.
 pwd_file="$script_folder/scratchpad/pwd.txt"
+catalog_file="$script_folder/scratchpad/catalog.enc"
 
 set -e
 
@@ -53,12 +58,68 @@ ask_mailbox() {
   printf 'user = "%s:%s"\n' "$mailbox_address" "$quoted" | curl --silent --show-error --config - "$@"
 }
 
+circle_letter() {
+  # A plain letter becomes its circled twin: W becomes Ⓦ, U+24B6 plus the letter's place in the alphabet.
+  local letter=${1^^} code
+  if [[ ! $letter =~ ^[A-Z]$ ]]; then echo 'The catalog takes one letter, A to Z.'; exit 1; fi
+  code=$(( 0x24B6 + $(printf '%d' "'$letter") - 65 ))
+  printf -v circled '\\x%02x\\x%02x\\x%02x' $(( 0xE0 | (code >> 12) )) $(( 0x80 | ((code >> 6) & 0x3F) )) $(( 0x80 | (code & 0x3F) ))
+  printf -v circled '%b' "$circled"
+}
+
+read_catalog() {
+  # The catalog opens only in memory, with the mailbox password as its key.
+  # openssl is a native Windows program, so the password reaches it through the environment of this one command.
+  catalog=''
+  if [[ -f $catalog_file ]]; then
+    catalog=$(calm_email_key=$password openssl enc -d -aes-256-cbc -pbkdf2 -iter 100000 -pass env:calm_email_key -in "$catalog_file")
+  fi
+}
+
+write_catalog() {
+  mkdir -p "${catalog_file%/*}"
+  printf '%s\n' "$catalog" \
+    | calm_email_key=$password openssl enc -e -aes-256-cbc -pbkdf2 -iter 100000 -salt -pass env:calm_email_key -out "$catalog_file.new"
+  mv "$catalog_file.new" "$catalog_file"
+}
+
+add_to_catalog() {
+  local address
+  # Only a real terminal: the address comes from Wally, never through a raven's window.
+  if [[ ! -t 0 ]]; then echo 'catalog add runs only in a real terminal.'; exit 1; fi
+  circle_letter "$1"
+  read -r -p "Address for $circled: " address
+  if [[ $address != *@* || $address == *[[:space:]]* ]]; then echo 'That is no address; the catalog stays as it was.'; exit 1; fi
+  read_password
+  read_catalog
+  # A letter holds one address; a new one replaces the old.
+  catalog=$(printf '%s\n' "$catalog" | grep -v "^$circled"$'\t' || true)
+  catalog+=${catalog:+$'\n'}$circled$'\t'$address
+  write_catalog
+  echo "$circled is in the catalog."
+}
+
+show_catalog() {
+  read_password
+  read_catalog
+  if [[ -z $catalog ]]; then echo 'The catalog is empty.'; return; fi
+  # Only the letters; the addresses stay inside the tool.
+  printf '%s\n' "$catalog" | cut -f1 | paste -s -d' ' -
+}
+
 list_mails() {
   local mail_lines
   read_password
+  read_catalog
   # One login and one request: ENVELOPE answers on a single line, and reading it marks nothing as read.
-  # Only the sender's domain is shown, so no address enters a window.
-  mail_lines=$(ask_mailbox "$imap_location" --request 'FETCH 1:* (RFC822.SIZE ENVELOPE)' | tr -d '\r' | awk '
+  # A sender in the catalog shows as their letter, anyone else only as their domain, so no address enters a window.
+  mail_lines=$(ask_mailbox "$imap_location" --request 'FETCH 1:* (RFC822.SIZE ENVELOPE)' | tr -d '\r' | catalog=$catalog awk '
+    BEGIN {
+      entries = split(ENVIRON["catalog"], catalog_lines, "\n")
+      for (e = 1; e <= entries; e++) {
+        if (split(catalog_lines[e], parts, "\t") == 2) letters[tolower(parts[2])] = parts[1]
+      }
+    }
     function tokenize(line,    i, c, n, token) {
       n = 0; i = 1
       while (i <= length(line)) {
@@ -86,17 +147,21 @@ list_mails() {
     /^\* [0-9]+ FETCH/ {
       delete tokens
       count = tokenize($0)
-      size = 0; date = ""; subject = ""; domain = "?"
+      size = 0; date = ""; subject = ""; sender_label = "?"
       for (k = 1; k <= count; k++) {
         if (tokens[k] == "RFC822.SIZE") size = tokens[k + 1] + 0
         if (tokens[k] == "ENVELOPE") {
           date = text(tokens[k + 2]); subject = text(tokens[k + 3])
-          # From is a list of addresses (name route mailbox host); only the host is kept.
-          if (tokens[k + 4] == "(" && tokens[k + 5] == "(") domain = "@" text(tokens[k + 9])
+          # From is a list of addresses (name route mailbox host).
+          if (tokens[k + 4] == "(" && tokens[k + 5] == "(") {
+            host = text(tokens[k + 9])
+            sender = tolower(text(tokens[k + 8]) "@" host)
+            sender_label = (sender in letters) ? letters[sender] : "@" host
+          }
         }
       }
       size_text = (size < 1024) ? "<1 KB" : int((size + 1023) / 1024) " KB"
-      print $2 "  " date "  " domain "  " subject "  (" size_text ")"
+      print $2 "  " date "  " sender_label "  " subject "  (" size_text ")"
     }
   ')
   if [[ -z $mail_lines ]]; then echo 'no mail'; else echo "$mail_lines"; fi
@@ -105,5 +170,12 @@ list_mails() {
 case $verb in
   setup) setup_password ;;
   list) list_mails ;;
-  *) echo 'setup or list?'; exit 1 ;;
+  catalog)
+    case $2 in
+      '') show_catalog ;;
+      add) add_to_catalog "$3" ;;
+      *) echo 'catalog, or catalog add <letter>?'; exit 1 ;;
+    esac
+    ;;
+  *) echo 'setup, list or catalog?'; exit 1 ;;
 esac
