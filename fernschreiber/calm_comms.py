@@ -27,14 +27,16 @@ def run_calm_comms(*arguments: str) -> subprocess.CompletedProcess:
     return subprocess.run(calm_comms_command(*arguments), capture_output=True, **CALM_COMMS_OPTIONS)
 
 
-def start_calm_comms(*arguments: str) -> subprocess.Popen:
-    """Starts calm-comms without waiting for it, such as `off` on the way out."""
-    return subprocess.Popen(calm_comms_command(*arguments), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **CALM_COMMS_OPTIONS)
-
-
 def start_watcher() -> subprocess.Popen:
-    """Starts the own seat's watcher; in terminal mode it runs until `off`, and prints one line per mail."""
-    return subprocess.Popen(calm_comms_command("on", settings.OWN_SEAT), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, **CALM_COMMS_OPTIONS)
+    """Starts the own seat's watcher; in terminal mode it prints one line per mail, and leaves as soon as its stdin closes."""
+    # The open stdin pipe is fernschreiber's presence: when fernschreiber ends, even hard, the pipe closes and the watcher leaves.
+    return subprocess.Popen(
+        calm_comms_command("on", settings.OWN_SEAT),
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        env=CALM_COMMS_ENVIRONMENT,
+    )
 
 
 def send_mail(target_seat: str, text: str) -> subprocess.CompletedProcess:

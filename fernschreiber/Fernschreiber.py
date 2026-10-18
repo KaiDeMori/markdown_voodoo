@@ -13,7 +13,7 @@ from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Static, TextArea
 
 import settings
-from calm_comms import read_seats, run_calm_comms, send_mail, start_calm_comms, start_watcher
+from calm_comms import read_seats, run_calm_comms, send_mail, start_watcher
 from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail
 from Widgets import Help_screen, Message_area, Rule_line, Seat_list
@@ -226,12 +226,13 @@ class Fernschreiber(App):
         self.inbox.scroll_end(animate=False)
 
     def stop_watching(self) -> None:
-        """Runs `off`, which stops the watcher and deletes watching.md."""
+        """Closes the watcher's stdin; the watcher leaves at once and removes its marker."""
         with self.watcher_lock:
             if self.stopping:
                 return
             self.stopping = True
-        start_calm_comms("off", settings.OWN_SEAT)
+            if self.watcher is not None:
+                self.watcher.stdin.close()
 
     def post(self, callback, *arguments) -> None:
         """Hands a call from a worker thread to the app, unless the app is already on its way out."""
