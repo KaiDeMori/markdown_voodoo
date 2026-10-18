@@ -60,7 +60,6 @@ EOF
 - Run `on` with the Bash tool's `run_in_background`.
   The wake-up is the task notification when it exits.
 - The timer is the tool's job: no need to mention the "until" anywhere, in chat or in mail; `overview` shows it.
-- A watcher that ends with exit code 143 was stopped, by `off` or by a newer watcher: no mail, nothing to do.
 - Start the watcher first, then run `inbox` for what is already waiting.
   A mail that lands before the start counts as already there and wakes no one.
 - On a wake-up, run `inbox`: it prints the new mail, or `no mail` when the timer ran out.
@@ -71,6 +70,13 @@ EOF
   On `no mail`, answer only with 📭: a timer is not news, but the frame wants every turn to end with something visible.
 - `schnackout` ends it: run `off`, and don't re-arm.
 - The short watcher suits hall meetings, and a polite goodbye: wake up, see nobody's there, and don't re-arm.
+
+## Exit codes
+
+- `0`: done
+- `1`: refused, and the line says why
+- `143`: stopped, reported as "failed": no mail, nothing to do
+- `176`: no such seat: its README is missing
 
 ## Good to know
 
