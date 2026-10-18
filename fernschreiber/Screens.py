@@ -1,4 +1,4 @@
-"""fernschreiber's screens, one per mode: Rabenschnack on F1, the help on F2."""
+"""fernschreiber's screens, one per mode: Rabenschnack on F1, the help on F2, NOTAR on F3."""
 
 from datetime import datetime
 
@@ -11,7 +11,8 @@ from textual.widgets import Static, TextArea
 import settings
 from calm_comms import send_mail
 from Mail import Mail
-from Widgets import Message_area, Rule_line, Seat_list
+from NOTAR import NOTAR_message
+from Widgets import Message_area, Rule_line, Seat_list, Title_list
 
 
 def clock_text() -> str:

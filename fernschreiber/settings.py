@@ -4,11 +4,14 @@ from pathlib import Path
 
 TITLE = "RABENSCHNACK"
 KEY_HINTS = "[Tab] focus  [^Enter] send  [F2] help  [^Q] quit"
+NOTAR_KEY_HINTS = "[Up/Down] pick  [^Enter] send to all watching  [Esc] back"
+NOTAR_MESSAGES_FILE = Path(__file__).with_name("NOTAR_messages.md")
 HELP_TEXT = """\
 fernschreiber keys
 
 F1           Rabenschnack
 F2           this help; Esc goes back
+F3           NOTAR, a notice to all ravens; Esc goes back
 Ctrl+Q       quit
 
 In Rabenschnack
@@ -18,6 +21,10 @@ Up/Down      move in the pane with the focus
 PgUp/PgDn    scroll the mailbox, from anywhere
 Enter        new line
 Ctrl+Enter   send to the selected seat
+
+In NOTAR
+Up/Down      pick a message
+Ctrl+Enter   send it to every watching seat
 
 ^ stands for Ctrl."""
 

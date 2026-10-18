@@ -76,17 +76,51 @@ class Seat_list(Static, can_focus=True):
             self.redraw()
 
     def redraw(self, focused: bool | None = None) -> None:
-        if focused is None:
-            focused = self.has_focus
-        color_theme = self.app.color_theme
-        if focused:
-            style = f"bold {color_theme.focus}" if color_theme else "bold"
-        else:
-            style = color_theme.dim if color_theme else ""
-        text = Text(" seats", style=style)
+        text = Text(" seats", style=header_style(self, focused))
         for index, (name, watching) in enumerate(self.seats):
             text.append(f"\n{'>' if index == self.selected else ' '} {'~' if watching else ' '} {name}")
         self.update(text)
+
+
+class Title_list(Static, can_focus=True):
+    """A list of titles, with ">" for the selected one."""
+
+    def __init__(self, header: str, titles: list[str], **kwargs) -> None:
+        super().__init__(markup=False, **kwargs)
+        self.header = header
+        self.titles = titles
+        self.selected = 0
+
+    def on_mount(self) -> None:
+        self.redraw()
+
+    # has_focus changes only after these handlers, so they hand the new state in themselves.
+    def on_focus(self) -> None:
+        self.redraw(focused=True)
+
+    def on_blur(self) -> None:
+        self.redraw(focused=False)
+
+    def move(self, step: int) -> None:
+        if self.titles:
+            self.selected = max(0, min(len(self.titles) - 1, self.selected + step))
+            self.redraw()
+
+    def redraw(self, focused: bool | None = None) -> None:
+        text = Text(f" {self.header}", style=header_style(self, focused))
+        for index, title in enumerate(self.titles):
+            text.append(f"\n{'>' if index == self.selected else ' '} {title}")
+        self.update(text)
+
+
+def header_style(widget: Static, focused: bool | None) -> str:
+    """A pane's header: lit while the pane has the focus, dim otherwise, in the theme's colors when there is a theme."""
+    if focused is None:
+        focused = widget.has_focus
+    color_theme = widget.app.color_theme
+    if focused:
+        return f"bold {color_theme.focus}" if color_theme else "bold"
+    return color_theme.dim if color_theme else ""
 
 
 class Message_area(TextArea):
