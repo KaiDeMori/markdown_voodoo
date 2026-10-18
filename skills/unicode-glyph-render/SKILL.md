@@ -20,7 +20,7 @@ Read the JSON first, then view the PNG with the Read tool.
 Every command runs as:
 
 ```
-${CLAUDE_SKILL_DIR}/.venv/Scripts/python.exe ${CLAUDE_SKILL_DIR}/render_glyph.py <command> ...
+unicode-glyph-render <command> ...
 ```
 
 | Command | Draws | Output |

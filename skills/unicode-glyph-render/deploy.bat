@@ -7,6 +7,7 @@ echo Deploying to %target%
 mkdir "%target%\fonts\BYOF" 2>nul
 call :copy_file SKILL.md
 call :copy_file render_glyph.py
+call :copy_file unicode_glyph_render.sh
 call :copy_file requirements.txt
 
 call :copy_file fonts\GoNotoCurrent-Regular.ttf
