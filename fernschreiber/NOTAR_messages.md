@@ -8,7 +8,7 @@ Birds still in the sky? Mail wally first.
 
 ## Maintenance Over
 
-All activites can resmume.
+All activities can resume.
 Skies are clear!
 
 ## Joke of the day
