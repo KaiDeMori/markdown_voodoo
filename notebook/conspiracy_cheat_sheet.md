@@ -4,7 +4,7 @@
 
 Scope: one agent through `Workflow`, with `model` and `effort` set explicitly.
 This sheet replaces the `workflow-authoring` skill for that case.
-If something here fails, load that skill and trust it over this sheet.
+If something here fails, ask Wally, or send a raven to look it up in that skill; the skill itself stays out of this window.
 Source: that skill, 2026-10-18.
 
 ### House rule
