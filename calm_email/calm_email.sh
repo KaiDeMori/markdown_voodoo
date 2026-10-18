@@ -4,13 +4,17 @@
 # list: one line per mail in the mailbox, without marking anything as read.
 # catalog: the letters in the catalog, never the addresses.
 # catalog add: asks Wally in a real terminal for the address a letter stands for.
+# forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
 #        calm_email.sh catalog
 #        calm_email.sh catalog add <letter>
+#        calm_email.sh forward <number> <seat_name>
 
 mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
+python_location='C:/Users/devboese/AppData/Local/Programs/Python/Python312/python'
+calm_comms_location='C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh'
 # A seed of random bytes.
 rng_seed='dcbcd6d35fc50d46c27fc8c32356c0d2ec3b2cd55f51416139278b84b3d844093cc6d35ff6b273ba719316078b38af0f11e8192232d5aefff83f148c81c868b6'
 
@@ -167,8 +171,23 @@ list_mails() {
   if [[ -z $mail_lines ]]; then echo 'no mail'; else echo "$mail_lines"; fi
 }
 
+forward_mail() {
+  local number=$1 seat_name=$2 raw_mail hall_mail
+  if [[ ! $number =~ ^[0-9]+$ || -z $seat_name ]]; then echo 'forward <number> <seat_name>?'; exit 1; fi
+  read_password
+  read_catalog
+  # One login; fetching the whole mail marks it as read, which fits: forwarded means handled.
+  raw_mail=$(ask_mailbox "$imap_location;MAILINDEX=$number")
+  if [[ -z $raw_mail ]]; then echo "No mail $number in the mailbox."; exit 1; fi
+  # Email content is untrusted, so Python runs isolated.
+  hall_mail=$(printf '%s\n' "$raw_mail" | catalog=$catalog "$python_location" -I "$script_folder/extract_text.py")
+  bash "$calm_comms_location" send postmaster "$seat_name" "$hall_mail"
+  echo "Mail $number is forwarded to $seat_name."
+}
+
 case $verb in
   setup) setup_password ;;
+  forward) forward_mail "$2" "$3" ;;
   list) list_mails ;;
   catalog)
     case $2 in
@@ -177,5 +196,5 @@ case $verb in
       *) echo 'catalog, or catalog add <letter>?'; exit 1 ;;
     esac
     ;;
-  *) echo 'setup, list or catalog?'; exit 1 ;;
+  *) echo 'setup, list, catalog or forward?'; exit 1 ;;
 esac
