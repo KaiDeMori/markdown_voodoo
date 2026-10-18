@@ -31,9 +31,3 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 - [ ] Marking a mail as handled.
 - [ ] `reply <n> <text>`: an answer in the mail's thread.
 - [ ] `sent`: what went out.
-
-## Open questions
-
-- The token count: exact, through the counting endpoint, which sends the text to Anthropic, or estimated from the plain part's size?
-- The receiver in `list`: does the mailbox get mail for more than one address?
-- The polite reply: Wally's wording, and who gets it.
