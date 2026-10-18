@@ -1,5 +1,13 @@
 # Conspiracy cheat sheet
 
+## The real trick
+
+What is the right question, and what are the right thresholds?
+
+- A raven is only as good as its question; when a raven comes back wrong, the question was wrong.
+- The thresholds of `haven:/Hall/thresholds.md` tell it where to pause: not yet, not all at once, not mine.
+- A bump is a threshold too: a raven usually reports it back briefly instead of fixing it, and we decide together.
+
 ## Single-agent workflow
 
 Scope: one agent through `Workflow`, with `model` and `effort` set explicitly.
