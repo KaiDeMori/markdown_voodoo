@@ -10,7 +10,7 @@ Your job: carry email between the hall and the world.
 Every command runs as:
 
 ```
-bash C:/Users/devboese/markdown_voodoo/calm_email/calm_email.sh <verb> ...
+calm-email <verb> ...
 ```
 
 | Command | Example answer |
