@@ -15,7 +15,7 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 
 ## Steps
 
-- [ ] Check whether the mailbox server announces IDLE: one `CAPABILITY` request.
+- [x] Check whether the mailbox server announces IDLE: one `CAPABILITY` request. Dovecot announces it before login.
 - [ ] Send a raven to find out how IMAPClient's IDLE works, including the renewal before 29 minutes.
 - [ ] Set up `calm_email/.venv` with `imapclient==4.1.0` from a `requirements.txt`; the venv stays out of git.
 - [ ] Write `mailbox.py`: one login per call, the password through the environment, as `send_mail.py` gets it.
