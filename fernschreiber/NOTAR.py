@@ -24,8 +24,10 @@ def load_NOTAR_messages(file_location: Path) -> list[NOTAR_message]:
     for line_number, line in enumerate(file_location.read_text(encoding="utf-8").splitlines(), start=1):
         heading = HEADING.match(line)
         if heading and len(heading.group(1)) == 1:
-            if chapters or seen_title_line:
-                fail(line_number, f"a second `#` title ({line.strip()}); only the first line may be one")
+            if seen_title_line:
+                fail(line_number, f"a second `#` title ({line.strip()}); the file has one at most")
+            if chapters:
+                fail(line_number, f"a `#` title below the chapters ({line.strip()}); it belongs on top")
             seen_title_line = True
         elif heading and len(heading.group(1)) == 2:
             if not heading.group(2):

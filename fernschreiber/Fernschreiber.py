@@ -13,7 +13,8 @@ import settings
 from calm_comms import read_seats, run_calm_comms, start_watcher
 from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail
-from Screens import Help_screen, Rabenschnack_screen, clock_text
+from NOTAR import load_NOTAR_messages
+from Screens import Help_screen, NOTAR_screen, Rabenschnack_screen, clock_text
 
 
 def build_css(color_theme: Color_theme | None) -> str:
@@ -34,6 +35,11 @@ def build_css(color_theme: Color_theme | None) -> str:
     #message.-read-only {{ color: $text-muted; }}
     #message.-read-only .text-area--cursor {{ background: transparent; color: $text-muted; text-style: none; }}
     #help_text {{ height: 1fr; padding: 1 2; border-left: ascii; border-right: ascii; }}
+    #notar_main {{ height: 1fr; }}
+    #notar_titles {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
+    #notar_preview {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
+    #notar_text {{ margin-top: 1; }}
+    #notar_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
     """
     if color_theme is None:
         return css
@@ -54,6 +60,10 @@ def build_css(color_theme: Color_theme | None) -> str:
     #message.-read-only {{ color: {dim}; }}
     #message.-read-only .text-area--cursor {{ color: {dim}; }}
     #help_text {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #notar_titles {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #notar_preview {{ border-right: ascii {frame}; }}
+    #notar_recipients {{ color: {dim}; }}
+    #notar_status {{ border-left: ascii {frame}; border-right: ascii {frame}; color: {dim}; }}
     """
 
 
@@ -65,11 +75,13 @@ class Fernschreiber(App):
     MODES = {
         "rabenschnack": Rabenschnack_screen,
         "help": Help_screen,
+        "notar": NOTAR_screen,
     }
     DEFAULT_MODE = "rabenschnack"
     BINDINGS = [
         Binding("f1", "switch_mode('rabenschnack')", show=False),
         Binding("f2", "switch_mode('help')", show=False),
+        Binding("f3", "switch_mode('notar')", show=False),
     ]
 
     def __init__(self, color_theme: Color_theme | None = None) -> None:
@@ -77,7 +89,11 @@ class Fernschreiber(App):
         self.color_theme = color_theme
         # Textual reads CSS only at startup, so each instance can bring its own.
         self.CSS = build_css(color_theme)
+        # Read before the window opens, so a broken file stops fernschreiber right away.
+        self.NOTAR_messages = load_NOTAR_messages(settings.NOTAR_MESSAGES_FILE)
+        self.seats: list[tuple[str, bool]] = []
         self.rabenschnack: Rabenschnack_screen | None = None
+        self.notar: NOTAR_screen | None = None
         self.watcher: subprocess.Popen | None = None
         self.watcher_lock = threading.Lock()
         self.stopping = False
@@ -117,7 +133,13 @@ class Fernschreiber(App):
     def load_seats(self) -> None:
         seats = read_seats()
         if seats is not None:
-            self.post(self.rabenschnack.show_seats, seats)
+            self.post(self.show_seats, seats)
+
+    def show_seats(self, seats: list[tuple[str, bool]]) -> None:
+        self.seats = seats
+        self.rabenschnack.show_seats(seats)
+        if self.notar is not None:
+            self.notar.show_selected()
 
     # The watcher
 
