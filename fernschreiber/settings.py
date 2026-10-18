@@ -6,6 +6,7 @@ TITLE = "RABENSCHNACK"
 KEY_HINTS = "[Tab] focus  [^Enter] send  [F2] help  [^Q] quit"
 NOTAR_KEY_HINTS = "[Up/Down] pick  [^Enter] send to all watching  [Esc] back"
 NOTAR_MESSAGES_FILE = Path(__file__).with_name("NOTAR_messages.md")
+NOTAR_FIRST_LINE = "📯 NOTAR: notice to all ravens"
 HELP_TEXT = """\
 fernschreiber keys
 

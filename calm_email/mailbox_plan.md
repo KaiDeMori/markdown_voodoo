@@ -19,14 +19,14 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 - [x] Send a raven to find out how IMAPClient's IDLE works, including the renewal before 29 minutes.
 - [x] Set up `calm_email/.venv` with `imapclient==4.1.0` from a `requirements.txt`; the venv stays out of git.
 - [x] Write `mailbox.py`: one login per call, the password through the environment, as `send_mail.py` gets it.
-- [x] `list`: number, date, sender as letter or domain, the decoded subject, and the token count of the plain part, or `no plain text`. It runs as `list_next` until the switch.
-- [ ] `on`: IDLE instead of polling; only a letter from the catalog wakes the postmaster.
-- [ ] The polite reply for a mail without a text/plain part.
-- [ ] Remove the curl and awk parts that `mailbox.py` replaces, including the polling `on`.
-- [ ] Put `exit` on the line of `esac` in `calm_email.sh`, as `calm_comms.sh` does, so an edit never hits a running watcher.
-- [ ] Update the README for the postmaster.
-- [ ] Test one at a time: `list`, then `on` with an email from Wally's phone, then the polite reply.
-- [ ] Mail the postmaster when it's ready to fly.
+- [x] `list`: number, date, sender as letter or domain, the decoded subject, and the token count of the plain part, or `no plain text`.
+- [x] `on`: IDLE instead of polling; only a letter from the catalog wakes the postmaster.
+- [ ] The polite reply for a mail without a text/plain part, tested with such a mail.
+- [x] Remove the curl and awk parts that `mailbox.py` replaces, including the polling `on`.
+- [x] Put `exit` on the line of `esac` in `calm_email.sh`, as `calm_comms.sh` does, so an edit never hits a running watcher.
+- [x] Update the README for the postmaster.
+- [x] Test one at a time: `list`, then `on` with an email from Wally's phone.
+- [x] Mail the postmaster when it's ready to fly.
 
 ## Still to talk about
 

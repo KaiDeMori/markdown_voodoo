@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # calm_email: the postmaster's door between the hall and the world, through the haven's mailbox.
 # setup: asks for the mailbox password in a real terminal, and writes scratchpad/pwd.txt next to the script.
-# list: one line per mail in the mailbox, without marking anything as read.
+# list: one line per mail, with the token count of its plain text, without marking anything as read.
 # catalog: the letters in the catalog, never the addresses.
 # catalog add: asks Wally in a real terminal for the address a letter stands for.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
@@ -118,73 +118,6 @@ show_catalog() {
   printf '%s\n' "$catalog" | cut -f1 | paste -s -d' ' -
 }
 
-describe_mails() {
-  # Turns FETCH answers into one line per mail, numbered the way list numbers them.
-  # A sender in the catalog shows as their letter, anyone else only as their domain, so no address enters a window.
-  # With only_catalog, a mail from anyone outside the catalog is left out.
-  tr -d '\r' | catalog=$catalog only_catalog=${1:-} awk '
-    BEGIN {
-      entries = split(ENVIRON["catalog"], catalog_lines, "\n")
-      for (e = 1; e <= entries; e++) {
-        if (split(catalog_lines[e], parts, "\t") == 2) letters[tolower(parts[2])] = parts[1]
-      }
-    }
-    function tokenize(line,    i, c, n, token) {
-      n = 0; i = 1
-      while (i <= length(line)) {
-        c = substr(line, i, 1)
-        if (c == "(" || c == ")") { tokens[++n] = c; i++ }
-        else if (c == " ") { i++ }
-        else if (c == "\"") {
-          token = "\""; i++
-          while (i <= length(line)) {
-            c = substr(line, i, 1)
-            if (c == "\\") { token = token substr(line, i + 1, 1); i += 2; continue }
-            if (c == "\"") { i++; break }
-            token = token c; i++
-          }
-          tokens[++n] = token
-        } else {
-          token = ""
-          while (i <= length(line)) { c = substr(line, i, 1); if (c == " " || c == "(" || c == ")") break; token = token c; i++ }
-          tokens[++n] = token
-        }
-      }
-      return n
-    }
-    function text(token) { return (substr(token, 1, 1) == "\"") ? substr(token, 2) : "" }
-    /^\* [0-9]+ FETCH/ {
-      delete tokens
-      count = tokenize($0)
-      size = 0; date = ""; subject = ""; sender = ""; sender_label = "?"
-      for (k = 1; k <= count; k++) {
-        if (tokens[k] == "RFC822.SIZE") size = tokens[k + 1] + 0
-        if (tokens[k] == "ENVELOPE") {
-          date = text(tokens[k + 2]); subject = text(tokens[k + 3])
-          # From is a list of addresses (name route mailbox host).
-          if (tokens[k + 4] == "(" && tokens[k + 5] == "(") {
-            host = text(tokens[k + 9])
-            sender = tolower(text(tokens[k + 8]) "@" host)
-            sender_label = (sender in letters) ? letters[sender] : "@" host
-          }
-        }
-      }
-      if (ENVIRON["only_catalog"] != "" && !(sender in letters)) next
-      size_text = (size < 1024) ? "<1 KB" : int((size + 1023) / 1024) " KB"
-      print $2 "  " date "  " sender_label "  " subject "  (" size_text ")"
-    }
-  '
-}
-
-list_mails() {
-  local mail_lines
-  read_password
-  read_catalog
-  # One login and one request: ENVELOPE answers on a single line, and reading it marks nothing as read.
-  mail_lines=$(ask_mailbox "$imap_location" --request 'FETCH 1:* (RFC822.SIZE ENVELOPE)' | describe_mails)
-  if [[ -z $mail_lines ]]; then echo 'no mail'; else echo "$mail_lines"; fi
-}
-
 forward_mail() {
   local number=$1 seat_name=$2 raw_mail hall_mail
   if [[ ! $number =~ ^[0-9]+$ || -z $seat_name ]]; then echo 'forward <number> <seat_name>?'; exit 1; fi
@@ -238,10 +171,8 @@ case $verb in
   setup) setup_password ;;
   forward) forward_mail "$2" "$3" ;;
   send) send_mail "$2" "$3" "$4" ;;
-  list) list_mails ;;
+  list) run_mailbox list ;;
   on) watch_mailbox "$2" ;;
-  # list_next tries mailbox.py while list stays as it is; it goes away at the switch.
-  list_next) run_mailbox list ;;
   catalog)
     case $2 in
       '') show_catalog ;;

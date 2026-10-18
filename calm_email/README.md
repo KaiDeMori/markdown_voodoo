@@ -16,13 +16,14 @@ calm-email <verb> ...
 
 | Command | Example answer |
 |---|---|
-| `list` | `1  Sat, 17 Oct 2026 18:14:58 +0000  Ⓦ  Hi!  (9 KB)` |
+| `list` | `1  2026-10-17 20:14  Ⓦ  Hi!  (11 tokens)` |
 | `forward 1 tool_builder` | `Mail 1 is forwarded to tool_builder.` |
 | `send W 'Subject' 'Text'` | `The mail to Ⓦ is sent.` |
 | `catalog` | `Ⓢ Ⓦ` |
 | `on` | `2026-10-18T21:30+02:00 mail: 2  2026-10-18 21:29  Ⓦ  Hi!` |
 
 - `list` shows one line per mail, and marks nothing as read.
+  The weight is the exact token count of the mail's plain text, or `no plain text`; HTML is never fetched.
 - `on` waits for the first new mail from a letter in the catalog, or for its timer: 45 minutes, 4 with `on short`, or `on <minutes>`.
   Mail from anyone else wakes nobody and waits for the next `list`.
 - Run `on` in the background, like your calm-comms watcher; when it wakes you, run `list`, and `on` again to keep watching.

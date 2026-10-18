@@ -22,6 +22,11 @@ class NOTAR_message:
     title: str
     text: str
 
+    @property
+    def mail_text(self) -> str:
+        """What goes out: the post horn's first line, the chapter's heading as markdown, then its text."""
+        return f"{settings.NOTAR_FIRST_LINE}\n\n## {self.title}\n\n{self.text}"
+
 
 def load_NOTAR_messages(file_location: Path) -> list[NOTAR_message]:
     """Reads the messages, one `##` chapter each, and stops fernschreiber before its window opens when the file breaks a rule, naming the line and the rule."""
@@ -114,7 +119,7 @@ class NOTAR_screen(Screen):
             self.recipients_label.update(f"to {len(seats)} watching seat{'' if len(seats) == 1 else 's'}: {', '.join(seats)}")
         else:
             self.recipients_label.update("nobody is watching right now")
-        self.text_label.update(self.app.NOTAR_messages[self.title_list.selected].text)
+        self.text_label.update(self.app.NOTAR_messages[self.title_list.selected].mail_text)
 
     def action_move(self, step: int) -> None:
         self.title_list.move(step)
@@ -135,7 +140,7 @@ class NOTAR_screen(Screen):
     def send_in_background(self, message: NOTAR_message, seats: list[str]) -> None:
         failures = []
         for seat in seats:
-            result = send_mail(seat, message.text)
+            result = send_mail(seat, message.mail_text)
             if result.returncode != 0:
                 failures.append((seat, (result.stdout + result.stderr).decode("utf-8", "replace").strip() or f"exit code {result.returncode}"))
         self.app.post(self.finish_send, message, seats, failures)
@@ -148,4 +153,4 @@ class NOTAR_screen(Screen):
         if failures:
             status += "; not to " + ", ".join(f"{seat} ({reason})" for seat, reason in failures)
         self.status_label.update(status)
-        self.app.rabenschnack.add_note(f"{clock_text()}  -> NOTAR {message.title}, {sent_count} of {len(seats)} seats", message.text, sent=True)
+        self.app.rabenschnack.add_note(f"{clock_text()}  -> NOTAR {message.title}, {sent_count} of {len(seats)} seats", message.mail_text, sent=True)
