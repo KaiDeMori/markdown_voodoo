@@ -9,6 +9,9 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 - Only text/plain parts are fetched, with `BODY.PEEK[<section>]`; HTML never leaves the server.
 - A mail without a text/plain part gets a polite reply, in Wally's wording.
 - `calm_email.sh` stays the calm shell around it: verbs, password and catalog.
+- The token count is exact, from the counting endpoint; the plain text goes to Anthropic for it.
+- The haven has one address, and more and more senders are expected.
+- The polite reply goes back to the sender, with `placeholder_wording` for now.
 
 ## Steps
 
