@@ -2,14 +2,14 @@
 name: hallmark
 description: >-
   hallmark_tool
+  All ravens must read at least once!
   What the mark hallmark_tool promises, and what a raven does when a marked tool acts up.
   Use when a raven works with a tool whose description starts with hallmark_tool, and especially when such a tool seems to misbehave.
 ---
 
 # hallmark
 
-The word comes from Goldsmiths' Hall in London, where gold and silver were tested and stamped as genuine.
-Our hall stamps its tools the same way: every tool whose description starts with `hallmark_tool` is officially hall approved by the tool builders.
+Every tool whose description starts with `hallmark_tool` is officially hall approved by the tool builders.
 
 ## When a marked tool acts up
 
