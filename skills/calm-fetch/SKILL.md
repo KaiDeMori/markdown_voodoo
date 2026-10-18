@@ -9,8 +9,10 @@ description: >-
 # calm-fetch
 
 ```
-bash C:/Users/devboese/.claude/skills/calm-fetch/calm_fetch.sh <url> [limit_in_megabytes]
+calm-fetch <url> [limit_in_megabytes]
 ```
+
+If the short call is unknown, the long one works: `bash C:/Users/devboese/.claude/skills/calm-fetch/calm_fetch.sh`.
 
 It fetches the URL raw with curl into the workspace's `scratchpad/fetched/`, and prints one line:
 

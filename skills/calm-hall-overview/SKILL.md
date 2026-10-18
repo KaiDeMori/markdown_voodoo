@@ -9,8 +9,10 @@ description: >-
 # calm-hall-overview
 
 ```
-bash C:/Users/devboese/.claude/skills/calm-hall-overview/calm_hall_overview.sh
+calm-hall-overview
 ```
+
+If the short call is unknown, the long one works: `bash C:/Users/devboese/.claude/skills/calm-hall-overview/calm_hall_overview.sh`.
 
 It shows the hall as far as `haven:/Hall/hall_overview_visibility.txt` lets it:
 

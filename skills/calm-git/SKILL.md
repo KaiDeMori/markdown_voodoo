@@ -14,9 +14,11 @@ A threshold, not a door: one read-only look, and only when Wally asks for it.
 ## Command
 
 ```
-bash C:/Users/devboese/.claude/skills/calm-git/calm_git.sh status
-bash C:/Users/devboese/.claude/skills/calm-git/calm_git.sh recent [count]
+calm-git status
+calm-git recent [count]
 ```
+
+If the short call is unknown, the long one works: `bash C:/Users/devboese/.claude/skills/calm-git/calm_git.sh`.
 
 It looks at the repository of the current folder.
 

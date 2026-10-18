@@ -17,8 +17,10 @@ The watcher wakes the raven once: on the first new mail, or when the timer runs 
 Every command runs as:
 
 ```
-bash C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh <verb> ...
+calm-comms <verb> ...
 ```
+
+If the short call is unknown, the long one works: `bash C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh`.
 
 | Command | Does |
 |---|---|

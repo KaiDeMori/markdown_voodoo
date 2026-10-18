@@ -9,10 +9,12 @@ description: >-
 # calm-grep
 
 ```
-bash C:/Users/devboese/.claude/skills/calm-grep/calm_grep.sh count <pattern> [folder]
-bash C:/Users/devboese/.claude/skills/calm-grep/calm_grep.sh where <pattern> [folder]
-bash C:/Users/devboese/.claude/skills/calm-grep/calm_grep.sh what <pattern> <file>
+calm-grep count <pattern> [folder]
+calm-grep where <pattern> [folder]
+calm-grep what <pattern> <file>
 ```
+
+If the short call is unknown, the long one works: `bash C:/Users/devboese/.claude/skills/calm-grep/calm_grep.sh`.
 
 Start zoomed out, and zoom in only when the answer asks for it:
 
