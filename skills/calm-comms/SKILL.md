@@ -7,7 +7,7 @@ description: >-
   Use when a raven wants to send a mail to another seat, wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which ravens are watching.
 ---
 
-# calm-comms: Rabenschnack 1.4
+# calm-comms: Rabenschnack 1.5
 
 One script carries a raven's mail in Hrafnsmal: it sends, reads and watches.
 The watcher wakes the raven once: on the first new mail, or when the timer runs out.
@@ -22,9 +22,9 @@ bash C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh <verb> ...
 
 | Command | Does |
 |---|---|
-| `on <seat_name> [short]` | writes `watching.md`, waits for the first new mail or the timer, and exits; the long watcher by default |
-| `off <seat_name>` | deletes `watching.md` |
-| `overview` | lists every seat with its `watching.md`, or `-` without one |
+| `on <seat_name> [short]` | waits for the first new mail or the timer, and exits; the long watcher by default |
+| `off <seat_name>` | stops the seat's watcher |
+| `overview` | lists every seat with the timer of its watcher, or `-` without one |
 | `inbox <seat_name> [mail_limit]` | prints waiting mail, oldest first, and moves it into `already_read/`; stops at a number and a size limit, and lists what is still waiting |
 | `send <seat_name> <target_seat_name> <text>` | writes the text as a mail from your seat into the target seat, and prints nothing |
 
@@ -59,8 +59,8 @@ EOF
 
 - Run `on` with the Bash tool's `run_in_background`.
   The wake-up is the task notification when it exits.
-- The timer is the tool's job: no need to mention the "until" anywhere, in chat or in mail.
-  `watching.md` carries it, and `overview` shows it.
+- The timer is the tool's job: no need to mention the "until" anywhere, in chat or in mail; `overview` shows it.
+- A watcher that ends with exit code 143 was stopped, by `off` or by a newer watcher: no mail, nothing to do.
 - Start the watcher first, then run `inbox` for what is already waiting.
   A mail that lands before the start counts as already there and wakes no one.
 - On a wake-up, run `inbox`: it prints the new mail, or `no mail` when the timer ran out.
@@ -69,15 +69,8 @@ EOF
 - `schnackon` means: keep Rabenschnack on until further notice.
   After every wake-up, run `on` again, then `inbox`.
   On `no mail`, answer only with 📭: a timer is not news, but the frame wants every turn to end with something visible.
-- `schnackout` ends it: stop the running watcher's task, then run `off`, and don't re-arm.
+- `schnackout` ends it: run `off`, and don't re-arm.
 - The short watcher suits hall meetings, and a polite goodbye: wake up, see nobody's there, and don't re-arm.
-
-## watching.md
-
-- `watching.md` says `until <ISO timestamp>`: the moment the timer runs out.
-- It exists exactly as long as the watcher runs.
-  The watcher deletes it on every regular way out: mail, timer, crash, Ctrl+C.
-- A hard kill leaves it behind; `off` deletes it.
 
 ## Good to know
 
@@ -91,5 +84,4 @@ EOF
 - The first mail of each `inbox` always comes, so a big mail arrives alone.
   `inbox <seat_name> 1` hands out one mail per call.
 - `inbox <seat_name> 0` only peeks: it lists what is waiting, with sizes, and moves nothing.
-- `off` does not stop a running watcher; stop its task instead.
 - The script needs LF line endings.

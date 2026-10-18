@@ -49,8 +49,9 @@ read_marker() {
   marker_until=''
   marker_pid=''
   if [[ ! -f $1 ]]; then return 0; fi
-  marker_until=$(sed -n 's/^until //p' "$1")
-  marker_pid=$(sed -n 's/^pid //p' "$1")
+  # The marker can vanish while it is read, when off and a stopping watcher clean up at the same moment.
+  marker_until=$(sed -n 's/^until //p' "$1" 2> /dev/null || true)
+  marker_pid=$(sed -n 's/^pid //p' "$1" 2> /dev/null || true)
 }
 
 is_watcher_of() {
