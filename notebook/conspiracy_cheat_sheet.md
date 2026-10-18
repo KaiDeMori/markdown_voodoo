@@ -4,9 +4,9 @@
 
 What is the right question, and what are the right thresholds?
 
-- A raven is only as good as its question; when a raven comes back wrong, the question was wrong.
-- The thresholds of `haven:/Hall/thresholds.md` tell it where to pause: not yet, not all at once, not mine.
-- A bump is a threshold too: a raven usually reports it back briefly instead of fixing it, and we decide together.
+- A raven is only as good as its question; when a raven comes back wrong, we look at the question first.
+- The question carries the thresholds of `haven:/Hall/thresholds.md`: not yet, not all at once, not mine.
+- The question also says what to do at a bump: usually report it back briefly instead of fixing it, so we can decide together.
 
 ## Single-agent workflow
 
