@@ -249,12 +249,24 @@ watch_mailbox() {
   echo "$(date +%Y-%m-%dT%H:%M%:z) timer"
 }
 
+run_mailbox() {
+  local imap_host=${imap_location#imaps://}
+  read_password
+  read_catalog
+  # The password, the address and the catalog reach mailbox.py only through the environment of this one command.
+  # Mail content is untrusted, so Python runs isolated.
+  calm_email_key=$password mailbox_address=$mailbox_address imap_host=${imap_host%%[:/]*} catalog=$catalog \
+    "$script_folder/.venv/Scripts/python.exe" -I "$script_folder/mailbox.py" "$@"
+}
+
 case $verb in
   setup) setup_password ;;
   forward) forward_mail "$2" "$3" ;;
   send) send_mail "$2" "$3" "$4" ;;
   list) list_mails ;;
   on) watch_mailbox "$2" ;;
+  # list_next tries mailbox.py while list stays as it is; it goes away at the switch.
+  list_next) run_mailbox list ;;
   catalog)
     case $2 in
       '') show_catalog ;;
@@ -263,4 +275,5 @@ case $verb in
     esac
     ;;
   *) echo 'setup, list, catalog, forward, send or on?'; exit 1 ;;
-esac
+# exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
+esac; exit

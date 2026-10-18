@@ -3,20 +3,23 @@
 from pathlib import Path
 
 TITLE = "RABENSCHNACK"
-KEY_HINTS = "[Tab] focus  [^Enter] send  [F1] help  [^Q] quit"
+KEY_HINTS = "[Tab] focus  [^Enter] send  [F2] help  [^Q] quit"
 HELP_TEXT = """\
- fernschreiber keys
+fernschreiber keys
 
- Tab          next pane: input, seats, mailbox
- Esc          back to the input
- Up/Down      move in the pane with the focus
- PgUp/PgDn    scroll the mailbox, from anywhere
- Enter        new line
- Ctrl+Enter   send to the selected seat
- F1           this help, and back
- Ctrl+Q       quit
+F1           Rabenschnack
+F2           this help; Esc goes back
+Ctrl+Q       quit
 
- ^ stands for Ctrl."""
+In Rabenschnack
+Tab          next pane: input, seats, mailbox
+Esc          back to the input
+Up/Down      move in the pane with the focus
+PgUp/PgDn    scroll the mailbox, from anywhere
+Enter        new line
+Ctrl+Enter   send to the selected seat
+
+^ stands for Ctrl."""
 
 SEAT_PANE_WIDTH = 22
 INPUT_LINES = 2

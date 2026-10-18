@@ -1,12 +1,7 @@
-"""fernschreiber's widgets: the frame lines, the seat list, the input and the help."""
+"""fernschreiber's widgets: the frame lines, the seat list and the input."""
 
 from rich.text import Text
-from textual.app import ComposeResult
-from textual.binding import Binding
-from textual.screen import ModalScreen
 from textual.widgets import Static, TextArea
-
-import settings
 
 
 def ascii_rule(width: int, left: str = "", right: str = "", junction: int | None = None) -> str:
@@ -102,16 +97,3 @@ class Message_area(TextArea):
 
     def on_blur(self) -> None:
         self.parent.query_one("#prompt", Static).set_class(False, "focused")
-
-
-class Help_screen(ModalScreen):
-    BINDINGS = [
-        Binding("escape", "close", show=False),
-        Binding("f1", "close", show=False),
-    ]
-
-    def compose(self) -> ComposeResult:
-        yield Static(settings.HELP_TEXT, markup=False, id="help")
-
-    def action_close(self) -> None:
-        self.dismiss()
