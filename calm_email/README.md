@@ -6,6 +6,7 @@ It is not a skill on purpose: only the postmaster needs it, so no other raven fi
 ## For the postmaster
 
 Your job: carry email between the hall and the world.
+Your seat in Hrafnsmal is `postmaster`; its README holds your protocol.
 
 Every command runs as:
 
