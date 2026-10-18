@@ -19,8 +19,7 @@ mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
 python_location='C:/Users/devboese/AppData/Local/Programs/Python/Python312/python'
 calm_comms_location='C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh'
-# The watcher: every look is one login, so it looks once a minute.
-poll_interval_seconds=60
+# The watcher's timers; the server announces new mail, so nothing polls.
 long_watcher_minutes=45
 short_watcher_minutes=4
 # A seed of random bytes.
@@ -214,39 +213,15 @@ send_mail() {
   echo "The mail to $circled is sent."
 }
 
-next_uid() {
-  # STATUS names the UID the next mail will get; asked at the server, it selects no mailbox and marks nothing.
-  ask_mailbox "${imap_location%INBOX}" --request 'STATUS INBOX (UIDNEXT)' | tr -d '\r' | sed -n 's/.*UIDNEXT \([0-9][0-9]*\).*/\1/p'
-}
-
 watch_mailbox() {
-  local timer_minutes known_next_uid current_next_uid new_mail_lines
+  local timer_minutes
   case ${1:-long} in
     long) timer_minutes=$long_watcher_minutes ;;
     short) timer_minutes=$short_watcher_minutes ;;
     *[!0-9]*) echo 'on, on short, or on <minutes>?'; exit 1 ;;
     *) timer_minutes=$1 ;;
   esac
-  read_password
-  read_catalog
-  # A mail that lands before the start counts as already there and wakes no one.
-  known_next_uid=$(next_uid)
-  if [[ -z $known_next_uid ]]; then echo 'The mailbox named no UIDNEXT, so nothing is watched.'; exit 1; fi
-  while (( SECONDS < timer_minutes * 60 )); do
-    # Sleeping in the background lets a stop act at once instead of after the nap.
-    sleep "$poll_interval_seconds" & wait $!
-    # A look that fails, such as in a short network gap, is skipped; the next look tries again.
-    current_next_uid=$(next_uid || true)
-    if [[ -z $current_next_uid ]] || (( current_next_uid <= known_next_uid )); then continue; fi
-    # Only a mail from a letter in the catalog wakes the postmaster; anything else waits for the next list.
-    new_mail_lines=$(ask_mailbox "$imap_location" --request "UID FETCH $known_next_uid:* (RFC822.SIZE ENVELOPE)" | describe_mails only_catalog || true)
-    if [[ -n $new_mail_lines ]]; then
-      echo "$(date +%Y-%m-%dT%H:%M%:z) mail: ${new_mail_lines%%$'\n'*}"
-      return
-    fi
-    known_next_uid=$current_next_uid
-  done
-  echo "$(date +%Y-%m-%dT%H:%M%:z) timer"
+  run_mailbox on "$timer_minutes"
 }
 
 run_mailbox() {
