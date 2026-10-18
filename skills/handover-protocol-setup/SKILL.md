@@ -4,6 +4,7 @@ description: >-
   Set up the HandOver Protocol (HOP) in the current project — a small, single-purpose knowledge-continuity setup: the Status.md baton, the HandOver_Protocol.md mechanism doc, and a minimal hand-over pointer in CLAUDE.md.
   Use when bootstrapping a project for long-running, multi-session work, or re-applying the protocol to an existing one.
   Writes only inside the current project.
+disable-model-invocation: true
 ---
 
 # HandOver Protocol setup (HOP)
