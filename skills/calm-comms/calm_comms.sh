@@ -5,6 +5,8 @@
 # overview: lists every seat with the timer of its living watcher, or - without one.
 # inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 # send: writes a mail from one seat into another, and never overwrites a mail.
+# Terminal mode: the fernschreiber sets calm_comms_mode=terminal.
+# Then nothing pauses, inbox has no limits, and on stays present without a timer, printing one line per mail as it lands.
 # Usage: calm_comms.sh on <seat_name> [long|short|<minutes>]
 #        calm_comms.sh off <seat_name>
 #        calm_comms.sh overview
@@ -19,6 +21,13 @@ short_watcher_minutes=4
 inbox_mail_limit=3
 inbox_size_limit_kilobytes=10
 write_throttle_seconds=2
+# Terminal mode is no verb, so no raven finds it in a skill list; -1 lifts a limit.
+terminal_mode=''
+if [[ ${calm_comms_mode:-} == terminal ]]; then
+  terminal_mode=yes
+  inbox_mail_limit=-1
+  inbox_size_limit_kilobytes=-1
+fi
 
 verb=$1
 seat_name=$2
@@ -41,16 +50,30 @@ check_seat() {
 
 throttle() {
   # A busy hall gets a buffer: a call that wrote waits a moment before it returns.
+  # A terminal is no busy hall: terminal mode never waits.
+  if [[ -n $terminal_mode ]]; then return 0; fi
   sleep "$write_throttle_seconds"
 }
 
+rest() {
+  # read -t on a quiet FIFO waits inside bash: no sleep.exe on every look, and a stop still acts at once.
+  # The FIFO is deleted right after opening; the open descriptor keeps it alive, and nothing is left behind.
+  if [[ -z ${quiet_fd:-} ]]; then
+    local fifo_location="/tmp/calm_comms_quiet_$$"
+    mkfifo "$fifo_location"
+    exec {quiet_fd}<> "$fifo_location"
+    rm -f "$fifo_location"
+  fi
+  read -t "$1" -u "$quiet_fd" || true
+}
+
 read_marker() {
-  # watching.md holds the moment the timer runs out and the watcher's process ID.
+  # watching.md holds the moment the timer runs out, or present in terminal mode, and the watcher's process ID.
   marker_until=''
   marker_pid=''
   if [[ ! -f $1 ]]; then return 0; fi
   # The marker can vanish while it is read, when off and a stopping watcher clean up at the same moment.
-  marker_until=$(sed -n 's/^until //p' "$1" 2> /dev/null || true)
+  marker_until=$(sed -n -e 's/^until //p' -e '/^present$/p' "$1" 2> /dev/null || true)
   marker_pid=$(sed -n 's/^pid //p' "$1" 2> /dev/null || true)
 }
 
@@ -89,19 +112,21 @@ watch_seat() {
   for file_location in "$seat_location"/*; do
     known_files["${file_location##*/}"]=1
   done
-  while (( SECONDS < timer_minutes * 60 )); do
+  # Terminal mode stays present without a timer.
+  while [[ -n $terminal_mode ]] || (( SECONDS < timer_minutes * 60 )); do
     for file_location in "$seat_location"/*; do
       file_name=${file_location##*/}
       if [[ -f $file_location && $file_name != README.md && $file_name != watching.md && -z ${known_files[$file_name]} ]]; then
         # A writer's temp file is gone a second later; only a file that stays is mail.
-        sleep 1
+        rest 1
         [[ -e $file_location ]] || continue
         echo "$(timestamp) mail: $file_name"
-        return
+        # A raven wakes on the first mail; terminal mode keeps watching, one line per mail.
+        if [[ -z $terminal_mode ]]; then return; fi
+        known_files["$file_name"]=1
       fi
     done
-    # Sleeping in the background lets a stop act at once instead of after the nap.
-    sleep "$poll_interval_seconds" & wait $!
+    rest "$poll_interval_seconds"
   done
   echo "$(timestamp) timer"
 }
@@ -113,7 +138,9 @@ show_overview() {
     overview_seat_name=${seat_location##*/}
     read_marker "$seat_location/watching.md"
     # A marker without its living watcher counts as not watching.
-    if [[ -n $marker_until ]] && is_watcher_of "$marker_pid" "$overview_seat_name"; then
+    if [[ $marker_until == present ]] && is_watcher_of "$marker_pid" "$overview_seat_name"; then
+      printf '%-24s present\n' "$overview_seat_name"
+    elif [[ -n $marker_until ]] && is_watcher_of "$marker_pid" "$overview_seat_name"; then
       printf '%-24s until %s\n' "$overview_seat_name" "$marker_until"
     else
       printf '%-24s -\n' "$overview_seat_name"
@@ -126,7 +153,7 @@ show_inbox() {
   # Every file at the top of the seat is mail, oldest first, except README.md and watching.md.
   while read -r modification_time file_size file_name; do
     # The first mail of a call always comes, so a big one arrives alone.
-    if (( waiting_count > 0 || mail_count == mail_limit || (mail_count > 0 && used_bytes + file_size > inbox_size_limit_kilobytes * 1024) )); then
+    if (( waiting_count > 0 || mail_count == mail_limit || (mail_count > 0 && inbox_size_limit_kilobytes >= 0 && used_bytes + file_size > inbox_size_limit_kilobytes * 1024) )); then
       waiting_count=$((waiting_count + 1))
       if (( file_size < 1024 )); then file_size_text='<1 KB'; else file_size_text="$(( (file_size + 1023) / 1024 )) KB"; fi
       waiting_list+="${waiting_list:+, }$file_name ($file_size_text)"
@@ -169,13 +196,17 @@ case $verb in
       *) timer_minutes=$watcher_length ;;
     esac
     stop_old_watcher
-    printf 'until %s\npid %s\n' "$(timestamp "+$timer_minutes minutes")" "$$" > "$watching_marker_file_location"
+    if [[ -n $terminal_mode ]]; then
+      printf 'present\npid %s\n' "$$" > "$watching_marker_file_location"
+    else
+      printf 'until %s\npid %s\n' "$(timestamp "+$timer_minutes minutes")" "$$" > "$watching_marker_file_location"
+    fi
     # watching.md lives exactly as long as this watcher.
     trap remove_own_marker EXIT
     # 143 is the usual exit code after a stop; the raven reads it as: no mail, nothing to do.
     trap 'echo stopped; exit 143' INT TERM
     watch_seat
-    # The bell is for humans in a terminal; ravens in the background never hear it.
+    # The bell rings only in a terminal; ravens in the background never hear it.
     if [[ -t 1 ]]; then printf '\a'; fi
     ;;
   off)
