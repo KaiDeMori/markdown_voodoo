@@ -7,6 +7,7 @@
 # send: writes a mail from one seat into another, and never overwrites a mail.
 # Terminal mode: the fernschreiber sets calm_comms_mode=terminal.
 # Then nothing pauses, inbox has no limits, and on stays present without a timer, printing one line per mail as it lands.
+# A watcher in terminal mode stays only while its stdin stays open, so a crashed terminal leaves no ghost.
 # Usage: calm_comms.sh on <seat_name> [long|short|<minutes>]
 #        calm_comms.sh off <seat_name>
 #        calm_comms.sh overview
@@ -56,8 +57,16 @@ throttle() {
 }
 
 rest() {
-  # read -t on a quiet FIFO waits inside bash: no sleep.exe on every look, and a stop still acts at once.
-  # The FIFO is deleted right after opening; the open descriptor keeps it alive, and nothing is left behind.
+  # read -t waits inside bash: no sleep.exe on every look, and a stop still acts at once.
+  local read_status=0
+  if [[ -n $terminal_mode ]]; then
+    # Terminal mode waits on stdin, which the terminal keeps open and never writes to.
+    # When the terminal is gone, even after a crash, the pipe closes, read meets its end, and the watcher leaves without a ghost.
+    read -t "$1" -u 0 || read_status=$?
+    if (( read_status > 0 && read_status <= 128 )); then exit 0; fi
+    return 0
+  fi
+  # Everyone else waits on a quiet FIFO, deleted right after opening; the open descriptor keeps it alive, and nothing is left behind.
   if [[ -z ${quiet_fd:-} ]]; then
     local fifo_location="/tmp/calm_comms_quiet_$$"
     mkfifo "$fifo_location"
