@@ -2,6 +2,7 @@
 
 import argparse
 import subprocess
+import sys
 import threading
 from datetime import datetime
 from pathlib import Path
@@ -279,7 +280,9 @@ def main() -> None:
     parser.add_argument("theme_file", nargs="?", type=Path, help="a color theme, such as themes/paper.toml; without one, Textual's defaults show")
     arguments = parser.parse_args()
     color_theme = load_color_theme(arguments.theme_file) if arguments.theme_file else None
-    Fernschreiber(color_theme).run()
+    app = Fernschreiber(color_theme)
+    app.run()
+    sys.exit(app.return_code)
 
 
 if __name__ == "__main__":

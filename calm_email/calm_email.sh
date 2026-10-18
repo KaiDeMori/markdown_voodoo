@@ -5,11 +5,13 @@
 # catalog: the letters in the catalog, never the addresses.
 # catalog add: asks Wally in a real terminal for the address a letter stands for.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
+# send: sends a plain-text mail to a letter in the catalog, and to nobody else.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
 #        calm_email.sh catalog
 #        calm_email.sh catalog add <letter>
 #        calm_email.sh forward <number> <seat_name>
+#        calm_email.sh send <letter> <subject> <text>
 
 mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
@@ -185,9 +187,24 @@ forward_mail() {
   echo "Mail $number is forwarded to $seat_name."
 }
 
+send_mail() {
+  local subject=$2 text=$3 address
+  if [[ -z $1 || -z $subject || -z $text ]]; then echo 'send <letter> <subject> <text>?'; exit 1; fi
+  circle_letter "$1"
+  read_password
+  read_catalog
+  # The catalog is the guest list: mail goes out only to a letter in it.
+  address=$(printf '%s\n' "$catalog" | awk -F'\t' -v letter="$circled" '$1 == letter { print $2 }')
+  if [[ -z $address ]]; then echo "$circled is not in the catalog, so nothing goes out."; exit 1; fi
+  # The password and the address reach Python only through the environment of this one command.
+  calm_email_key=$password recipient=$address subject=$subject text=$text "$python_location" -I "$script_folder/send_mail.py"
+  echo "The mail to $circled is sent."
+}
+
 case $verb in
   setup) setup_password ;;
   forward) forward_mail "$2" "$3" ;;
+  send) send_mail "$2" "$3" "$4" ;;
   list) list_mails ;;
   catalog)
     case $2 in
@@ -196,5 +213,5 @@ case $verb in
       *) echo 'catalog, or catalog add <letter>?'; exit 1 ;;
     esac
     ;;
-  *) echo 'setup, list, catalog or forward?'; exit 1 ;;
+  *) echo 'setup, list, catalog, forward or send?'; exit 1 ;;
 esac
