@@ -13,8 +13,10 @@ import settings
 from calm_comms import read_seats, run_calm_comms, start_watcher
 from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail
-from NOTAR import load_NOTAR_messages
-from Screens import Help_screen, NOTAR_screen, Rabenschnack_screen, clock_text
+from modes.Help import Help_screen
+from modes.NOTAR import NOTAR_screen, load_NOTAR_messages
+from modes.Rabenschnack import Rabenschnack_screen
+from Widgets import clock_text
 
 
 def build_css(color_theme: Color_theme | None) -> str:

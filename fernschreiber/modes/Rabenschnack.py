@@ -1,6 +1,4 @@
-"""fernschreiber's screens, one per mode: Rabenschnack on F1, the help on F2, NOTAR on F3."""
-
-from datetime import datetime
+"""Rabenschnack, on F1: the seats, the own inbox and the input."""
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -11,12 +9,7 @@ from textual.widgets import Static, TextArea
 import settings
 from calm_comms import send_mail
 from Mail import Mail
-from NOTAR import NOTAR_message
-from Widgets import Message_area, Rule_line, Seat_list, Title_list
-
-
-def clock_text() -> str:
-    return datetime.now().strftime("%H:%M")
+from Widgets import Message_area, Rule_line, Seat_list, clock_text
 
 
 class Rabenschnack_screen(Screen):
@@ -138,108 +131,3 @@ class Rabenschnack_screen(Screen):
             self.message_area.clear()
         else:
             self.add_note(f"{clock_text()}  fernschreiber", f"not sent to {target}: {output or 'calm-comms gave no reason'}")
-
-
-class NOTAR_screen(Screen):
-    """NOTAR, a notice to all ravens: one prepared message, sent to every watching seat at once."""
-
-    BINDINGS = [
-        Binding("ctrl+enter", "send", show=False, priority=True),
-        Binding("up", "move(-1)", show=False),
-        Binding("down", "move(1)", show=False),
-        Binding("escape", "app.switch_mode('rabenschnack')", show=False),
-    ]
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.sending = False
-
-    def compose(self) -> ComposeResult:
-        yield Rule_line(left="NOTAR", right=clock_text(), id="top_rule", classes="rule")
-        with Horizontal(id="notar_main"):
-            yield Title_list("NOTARs", [message.title for message in self.app.NOTAR_messages], id="notar_titles")
-            with VerticalScroll(id="notar_preview"):
-                yield Static("", markup=False, id="notar_recipients")
-                yield Static("", markup=False, id="notar_text")
-        yield Rule_line(junction=settings.SEAT_PANE_WIDTH - 1, id="middle_rule", classes="rule")
-        yield Static("ready", markup=False, id="notar_status")
-        yield Rule_line(left=settings.NOTAR_KEY_HINTS, id="bottom_rule", classes="rule")
-
-    def on_mount(self) -> None:
-        self.top_rule = self.query_one("#top_rule", Rule_line)
-        self.title_list = self.query_one(Title_list)
-        self.recipients_label = self.query_one("#notar_recipients", Static)
-        self.text_label = self.query_one("#notar_text", Static)
-        self.status_label = self.query_one("#notar_status", Static)
-        self.title_list.focus()
-        self.app.notar = self
-        self.show_selected()
-
-    def on_screen_resume(self) -> None:
-        self.app.tick()
-
-    @property
-    def watching_seats(self) -> list[str]:
-        return [name for name, watching in self.app.seats if watching]
-
-    def show_selected(self) -> None:
-        """Shows the selected message, and the seats it would go to right now."""
-        seats = self.watching_seats
-        if seats:
-            self.recipients_label.update(f"to {len(seats)} watching seat{'' if len(seats) == 1 else 's'}: {', '.join(seats)}")
-        else:
-            self.recipients_label.update("nobody is watching right now")
-        self.text_label.update(self.app.NOTAR_messages[self.title_list.selected].text)
-
-    def action_move(self, step: int) -> None:
-        self.title_list.move(step)
-        self.show_selected()
-
-    def action_send(self) -> None:
-        if self.sending:
-            return
-        seats = self.watching_seats
-        message = self.app.NOTAR_messages[self.title_list.selected]
-        if not seats:
-            self.status_label.update("nobody is watching, so nothing was sent")
-            return
-        self.sending = True
-        self.status_label.update(f"sending to {len(seats)} seat{'' if len(seats) == 1 else 's'} ...")
-        self.run_worker(lambda: self.send_in_background(message, seats), thread=True, group="notar")
-
-    def send_in_background(self, message: NOTAR_message, seats: list[str]) -> None:
-        failures = []
-        for seat in seats:
-            result = send_mail(seat, message.text)
-            if result.returncode != 0:
-                failures.append((seat, (result.stdout + result.stderr).decode("utf-8", "replace").strip() or f"exit code {result.returncode}"))
-        self.app.post(self.finish_send, message, seats, failures)
-
-    def finish_send(self, message: NOTAR_message, seats: list[str], failures: list[tuple[str, str]]) -> None:
-        """Reports how many seats got the message, and echoes it into Rabenschnack."""
-        self.sending = False
-        sent_count = len(seats) - len(failures)
-        status = f"{clock_text()}  {message.title}: sent to {sent_count} of {len(seats)}"
-        if failures:
-            status += "; not to " + ", ".join(f"{seat} ({reason})" for seat, reason in failures)
-        self.status_label.update(status)
-        self.app.rabenschnack.add_note(f"{clock_text()}  -> NOTAR {message.title}, {sent_count} of {len(seats)} seats", message.text, sent=True)
-
-
-class Help_screen(Screen):
-    """The help: every key, in a mode of its own."""
-
-    BINDINGS = [
-        Binding("escape", "app.switch_mode('rabenschnack')", show=False),
-    ]
-
-    def compose(self) -> ComposeResult:
-        yield Rule_line(left="HELP", right=clock_text(), id="top_rule", classes="rule")
-        yield Static(settings.HELP_TEXT, markup=False, id="help_text")
-        yield Rule_line(left=settings.KEY_HINTS, id="bottom_rule", classes="rule")
-
-    def on_mount(self) -> None:
-        self.top_rule = self.query_one("#top_rule", Rule_line)
-
-    def on_screen_resume(self) -> None:
-        self.app.tick()

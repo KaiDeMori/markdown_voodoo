@@ -1,7 +1,13 @@
-"""fernschreiber's widgets: the frame lines, the seat list and the input."""
+"""fernschreiber's widgets: the frame lines with their clock, the lists and the input."""
+
+from datetime import datetime
 
 from rich.text import Text
 from textual.widgets import Static, TextArea
+
+
+def clock_text() -> str:
+    return datetime.now().strftime("%H:%M")
 
 
 def ascii_rule(width: int, left: str = "", right: str = "", junction: int | None = None) -> str:
