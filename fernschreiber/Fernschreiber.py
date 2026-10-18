@@ -13,7 +13,7 @@ from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Static, TextArea
 
 import settings
-from calm_comms import read_seats, run_calm_comms, send_mail, start_calm_comms
+from calm_comms import read_seats, run_calm_comms, send_mail, start_calm_comms, start_watcher
 from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail
 from Widgets import Help_screen, Message_area, Rule_line, Seat_list
@@ -176,34 +176,31 @@ class Fernschreiber(App):
     # The inbox
 
     def watch_loop(self) -> None:
-        """Shows the history, then keeps the own seat watched: start `on`, deliver what is waiting, wait for the watcher, again."""
+        """Shows the history and what is waiting, then delivers mail for every line the watcher prints, until `off` stops it."""
         self.post(self.add_mails, [read_mail(file) for file in already_read_files()[-settings.HISTORY_MAIL_COUNT:]], False)
-        while True:
-            with self.watcher_lock:
-                if self.stopping:
-                    return
-                self.watcher = start_calm_comms("on", settings.OWN_SEAT, str(settings.WATCH_MINUTES))
-            self.deliver_mail()
-            return_code = self.watcher.wait()
+        with self.watcher_lock:
             if self.stopping:
                 return
-            if return_code != 0:
-                self.post(self.add_mails, [Mail(self.clock_text(), "fernschreiber", f"The watcher stopped with exit code {return_code}; fernschreiber no longer watches.")], True)
+            self.watcher = start_watcher()
+        self.deliver_mail()
+        for _ in iter(self.watcher.stdout.readline, b""):
+            if self.stopping:
                 return
+            self.deliver_mail()
+        return_code = self.watcher.wait()
+        if not self.stopping:
+            self.post(self.add_mails, [Mail(self.clock_text(), "fernschreiber", f"The watcher stopped with exit code {return_code}; fernschreiber no longer watches.")], True)
 
     def deliver_mail(self) -> None:
-        """Runs `inbox` until nothing more is waiting, and shows the mails it moved into already_read."""
-        for _ in range(50):
-            before = {file.name for file in already_read_files()}
-            result = run_calm_comms("inbox", settings.OWN_SEAT, str(settings.INBOX_MAIL_LIMIT))
-            output = result.stdout.decode("utf-8", "replace")
-            mails = [read_mail(file) for file in already_read_files() if file.name not in before]
-            if result.returncode != 0:
-                mails.append(Mail(self.clock_text(), "fernschreiber", output.strip() or f"inbox stopped with exit code {result.returncode}"))
-            if mails:
-                self.post(self.add_mails, mails, True)
-            if result.returncode != 0 or " more waiting: " not in output:
-                return
+        """Runs `inbox`, which in terminal mode hands out everything waiting, and shows the mails it moved into already_read."""
+        before = {file.name for file in already_read_files()}
+        result = run_calm_comms("inbox", settings.OWN_SEAT)
+        mails = [read_mail(file) for file in already_read_files() if file.name not in before]
+        if result.returncode != 0:
+            output = result.stdout.decode("utf-8", "replace").strip()
+            mails.append(Mail(self.clock_text(), "fernschreiber", output or f"inbox stopped with exit code {result.returncode}"))
+        if mails:
+            self.post(self.add_mails, mails, True)
 
     @staticmethod
     def entry_widgets(head: str, body: str, sent: bool = False) -> list[Static]:
@@ -229,13 +226,11 @@ class Fernschreiber(App):
         self.inbox.scroll_end(animate=False)
 
     def stop_watching(self) -> None:
-        """Stops the running watcher and deletes watching.md, which a stopped watcher leaves behind."""
+        """Runs `off`, which stops the watcher and deletes watching.md."""
         with self.watcher_lock:
             if self.stopping:
                 return
             self.stopping = True
-            if self.watcher is not None and self.watcher.poll() is None:
-                self.watcher.terminate()
         start_calm_comms("off", settings.OWN_SEAT)
 
     def post(self, callback, *arguments) -> None:

@@ -7,7 +7,13 @@ from datetime import datetime
 import settings
 
 # The raw MSYS bash takes PATH as it comes; without Git's usr/bin first, date, sleep and rm are missing, and find and sort are Windows' own.
-CALM_COMMS_ENVIRONMENT = dict(os.environ, LANG="C.UTF-8", PATH=settings.GIT_USR_BIN + os.pathsep + os.environ.get("PATH", ""))
+# Terminal mode: present without a timer, one line per mail, no pause after a write, no inbox limits.
+CALM_COMMS_ENVIRONMENT = dict(
+    os.environ,
+    LANG="C.UTF-8",
+    PATH=settings.GIT_USR_BIN + os.pathsep + os.environ.get("PATH", ""),
+    calm_comms_mode="terminal",
+)
 CALM_COMMS_OPTIONS = dict(stdin=subprocess.DEVNULL, env=CALM_COMMS_ENVIRONMENT)
 # The text goes in on stdin, so the Windows command line never carries it: no quoting, no globbing.
 SEND_SCRIPT = 'exec bash "$0" send "$1" "$2" "$(cat)"'
@@ -22,8 +28,13 @@ def run_calm_comms(*arguments: str) -> subprocess.CompletedProcess:
 
 
 def start_calm_comms(*arguments: str) -> subprocess.Popen:
-    """Starts calm-comms without waiting for it: the watcher, and `off` on the way out."""
+    """Starts calm-comms without waiting for it, such as `off` on the way out."""
     return subprocess.Popen(calm_comms_command(*arguments), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **CALM_COMMS_OPTIONS)
+
+
+def start_watcher() -> subprocess.Popen:
+    """Starts the own seat's watcher; in terminal mode it runs until `off`, and prints one line per mail."""
+    return subprocess.Popen(calm_comms_command("on", settings.OWN_SEAT), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, **CALM_COMMS_OPTIONS)
 
 
 def send_mail(target_seat: str, text: str) -> subprocess.CompletedProcess:
@@ -37,7 +48,9 @@ def send_mail(target_seat: str, text: str) -> subprocess.CompletedProcess:
 
 
 def is_watching(state: list[str], now: datetime) -> bool:
-    """Whether an overview state such as `until 2026-10-17T12:09+02:00` names a watcher whose time has not run out."""
+    """Whether an overview state names a running watcher: `present` in terminal mode, or `until 2026-10-17T12:09+02:00` that has not run out."""
+    if state == ["present"]:
+        return True
     if len(state) != 2 or state[0] != "until":
         return False
     try:
