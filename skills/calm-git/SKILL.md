@@ -18,8 +18,6 @@ calm-git status
 calm-git recent [count]
 ```
 
-If the short call is unknown, the long one works: `bash C:/Users/devboese/.claude/skills/calm-git/calm_git.sh`.
-
 It looks at the repository of the current folder.
 
 ## What it shows

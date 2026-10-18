@@ -24,8 +24,6 @@ Made for long indexes and boring refs: read now, think when asked.
 self-flow [file]
 ```
 
-If the short call is unknown, the long one works: `bash C:/Users/devboese/.claude/skills/self-flow/self_flow.sh`.
-
 | Command | Does |
 |---|---|
 | `self_flow.sh <file>` | prints the file, then the koan |

@@ -20,8 +20,6 @@ Every command runs as:
 calm-comms <verb> ...
 ```
 
-If the short call is unknown, the long one works: `bash C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh`.
-
 | Command | Does |
 |---|---|
 | `on <seat_name> [short]` | waits for the first new mail or the timer, and exits; the long watcher by default |
