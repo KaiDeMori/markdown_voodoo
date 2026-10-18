@@ -6,17 +6,23 @@
 # catalog add: asks Wally in a real terminal for the address a letter stands for.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
 # send: sends a plain-text mail to a letter in the catalog, and to nobody else.
+# on: waits for the first new mail from a letter in the catalog, or the timer, and exits.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
 #        calm_email.sh catalog
 #        calm_email.sh catalog add <letter>
 #        calm_email.sh forward <number> <seat_name>
 #        calm_email.sh send <letter> <subject> <text>
+#        calm_email.sh on [long|short|<minutes>]
 
 mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
 python_location='C:/Users/devboese/AppData/Local/Programs/Python/Python312/python'
 calm_comms_location='C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh'
+# The watcher: every look is one login, so it looks once a minute.
+poll_interval_seconds=60
+long_watcher_minutes=45
+short_watcher_minutes=4
 # A seed of random bytes.
 rng_seed='dcbcd6d35fc50d46c27fc8c32356c0d2ec3b2cd55f51416139278b84b3d844093cc6d35ff6b273ba719316078b38af0f11e8192232d5aefff83f148c81c868b6'
 
@@ -113,13 +119,11 @@ show_catalog() {
   printf '%s\n' "$catalog" | cut -f1 | paste -s -d' ' -
 }
 
-list_mails() {
-  local mail_lines
-  read_password
-  read_catalog
-  # One login and one request: ENVELOPE answers on a single line, and reading it marks nothing as read.
+describe_mails() {
+  # Turns FETCH answers into one line per mail, numbered the way list numbers them.
   # A sender in the catalog shows as their letter, anyone else only as their domain, so no address enters a window.
-  mail_lines=$(ask_mailbox "$imap_location" --request 'FETCH 1:* (RFC822.SIZE ENVELOPE)' | tr -d '\r' | catalog=$catalog awk '
+  # With only_catalog, a mail from anyone outside the catalog is left out.
+  tr -d '\r' | catalog=$catalog only_catalog=${1:-} awk '
     BEGIN {
       entries = split(ENVIRON["catalog"], catalog_lines, "\n")
       for (e = 1; e <= entries; e++) {
@@ -153,7 +157,7 @@ list_mails() {
     /^\* [0-9]+ FETCH/ {
       delete tokens
       count = tokenize($0)
-      size = 0; date = ""; subject = ""; sender_label = "?"
+      size = 0; date = ""; subject = ""; sender = ""; sender_label = "?"
       for (k = 1; k <= count; k++) {
         if (tokens[k] == "RFC822.SIZE") size = tokens[k + 1] + 0
         if (tokens[k] == "ENVELOPE") {
@@ -166,10 +170,19 @@ list_mails() {
           }
         }
       }
+      if (ENVIRON["only_catalog"] != "" && !(sender in letters)) next
       size_text = (size < 1024) ? "<1 KB" : int((size + 1023) / 1024) " KB"
       print $2 "  " date "  " sender_label "  " subject "  (" size_text ")"
     }
-  ')
+  '
+}
+
+list_mails() {
+  local mail_lines
+  read_password
+  read_catalog
+  # One login and one request: ENVELOPE answers on a single line, and reading it marks nothing as read.
+  mail_lines=$(ask_mailbox "$imap_location" --request 'FETCH 1:* (RFC822.SIZE ENVELOPE)' | describe_mails)
   if [[ -z $mail_lines ]]; then echo 'no mail'; else echo "$mail_lines"; fi
 }
 
@@ -201,11 +214,47 @@ send_mail() {
   echo "The mail to $circled is sent."
 }
 
+next_uid() {
+  # STATUS names the UID the next mail will get; asked at the server, it selects no mailbox and marks nothing.
+  ask_mailbox "${imap_location%INBOX}" --request 'STATUS INBOX (UIDNEXT)' | tr -d '\r' | sed -n 's/.*UIDNEXT \([0-9][0-9]*\).*/\1/p'
+}
+
+watch_mailbox() {
+  local timer_minutes known_next_uid current_next_uid new_mail_lines
+  case ${1:-long} in
+    long) timer_minutes=$long_watcher_minutes ;;
+    short) timer_minutes=$short_watcher_minutes ;;
+    *[!0-9]*) echo 'on, on short, or on <minutes>?'; exit 1 ;;
+    *) timer_minutes=$1 ;;
+  esac
+  read_password
+  read_catalog
+  # A mail that lands before the start counts as already there and wakes no one.
+  known_next_uid=$(next_uid)
+  if [[ -z $known_next_uid ]]; then echo 'The mailbox named no UIDNEXT, so nothing is watched.'; exit 1; fi
+  while (( SECONDS < timer_minutes * 60 )); do
+    # Sleeping in the background lets a stop act at once instead of after the nap.
+    sleep "$poll_interval_seconds" & wait $!
+    # A look that fails, such as in a short network gap, is skipped; the next look tries again.
+    current_next_uid=$(next_uid || true)
+    if [[ -z $current_next_uid ]] || (( current_next_uid <= known_next_uid )); then continue; fi
+    # Only a mail from a letter in the catalog wakes the postmaster; anything else waits for the next list.
+    new_mail_lines=$(ask_mailbox "$imap_location" --request "UID FETCH $known_next_uid:* (RFC822.SIZE ENVELOPE)" | describe_mails only_catalog || true)
+    if [[ -n $new_mail_lines ]]; then
+      echo "$(date +%Y-%m-%dT%H:%M%:z) mail: ${new_mail_lines%%$'\n'*}"
+      return
+    fi
+    known_next_uid=$current_next_uid
+  done
+  echo "$(date +%Y-%m-%dT%H:%M%:z) timer"
+}
+
 case $verb in
   setup) setup_password ;;
   forward) forward_mail "$2" "$3" ;;
   send) send_mail "$2" "$3" "$4" ;;
   list) list_mails ;;
+  on) watch_mailbox "$2" ;;
   catalog)
     case $2 in
       '') show_catalog ;;
@@ -213,5 +262,5 @@ case $verb in
       *) echo 'catalog, or catalog add <letter>?'; exit 1 ;;
     esac
     ;;
-  *) echo 'setup, list, catalog, forward or send?'; exit 1 ;;
+  *) echo 'setup, list, catalog, forward, send or on?'; exit 1 ;;
 esac

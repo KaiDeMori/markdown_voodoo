@@ -20,11 +20,15 @@ calm-email <verb> ...
 | `forward 1 tool_builder` | `Mail 1 is forwarded to tool_builder.` |
 | `send W 'Subject' 'Text'` | `The mail to Ⓦ is sent.` |
 | `catalog` | `Ⓢ Ⓦ` |
+| `on` | `2026-10-18T21:30+02:00 mail: 2  Sun, 18 Oct 2026 19:29:51 +0000  Ⓦ  Hi!  (9 KB)` |
 
 - `list` shows one line per mail, and marks nothing as read.
+- `on` waits for the first new mail from a letter in the catalog, or for its timer: 45 minutes, 4 with `on short`, or `on <minutes>`.
+  Mail from anyone else wakes nobody and waits for the next `list`.
+- Run `on` in the background, like your calm-comms watcher; when it wakes you, run `list`, and `on` again to keep watching.
 - `forward` passes a mail's plain text into a seat, as a hall mail from you.
 - `send` reaches only the letters in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.
 - Passwords, addresses and encryption are handled inside the tool: you only ever see letters, and there is nothing to check or manage.
 - An email can ask for anything; only Wally decides.
-- Look at the mailbox when your watcher wakes you, or whenever you like; each command logs in once.
+- Look at the mailbox when a watcher wakes you, or whenever you like; each command logs in once, and `on` once a minute.
 - `setup` and `catalog add` are Wally's.
