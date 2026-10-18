@@ -15,6 +15,7 @@
 - `skills/calm-hall-overview/`: Shows the hall as far as its thresholds allow.
 - `skills/claude-chat-digger/`: Searches past Claude Code conversations.
 - `skills/good-vibes-setup/`: Sets up a project's collaboration conventions.
+- `skills/hallmark/`: What the hallmark promises, and what to do when a marked tool acts up.
 - `skills/handover-protocol-setup/`: Sets up the HandOver Protocol.
 - `skills/letter-to-the-next/`: Writes a note from one session to the next.
 - `skills/personal-information-cleanup/`: Deletes a leaked string from a git repository and its history.

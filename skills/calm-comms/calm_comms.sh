@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# calm_comms, Rabenschnack 1.4: watches a raven's Hrafnsmal seat and sends its mail.
+# calm_comms, Rabenschnack 1.5: watches a raven's Hrafnsmal seat and sends its mail.
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
-# off: deletes watching.md.
-# overview: lists every seat with its watching.md, or - without one.
+# off: stops the seat's watcher and deletes watching.md.
+# overview: lists every seat with the timer of its living watcher, or - without one.
 # inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 # send: writes a mail from one seat into another, and never overwrites a mail.
 # Usage: calm_comms.sh on <seat_name> [long|short|<minutes>]
@@ -44,6 +44,44 @@ throttle() {
   sleep "$write_throttle_seconds"
 }
 
+read_marker() {
+  # watching.md holds the moment the timer runs out and the watcher's process ID.
+  marker_until=''
+  marker_pid=''
+  if [[ ! -f $1 ]]; then return 0; fi
+  marker_until=$(sed -n 's/^until //p' "$1")
+  marker_pid=$(sed -n 's/^pid //p' "$1")
+}
+
+is_watcher_of() {
+  # A process ID can be handed out again after a restart, so the command line has to name this watcher.
+  local command_line
+  if [[ -z $1 || ! -r /proc/$1/cmdline ]]; then return 1; fi
+  command_line=$(tr '\0' ' ' < "/proc/$1/cmdline")
+  [[ $command_line == *"calm_comms.sh on $2 "* ]]
+}
+
+stop_old_watcher() {
+  # Quiet when there is nothing to do, two words after a cleanup, and one calm line otherwise.
+  read_marker "$watching_marker_file_location"
+  if [[ -z $marker_pid ]] || ! kill -0 "$marker_pid" 2> /dev/null; then return 0; fi
+  if ! is_watcher_of "$marker_pid" "$seat_name"; then
+    echo "watching.md named process $marker_pid, which is no watcher of $seat_name; it was left alone."
+    return 0
+  fi
+  if kill "$marker_pid" 2> /dev/null; then
+    echo 'cleanup done'
+  else
+    echo "The old watcher, process $marker_pid, could not be stopped."
+  fi
+}
+
+remove_own_marker() {
+  # A watcher deletes watching.md only while it is still its own, never a newer watcher's.
+  read_marker "$watching_marker_file_location"
+  if [[ $marker_pid == "$$" ]]; then rm -f "$watching_marker_file_location"; fi
+}
+
 watch_seat() {
   local -A known_files
   local file_location file_name
@@ -61,21 +99,24 @@ watch_seat() {
         return
       fi
     done
-    sleep "$poll_interval_seconds"
+    # Sleeping in the background lets a stop act at once instead of after the nap.
+    sleep "$poll_interval_seconds" & wait $!
   done
   echo "$(timestamp) timer"
 }
 
 show_overview() {
-  local seat_location watching_status
+  local seat_location overview_seat_name
   for seat_location in "$hrafnsmal_location"/*/; do
     seat_location=${seat_location%/}
-    if [[ -f $seat_location/watching.md ]]; then
-      watching_status=$(<"$seat_location/watching.md")
+    overview_seat_name=${seat_location##*/}
+    read_marker "$seat_location/watching.md"
+    # A marker without its living watcher counts as not watching.
+    if [[ -n $marker_until ]] && is_watcher_of "$marker_pid" "$overview_seat_name"; then
+      printf '%-24s until %s\n' "$overview_seat_name" "$marker_until"
     else
-      watching_status=-
+      printf '%-24s -\n' "$overview_seat_name"
     fi
-    printf '%-24s %s\n' "${seat_location##*/}" "$watching_status"
   done
 }
 
@@ -126,17 +167,21 @@ case $verb in
       *[!0-9]*) echo 'Long, short, or minutes?'; exit 1 ;;
       *) timer_minutes=$watcher_length ;;
     esac
-    echo "until $(timestamp "+$timer_minutes minutes")" > "$watching_marker_file_location"
+    stop_old_watcher
+    printf 'until %s\npid %s\n' "$(timestamp "+$timer_minutes minutes")" "$$" > "$watching_marker_file_location"
     # watching.md lives exactly as long as this watcher.
-    trap 'rm -f "$watching_marker_file_location"' EXIT
-    trap exit INT TERM
+    trap remove_own_marker EXIT
+    # 143 is the usual exit code after a stop; the raven reads it as: no mail, nothing to do.
+    trap 'echo stopped; exit 143' INT TERM
     watch_seat
     # The bell is for humans in a terminal; ravens in the background never hear it.
     if [[ -t 1 ]]; then printf '\a'; fi
     ;;
   off)
     check_seat "$seat_name"
-    rm "$watching_marker_file_location"
+    stop_old_watcher
+    # A stopped watcher deletes its own marker; one without a living watcher goes here.
+    rm -f "$watching_marker_file_location"
     throttle
     ;;
   overview)
