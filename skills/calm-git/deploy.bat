@@ -8,7 +8,7 @@ mkdir "%target%" 2>nul
 call :copy_file SKILL.md
 call :copy_file calm_git.sh
 
-# pause
+rem pause
 exit /b
 
 :copy_file
