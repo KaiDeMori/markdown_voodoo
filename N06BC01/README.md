@@ -25,21 +25,22 @@ Until the fernschreiber sends it, Wally hands you the list directly.
 
    ```
    ☕ N06BC01: Wally asks these seats to schnackon: tool_builder, otis_builder.
-   If you have a seat: append one line to haven:/Hall/thing/Hrafnsmal/sessions.txt: your seat, a space, and your name as the first line of ListAgents shows it, ref included.
+   If you have a seat: append one line to haven:/Hall/thing/Hrafnsmal/frame_workaround_session_names.txt: your seat, a space, and your name as the first line of ListAgents shows it, ref included.
    If your seat is on the list: schnackon too.
    If you have no seat: nothing to do.
    ```
 
-3. Report back in free text, by mail when the list came by mail: the messages that were held or refused, and from `calm-comms overview`, who on the list is watching.
+3. Append your own line too, since your broadcast never reaches you.
+4. Report back in free text, by mail when the list came by mail: the messages that were held or refused, and from `calm-comms overview`, who on the list is watching.
 
 - Session names change with every restart, but every raven knows its seat from its own window, so the broadcast needs no names.
-- `sessions.txt` is only ever appended to, so ravens waking at the same moment never overwrite each other; the last line of a seat wins.
+- `frame_workaround_session_names.txt` is only ever appended to, so ravens waking at the same moment never overwrite each other; the last line of a seat wins.
 - When `SendMessage` reports a message as held or refused, the report says so, as it came.
 - A lost wake changes nothing: the raven sleeps on, and the overview shows it.
 - A message reaches its session only when both run in the same permission mode; otherwise it is held.
 
 ## Waking a single seat
 
-Between two restarts, a seat's last line in `haven:/Hall/thing/Hrafnsmal/sessions.txt` names its session, for example `tool_builder markdown-voodoo-a2 [3f99aa]`.
+Between two restarts, a seat's last line in `haven:/Hall/thing/Hrafnsmal/frame_workaround_session_names.txt` names its session, for example `tool_builder markdown-voodoo-a2 [3f99aa]`.
 `SendMessage` to that name, with its ref when two sessions share the name, and the wake message with that one seat.
 A name that `ListAgents` no longer shows means a restart came in between: the broadcast finds the raven again.
