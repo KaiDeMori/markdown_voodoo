@@ -3,20 +3,20 @@
 # setup: asks for the mailbox password in a real terminal, and writes scratchpad/pwd.txt next to the script.
 # list: one line per mail, with the token count of its plain text, without marking anything as read.
 # catalog: the letters in the catalog, never the addresses.
-# catalog add: asks Wally in a real terminal for the address a letter stands for; the fernschreiber brings the catalog key and the address on stdin instead.
-# catalog remove: asks Wally in a real terminal before a letter leaves the catalog; the fernschreiber brings the catalog key on stdin instead.
-# catalog key: makes the key for catalog addresses, shows it to Wally once in a real terminal, and keeps only its hash.
-# catalog addresses: with the catalog key on stdin, each letter with its address, for the fernschreiber.
+# catalog add: asks Wally in a real terminal for the address a letter stands for; the fernschreiber brings the catalog meta and the address on stdin instead.
+# catalog remove: asks Wally in a real terminal before a letter leaves the catalog; the fernschreiber brings the catalog meta on stdin instead.
+# catalog meta: makes the catalog meta, a random value the fernschreiber keeps, shows it to Wally once in a real terminal, and keeps only its hash.
+# catalog addresses: with the catalog meta on stdin, each letter with its address, for the fernschreiber.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
 # send: sends a plain-text mail to a letter in the catalog, and to nobody else.
 # on: waits for the first new mail from a letter in the catalog, or the timer, and exits.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
 #        calm_email.sh catalog
-#        calm_email.sh catalog add <letter> [< key, address]
-#        calm_email.sh catalog remove <letter> [< key]
-#        calm_email.sh catalog key
-#        calm_email.sh catalog addresses < key
+#        calm_email.sh catalog add <letter> [< meta, address]
+#        calm_email.sh catalog remove <letter> [< meta]
+#        calm_email.sh catalog meta
+#        calm_email.sh catalog addresses < meta
 #        calm_email.sh forward <number> <seat_name>
 #        calm_email.sh send <letter> <subject> <text>
 #        calm_email.sh on [long|short|<minutes>]
@@ -36,7 +36,7 @@ script_folder=$(cd "$(dirname "${BASH_SOURCE[0]}")" && { pwd -W 2>/dev/null || p
 # Every folder named scratchpad stays out of git.
 pwd_file="$script_folder/scratchpad/pwd.txt"
 catalog_file="$script_folder/scratchpad/catalog.enc"
-catalog_key_hash_file="$script_folder/scratchpad/catalog_key.sha256"
+catalog_meta_hash_file="$script_folder/scratchpad/catalog_meta.sha256"
 
 set -e
 
@@ -101,13 +101,13 @@ write_catalog() {
   mv "$catalog_file.new" "$catalog_file"
 }
 
-check_catalog_key() {
-  local key
-  # The key comes on the first line of stdin, never on a command line, and only its hash is kept.
-  IFS= read -r key || true
-  key=${key%$'\r'}
-  if [[ ! -f $catalog_key_hash_file || $(printf '%s' "$key" | sha256sum | cut -d' ' -f1) != "$(<"$catalog_key_hash_file")" ]]; then
-    echo 'That key opens nothing.'
+check_catalog_meta() {
+  local meta
+  # The meta comes on the first line of stdin, never on a command line, and only its hash is kept.
+  IFS= read -r meta || true
+  meta=${meta%$'\r'}
+  if [[ ! -f $catalog_meta_hash_file || $(printf '%s' "$meta" | sha256sum | cut -d' ' -f1) != "$(<"$catalog_meta_hash_file")" ]]; then
+    echo 'That opens nothing.'
     exit 1
   fi
 }
@@ -119,8 +119,8 @@ add_to_catalog() {
     # Wally in a real terminal: the address comes from Wally's keyboard, never through a raven's window.
     read -r -p "Address for $circled: " address
   else
-    # The fernschreiber: the catalog key on the first line, the address on the second, and no questions.
-    check_catalog_key
+    # The fernschreiber: the catalog meta on the first line, the address on the second, and no questions.
+    check_catalog_meta
     IFS= read -r address || true
     address=${address%$'\r'}
   fi
@@ -138,8 +138,8 @@ add_to_catalog() {
 remove_from_catalog() {
   local answer
   circle_letter "$1"
-  # The catalog changes only by Wally's hand: in a real terminal, or through the fernschreiber with the catalog key.
-  if [[ ! -t 0 ]]; then check_catalog_key; fi
+  # The catalog changes only by Wally's hand: in a real terminal, or through the fernschreiber with the catalog meta.
+  if [[ ! -t 0 ]]; then check_catalog_meta; fi
   read_password
   read_catalog
   if ! printf '%s\n' "$catalog" | grep -q "^$circled"$'\t'; then echo "$circled is not in the catalog."; exit 1; fi
@@ -153,20 +153,20 @@ remove_from_catalog() {
   echo "$circled is no longer in the catalog."
 }
 
-make_catalog_key() {
-  local key
-  # Only a real terminal: the key goes straight to Wally's eyes, through no window.
-  if [[ ! -t 0 ]]; then echo 'catalog key runs only in a real terminal.'; exit 1; fi
+make_catalog_meta() {
+  local meta
+  # Only a real terminal: the meta goes straight to Wally's eyes, through no window.
+  if [[ ! -t 0 ]]; then echo 'catalog meta runs only in a real terminal.'; exit 1; fi
   # 32 random bytes as hex: nobody guesses it, and it is pasted, never typed.
-  key=$(od -An -tx1 -N32 /dev/urandom | tr -d ' \n')
-  mkdir -p "${catalog_key_hash_file%/*}"
-  printf '%s' "$key" | sha256sum | cut -d' ' -f1 > "$catalog_key_hash_file"
-  echo "The catalog key, shown only this once: $key"
-  echo 'Paste it into the fernschreiber. Only its hash stays here, and a new key replaces the old one.'
+  meta=$(od -An -tx1 -N32 /dev/urandom | tr -d ' \n')
+  mkdir -p "${catalog_meta_hash_file%/*}"
+  printf '%s' "$meta" | sha256sum | cut -d' ' -f1 > "$catalog_meta_hash_file"
+  echo "The catalog meta, shown only this once: $meta"
+  echo 'Paste it into the fernschreiber. Only its hash stays here, and a new one replaces the old one.'
 }
 
 show_catalog_addresses() {
-  check_catalog_key
+  check_catalog_meta
   read_password
   read_catalog
   if [[ -z $catalog ]]; then echo 'The catalog is empty.'; return; fi
@@ -242,9 +242,9 @@ case $verb in
       '') show_catalog ;;
       add) add_to_catalog "$3" ;;
       remove) remove_from_catalog "$3" ;;
-      key) make_catalog_key ;;
+      meta) make_catalog_meta ;;
       addresses) show_catalog_addresses ;;
-      *) echo 'catalog, catalog add <letter>, catalog remove <letter>, catalog key, or catalog addresses?'; exit 1 ;;
+      *) echo 'catalog, catalog add <letter>, catalog remove <letter>, catalog meta, or catalog addresses?'; exit 1 ;;
     esac
     ;;
   *) echo 'setup, list, catalog, forward, send or on?'; exit 1 ;;
