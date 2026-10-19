@@ -7,12 +7,17 @@ KEY_HINTS = "[Tab] focus  [^Enter] send  [F2] help  [^Q] quit"
 NOTAR_KEY_HINTS = "[Up/Down] pick  [^Enter] send to all watching  [Esc] back"
 NOTAR_MESSAGES_FILE = Path(__file__).with_name("NOTAR_messages.md")
 NOTAR_FIRST_LINE = "📯 NOTAR: notice to all ravens"
+N06BC01_KEY_HINTS = "[Space] mark  [^Enter] send to the hallmaster  [Esc] back"
+N06BC01_FIRST_LINE = "☕ N06BC01: please wake these ravens and ask them to schnackon"
+HALLMASTER_SEAT = "hallmaster"
+WAKE_PANE_WIDTH = 26
 HELP_TEXT = """\
 fernschreiber keys
 
 F1           Rabenschnack
 F2           this help; Esc goes back
 F3           NOTAR, a notice to all ravens; Esc goes back
+F4           N06BC01, waking ravens; Esc goes back
 Ctrl+Q       quit
 
 In Rabenschnack
@@ -26,6 +31,11 @@ Ctrl+Enter   send to the selected seat
 In NOTAR
 Up/Down      pick a message
 Ctrl+Enter   send it to every watching seat
+
+In N06BC01
+Up/Down      move
+Space        mark a seat to wake, or unmark it
+Ctrl+Enter   send the wake list to the hallmaster
 
 ^ stands for Ctrl."""
 

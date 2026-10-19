@@ -119,6 +119,60 @@ class Title_list(Static, can_focus=True):
         self.update(text)
 
 
+class Seat_picker(Static, can_focus=True):
+    """The seats, with "[x]" for the marked ones, "~" for the ones watching and ">" for the one under the cursor."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(markup=False, **kwargs)
+        self.seats: list[tuple[str, bool]] = []
+        self.marked_names: set[str] = set()
+        self.selected = 0
+
+    def on_mount(self) -> None:
+        self.redraw()
+
+    # has_focus changes only after these handlers, so they hand the new state in themselves.
+    def on_focus(self) -> None:
+        self.redraw(focused=True)
+
+    def on_blur(self) -> None:
+        self.redraw(focused=False)
+
+    @property
+    def marked(self) -> list[str]:
+        """The marked seats, in the order of the list."""
+        return [name for name, _ in self.seats if name in self.marked_names]
+
+    def set_seats(self, seats: list[tuple[str, bool]]) -> None:
+        """Takes a fresh list, and keeps the cursor and the marks on the seats that are still there."""
+        previous = self.seats[self.selected][0] if self.seats else ""
+        self.seats = seats
+        names = [name for name, _ in seats]
+        self.marked_names &= set(names)
+        self.selected = names.index(previous) if previous in names else 0
+        self.redraw()
+
+    def move(self, step: int) -> None:
+        if self.seats:
+            self.selected = max(0, min(len(self.seats) - 1, self.selected + step))
+            self.redraw()
+
+    def toggle(self) -> None:
+        if self.seats:
+            self.marked_names ^= {self.seats[self.selected][0]}
+            self.redraw()
+
+    def clear_marks(self) -> None:
+        self.marked_names.clear()
+        self.redraw()
+
+    def redraw(self, focused: bool | None = None) -> None:
+        text = Text(" wake", style=header_style(self, focused))
+        for index, (name, watching) in enumerate(self.seats):
+            text.append(f"\n{'>' if index == self.selected else ' '} [{'x' if name in self.marked_names else ' '}] {'~' if watching else ' '} {name}")
+        self.update(text)
+
+
 def header_style(widget: Static, focused: bool | None) -> str:
     """A pane's header: lit while the pane has the focus, dim otherwise, in the theme's colors when there is a theme."""
     if focused is None:

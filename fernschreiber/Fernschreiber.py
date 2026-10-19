@@ -14,6 +14,7 @@ from calm_comms import read_seats, run_calm_comms, start_watcher
 from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail
 from modes.Help import Help_screen
+from modes.N06BC01 import N06BC01_screen
 from modes.NOTAR import NOTAR_screen, load_NOTAR_messages
 from modes.Rabenschnack import Rabenschnack_screen
 from Widgets import clock_text
@@ -42,6 +43,11 @@ def build_css(color_theme: Color_theme | None) -> str:
     #notar_preview {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
     #notar_text {{ margin-top: 1; }}
     #notar_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
+    #wake_main {{ height: 1fr; }}
+    #wake_seats {{ width: {settings.WAKE_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
+    #wake_preview {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
+    #wake_mail {{ margin-top: 1; }}
+    #wake_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
     """
     if color_theme is None:
         return css
@@ -66,6 +72,10 @@ def build_css(color_theme: Color_theme | None) -> str:
     #notar_preview {{ border-right: ascii {frame}; }}
     #notar_recipients {{ color: {dim}; }}
     #notar_status {{ border-left: ascii {frame}; border-right: ascii {frame}; color: {dim}; }}
+    #wake_seats {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #wake_preview {{ border-right: ascii {frame}; }}
+    #wake_recipient {{ color: {dim}; }}
+    #wake_status {{ border-left: ascii {frame}; border-right: ascii {frame}; color: {dim}; }}
     """
 
 
@@ -78,12 +88,14 @@ class Fernschreiber(App):
         "rabenschnack": Rabenschnack_screen,
         "help": Help_screen,
         "notar": NOTAR_screen,
+        "n06bc01": N06BC01_screen,
     }
     DEFAULT_MODE = "rabenschnack"
     BINDINGS = [
         Binding("f1", "switch_mode('rabenschnack')", show=False),
         Binding("f2", "switch_mode('help')", show=False),
         Binding("f3", "switch_mode('notar')", show=False),
+        Binding("f4", "switch_mode('n06bc01')", show=False),
     ]
 
     def __init__(self, color_theme: Color_theme | None = None) -> None:
@@ -96,6 +108,7 @@ class Fernschreiber(App):
         self.seats: list[tuple[str, bool]] = []
         self.rabenschnack: Rabenschnack_screen | None = None
         self.notar: NOTAR_screen | None = None
+        self.wake: N06BC01_screen | None = None
         self.watcher: subprocess.Popen | None = None
         self.watcher_lock = threading.Lock()
         self.stopping = False
@@ -142,6 +155,8 @@ class Fernschreiber(App):
         self.rabenschnack.show_seats(seats)
         if self.notar is not None:
             self.notar.show_selected()
+        if self.wake is not None:
+            self.wake.show_seats(seats)
 
     # The watcher
 
