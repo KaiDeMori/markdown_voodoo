@@ -9,7 +9,7 @@ from textual.widgets import Static, TextArea
 import settings
 from calm_comms import send_mail
 from Mail import Mail
-from Widgets import Message_area, Rule_line, Seat_list, clock_text
+from Widgets import Message_area, Rule_line, Seat_picker, clock_text
 
 
 class Rabenschnack_screen(Screen):
@@ -22,6 +22,9 @@ class Rabenschnack_screen(Screen):
         # Up and Down reach the screen only when the focused pane leaves them alone, which the seats do.
         Binding("up", "move_seat(-1)", show=False),
         Binding("down", "move_seat(1)", show=False),
+        Binding("space", "mark('toggle')", show=False),
+        Binding("a", "mark('watching')", show=False),
+        Binding("n", "mark('none')", show=False),
         Binding("escape", "focus_input", show=False),
     ]
 
@@ -32,7 +35,7 @@ class Rabenschnack_screen(Screen):
     def compose(self) -> ComposeResult:
         yield Rule_line(left=settings.TITLE, right=clock_text(), id="top_rule", classes="rule")
         with Horizontal(id="main"):
-            yield Seat_list(id="seats")
+            yield Seat_picker("seats", id="seats")
             with VerticalScroll(id="inbox"):
                 yield Static(settings.OWN_SEAT, markup=False, id="inbox_title")
         yield Rule_line(junction=settings.SEAT_PANE_WIDTH - 1, id="middle_rule", classes="rule")
@@ -43,7 +46,7 @@ class Rabenschnack_screen(Screen):
 
     def on_mount(self) -> None:
         self.top_rule = self.query_one("#top_rule", Rule_line)
-        self.seat_list = self.query_one(Seat_list)
+        self.seat_list = self.query_one(Seat_picker)
         self.inbox = self.query_one("#inbox", VerticalScroll)
         self.prompt_label = self.query_one("#prompt", Static)
         self.message_area = self.query_one("#message", TextArea)
@@ -62,11 +65,27 @@ class Rabenschnack_screen(Screen):
         self.seat_list.set_seats(seats)
         self.update_prompt()
 
+    @property
+    def recipients(self) -> list[str]:
+        """The marked seats; without marks, the one under the cursor."""
+        if self.seat_list.marked:
+            return self.seat_list.marked
+        return [self.seat_list.selected_name] if self.seat_list.selected_name else []
+
     def update_prompt(self) -> None:
-        self.prompt_label.update(f" to {self.seat_list.selected_name or '...'}: ")
+        marked = self.seat_list.marked
+        target = f"{len(marked)} marked" if marked else self.seat_list.selected_name or "..."
+        self.prompt_label.update(f" to {target}: ")
 
     def action_move_seat(self, step: int) -> None:
         self.seat_list.move(step)
+        self.update_prompt()
+
+    def action_mark(self, how: str) -> None:
+        """Space, A and N act on the seats only while the seats have the focus."""
+        if not self.seat_list.has_focus:
+            return
+        {"toggle": self.seat_list.toggle, "watching": self.seat_list.mark_watching, "none": self.seat_list.clear_marks}[how]()
         self.update_prompt()
 
     # Keys
@@ -109,25 +128,31 @@ class Rabenschnack_screen(Screen):
 
     def action_send(self) -> None:
         text = self.message_area.text.strip()
-        target = self.seat_list.selected_name
-        if self.sending or not text or not target:
+        recipients = self.recipients
+        if self.sending or not text or not recipients:
             return
         self.sending = True
-        # Locked until calm-comms comes back.
+        # Locked until calm-comms comes back from every seat.
         self.message_area.read_only = True
-        self.run_worker(lambda: self.send_in_background(target, text), thread=True, group="send")
+        self.run_worker(lambda: self.send_in_background(recipients, text), thread=True, group="send")
 
-    def send_in_background(self, target: str, text: str) -> None:
-        result = send_mail(target, text)
-        output = (result.stdout + result.stderr).decode("utf-8", "replace").strip()
-        self.app.post(self.finish_send, target, text, result.returncode == 0, output)
+    def send_in_background(self, recipients: list[str], text: str) -> None:
+        failures = []
+        for seat in recipients:
+            result = send_mail(seat, text)
+            if result.returncode != 0:
+                failures.append((seat, (result.stdout + result.stderr).decode("utf-8", "replace").strip() or "calm-comms gave no reason"))
+        self.app.post(self.finish_send, recipients, text, failures)
 
-    def finish_send(self, target: str, text: str, sent: bool, output: str) -> None:
-        """Echoes a sent mail and clears the input; a failed send keeps the text and shows why."""
+    def finish_send(self, recipients: list[str], text: str, failures: list[tuple[str, str]]) -> None:
+        """Echoes the mail for the seats it reached; when a seat refused it, the text stays in the input and the reason shows."""
         self.sending = False
         self.message_area.read_only = False
-        if sent:
-            self.add_note(f"{clock_text()}  -> {target}", text, sent=True)
-            self.message_area.clear()
+        failed = {seat for seat, _ in failures}
+        reached = [seat for seat in recipients if seat not in failed]
+        if reached:
+            self.add_note(f"{clock_text()}  -> {', '.join(reached)}", text, sent=True)
+        if failures:
+            self.add_note(f"{clock_text()}  fernschreiber", "\n".join(f"not sent to {seat}: {reason}" for seat, reason in failures))
         else:
-            self.add_note(f"{clock_text()}  fernschreiber", f"not sent to {target}: {output or 'calm-comms gave no reason'}")
+            self.message_area.clear()

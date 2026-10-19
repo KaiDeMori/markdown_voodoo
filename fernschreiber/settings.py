@@ -10,7 +10,6 @@ NOTAR_FIRST_LINE = "📯 NOTAR: notice to all ravens"
 N06BC01_KEY_HINTS = "[Space] mark  [^Enter] send to the hallmaster  [Esc] back"
 N06BC01_FIRST_LINE = "☕ N06BC01: please wake these ravens and ask them to schnackon"
 HALLMASTER_SEAT = "hallmaster"
-WAKE_PANE_WIDTH = 26
 CATALOG_KEY_HINTS = "[A] add  [Del] remove  [Esc] back"
 CATALOG_META_VARIABLE = "calm_email_catalog_meta"
 HELP_TEXT = """\
@@ -29,7 +28,9 @@ Esc          back to the input
 Up/Down      move in the pane with the focus
 PgUp/PgDn    scroll the mailbox, from anywhere
 Enter        new line
-Ctrl+Enter   send to the selected seat
+Ctrl+Enter   send to the marked seats, or without marks to the one under ">"
+Space        in the seats: mark a seat, or unmark it
+A / N        in the seats: mark all watching seats / no seat
 
 In NOTAR
 Up/Down      pick a message
@@ -47,7 +48,7 @@ Esc          cancel, or go back
 
 ^ stands for Ctrl."""
 
-SEAT_PANE_WIDTH = 22
+SEAT_PANE_WIDTH = 26
 INPUT_LINES = 2
 SEAT_REFRESH_SECONDS = 30
 HISTORY_MAIL_COUNT = 20

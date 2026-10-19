@@ -45,7 +45,7 @@ def build_css(color_theme: Color_theme | None) -> str:
     #notar_text {{ margin-top: 1; }}
     #notar_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
     #wake_main {{ height: 1fr; }}
-    #wake_seats {{ width: {settings.WAKE_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
+    #wake_seats {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
     #wake_preview {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
     #wake_mail {{ margin-top: 1; }}
     #wake_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}

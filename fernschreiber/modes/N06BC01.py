@@ -35,11 +35,11 @@ class N06BC01_screen(Screen):
     def compose(self) -> ComposeResult:
         yield Rule_line(left="N06BC01", right=clock_text(), id="top_rule", classes="rule")
         with Horizontal(id="wake_main"):
-            yield Seat_picker(id="wake_seats")
+            yield Seat_picker("wake", id="wake_seats")
             with VerticalScroll(id="wake_preview"):
                 yield Static("", markup=False, id="wake_recipient")
                 yield Static("", markup=False, id="wake_mail")
-        yield Rule_line(junction=settings.WAKE_PANE_WIDTH - 1, id="middle_rule", classes="rule")
+        yield Rule_line(junction=settings.SEAT_PANE_WIDTH - 1, id="middle_rule", classes="rule")
         yield Static("ready", markup=False, id="wake_status")
         yield Rule_line(left=settings.N06BC01_KEY_HINTS, id="bottom_rule", classes="rule")
 
