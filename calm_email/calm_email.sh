@@ -3,8 +3,8 @@
 # setup: asks for the mailbox password in a real terminal, and writes scratchpad/pwd.txt next to the script.
 # list: one line per mail, with the token count of its plain text, without marking anything as read.
 # catalog: the letters in the catalog, never the addresses.
-# catalog add: asks Wally in a real terminal for the address a letter stands for.
-# catalog remove: asks Wally in a real terminal before a letter leaves the catalog.
+# catalog add: asks Wally in a real terminal for the address a letter stands for; the fernschreiber brings the catalog key and the address on stdin instead.
+# catalog remove: asks Wally in a real terminal before a letter leaves the catalog; the fernschreiber brings the catalog key on stdin instead.
 # catalog key: makes the key for catalog addresses, shows it to Wally once in a real terminal, and keeps only its hash.
 # catalog addresses: with the catalog key on stdin, each letter with its address, for the fernschreiber.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
@@ -13,8 +13,8 @@
 # Usage: calm_email.sh setup
 #        calm_email.sh list
 #        calm_email.sh catalog
-#        calm_email.sh catalog add <letter>
-#        calm_email.sh catalog remove <letter>
+#        calm_email.sh catalog add <letter> [< key, address]
+#        calm_email.sh catalog remove <letter> [< key]
 #        calm_email.sh catalog key
 #        calm_email.sh catalog addresses < key
 #        calm_email.sh forward <number> <seat_name>
@@ -101,16 +101,34 @@ write_catalog() {
   mv "$catalog_file.new" "$catalog_file"
 }
 
+check_catalog_key() {
+  local key
+  # The key comes on the first line of stdin, never on a command line, and only its hash is kept.
+  IFS= read -r key || true
+  key=${key%$'\r'}
+  if [[ ! -f $catalog_key_hash_file || $(printf '%s' "$key" | sha256sum | cut -d' ' -f1) != "$(<"$catalog_key_hash_file")" ]]; then
+    echo 'That key opens nothing.'
+    exit 1
+  fi
+}
+
 add_to_catalog() {
   local address
-  # Only a real terminal: the address comes from Wally, never through a raven's window.
-  if [[ ! -t 0 ]]; then echo 'catalog add runs only in a real terminal.'; exit 1; fi
   circle_letter "$1"
-  read -r -p "Address for $circled: " address
+  if [[ -t 0 ]]; then
+    # Wally in a real terminal: the address comes from Wally's keyboard, never through a raven's window.
+    read -r -p "Address for $circled: " address
+  else
+    # The fernschreiber: the catalog key on the first line, the address on the second, and no questions.
+    check_catalog_key
+    IFS= read -r address || true
+    address=${address%$'\r'}
+  fi
   if [[ $address != *@* || $address == *[[:space:]]* ]]; then echo 'That is no address; the catalog stays as it was.'; exit 1; fi
   read_password
   read_catalog
-  # A letter holds one address; a new one replaces the old.
+  # In a real terminal a new address replaces the old; the fernschreiber asks before it removes, so a taken letter stays taken.
+  if [[ ! -t 0 ]] && printf '%s\n' "$catalog" | grep -q "^$circled"$'\t'; then echo "$circled is taken; the catalog stays as it was."; exit 1; fi
   catalog=$(printf '%s\n' "$catalog" | grep -v "^$circled"$'\t' || true)
   catalog+=${catalog:+$'\n'}$circled$'\t'$address
   write_catalog
@@ -119,14 +137,17 @@ add_to_catalog() {
 
 remove_from_catalog() {
   local answer
-  # Only a real terminal: the catalog changes only by Wally's hand.
-  if [[ ! -t 0 ]]; then echo 'catalog remove runs only in a real terminal.'; exit 1; fi
   circle_letter "$1"
+  # The catalog changes only by Wally's hand: in a real terminal, or through the fernschreiber with the catalog key.
+  if [[ ! -t 0 ]]; then check_catalog_key; fi
   read_password
   read_catalog
   if ! printf '%s\n' "$catalog" | grep -q "^$circled"$'\t'; then echo "$circled is not in the catalog."; exit 1; fi
-  read -r -p "Remove $circled from the catalog? (y/n) " answer
-  if [[ $answer != y ]]; then echo 'The catalog stays as it was.'; return; fi
+  # The fernschreiber does its own asking.
+  if [[ -t 0 ]]; then
+    read -r -p "Remove $circled from the catalog? (y/n) " answer
+    if [[ $answer != y ]]; then echo 'The catalog stays as it was.'; return; fi
+  fi
   catalog=$(printf '%s\n' "$catalog" | grep -v "^$circled"$'\t' || true)
   write_catalog
   echo "$circled is no longer in the catalog."
@@ -145,13 +166,7 @@ make_catalog_key() {
 }
 
 show_catalog_addresses() {
-  local key
-  # The key comes on stdin, never on a command line, and only its hash is kept.
-  IFS= read -r key || true
-  if [[ ! -f $catalog_key_hash_file || $(printf '%s' "$key" | sha256sum | cut -d' ' -f1) != "$(<"$catalog_key_hash_file")" ]]; then
-    echo 'That key opens nothing.'
-    exit 1
-  fi
+  check_catalog_key
   read_password
   read_catalog
   if [[ -z $catalog ]]; then echo 'The catalog is empty.'; return; fi
