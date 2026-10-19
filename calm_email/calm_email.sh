@@ -4,6 +4,7 @@
 # list: one line per mail, with the token count of its plain text, without marking anything as read.
 # catalog: the letters in the catalog, never the addresses.
 # catalog add: asks Wally in a real terminal for the address a letter stands for.
+# catalog remove: asks Wally in a real terminal before a letter leaves the catalog.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
 # send: sends a plain-text mail to a letter in the catalog, and to nobody else.
 # on: waits for the first new mail from a letter in the catalog, or the timer, and exits.
@@ -11,6 +12,7 @@
 #        calm_email.sh list
 #        calm_email.sh catalog
 #        calm_email.sh catalog add <letter>
+#        calm_email.sh catalog remove <letter>
 #        calm_email.sh forward <number> <seat_name>
 #        calm_email.sh send <letter> <subject> <text>
 #        calm_email.sh on [long|short|<minutes>]
@@ -110,6 +112,21 @@ add_to_catalog() {
   echo "$circled is in the catalog."
 }
 
+remove_from_catalog() {
+  local answer
+  # Only a real terminal: the catalog changes only by Wally's hand.
+  if [[ ! -t 0 ]]; then echo 'catalog remove runs only in a real terminal.'; exit 1; fi
+  circle_letter "$1"
+  read_password
+  read_catalog
+  if ! printf '%s\n' "$catalog" | grep -q "^$circled"$'\t'; then echo "$circled is not in the catalog."; exit 1; fi
+  read -r -p "Remove $circled from the catalog? (y/n) " answer
+  if [[ $answer != y ]]; then echo 'The catalog stays as it was.'; return; fi
+  catalog=$(printf '%s\n' "$catalog" | grep -v "^$circled"$'\t' || true)
+  write_catalog
+  echo "$circled is no longer in the catalog."
+}
+
 show_catalog() {
   read_password
   read_catalog
@@ -177,7 +194,8 @@ case $verb in
     case $2 in
       '') show_catalog ;;
       add) add_to_catalog "$3" ;;
-      *) echo 'catalog, or catalog add <letter>?'; exit 1 ;;
+      remove) remove_from_catalog "$3" ;;
+      *) echo 'catalog, catalog add <letter>, or catalog remove <letter>?'; exit 1 ;;
     esac
     ;;
   *) echo 'setup, list, catalog, forward, send or on?'; exit 1 ;;

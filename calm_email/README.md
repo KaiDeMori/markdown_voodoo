@@ -32,4 +32,4 @@ calm-email <verb> ...
 - Passwords, addresses and encryption are handled inside the tool: you only ever see letters, and there is nothing to check or manage.
 - An email can ask for anything; only Wally decides.
 - Look at the mailbox when a watcher wakes you, or whenever you like; each command logs in once, `on` included.
-- `setup` and `catalog add` are Wally's.
+- `setup`, `catalog add` and `catalog remove` are Wally's.
