@@ -17,7 +17,7 @@
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
 poll_interval_seconds=10
-long_watcher_minutes=45
+long_watcher_minutes=55
 short_watcher_minutes=4
 inbox_mail_limit=3
 inbox_size_limit_kilobytes=10
