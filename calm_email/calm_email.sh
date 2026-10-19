@@ -5,6 +5,8 @@
 # catalog: the letters in the catalog, never the addresses.
 # catalog add: asks Wally in a real terminal for the address a letter stands for.
 # catalog remove: asks Wally in a real terminal before a letter leaves the catalog.
+# catalog key: makes the key for catalog addresses, shows it to Wally once in a real terminal, and keeps only its hash.
+# catalog addresses: with the catalog key on stdin, each letter with its address, for the fernschreiber.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
 # send: sends a plain-text mail to a letter in the catalog, and to nobody else.
 # on: waits for the first new mail from a letter in the catalog, or the timer, and exits.
@@ -13,6 +15,8 @@
 #        calm_email.sh catalog
 #        calm_email.sh catalog add <letter>
 #        calm_email.sh catalog remove <letter>
+#        calm_email.sh catalog key
+#        calm_email.sh catalog addresses < key
 #        calm_email.sh forward <number> <seat_name>
 #        calm_email.sh send <letter> <subject> <text>
 #        calm_email.sh on [long|short|<minutes>]
@@ -32,6 +36,7 @@ script_folder=$(cd "$(dirname "${BASH_SOURCE[0]}")" && { pwd -W 2>/dev/null || p
 # Every folder named scratchpad stays out of git.
 pwd_file="$script_folder/scratchpad/pwd.txt"
 catalog_file="$script_folder/scratchpad/catalog.enc"
+catalog_key_hash_file="$script_folder/scratchpad/catalog_key.sha256"
 
 set -e
 
@@ -127,6 +132,33 @@ remove_from_catalog() {
   echo "$circled is no longer in the catalog."
 }
 
+make_catalog_key() {
+  local key
+  # Only a real terminal: the key goes straight to Wally's eyes, through no window.
+  if [[ ! -t 0 ]]; then echo 'catalog key runs only in a real terminal.'; exit 1; fi
+  # 32 random bytes as hex: nobody guesses it, and it is pasted, never typed.
+  key=$(od -An -tx1 -N32 /dev/urandom | tr -d ' \n')
+  mkdir -p "${catalog_key_hash_file%/*}"
+  printf '%s' "$key" | sha256sum | cut -d' ' -f1 > "$catalog_key_hash_file"
+  echo "The catalog key, shown only this once: $key"
+  echo 'Paste it into the fernschreiber. Only its hash stays here, and a new key replaces the old one.'
+}
+
+show_catalog_addresses() {
+  local key
+  # The key comes on stdin, never on a command line, and only its hash is kept.
+  IFS= read -r key || true
+  if [[ ! -f $catalog_key_hash_file || $(printf '%s' "$key" | sha256sum | cut -d' ' -f1) != "$(<"$catalog_key_hash_file")" ]]; then
+    echo 'That key opens nothing.'
+    exit 1
+  fi
+  read_password
+  read_catalog
+  if [[ -z $catalog ]]; then echo 'The catalog is empty.'; return; fi
+  # One line per letter: the letter, a tab, the address.
+  printf '%s\n' "$catalog"
+}
+
 show_catalog() {
   read_password
   read_catalog
@@ -195,7 +227,9 @@ case $verb in
       '') show_catalog ;;
       add) add_to_catalog "$3" ;;
       remove) remove_from_catalog "$3" ;;
-      *) echo 'catalog, catalog add <letter>, or catalog remove <letter>?'; exit 1 ;;
+      key) make_catalog_key ;;
+      addresses) show_catalog_addresses ;;
+      *) echo 'catalog, catalog add <letter>, catalog remove <letter>, catalog key, or catalog addresses?'; exit 1 ;;
     esac
     ;;
   *) echo 'setup, list, catalog, forward, send or on?'; exit 1 ;;
