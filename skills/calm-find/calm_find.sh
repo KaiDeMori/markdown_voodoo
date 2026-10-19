@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # calm_find: what kinds of files a folder holds, where they are, and what one of them would cost a window.
-# overview: one line with the count of each kind.
+# overview: a map one level down: the folder's own files and each subfolder, counted by kind, nothing inside named.
 # <kind>: the paths of one kind, up to a limit, then how many more.
 # what: one fact about one file, the one its kind is about.
 # Usage: calm_find.sh [folder]
@@ -47,18 +47,34 @@ list_files() {
 }
 
 show_overview() {
-  list_files "$1" | awk "$classify"'
-    { counts[kind($0)]++ }
+  # A map one level down: the folder's own files, then each subfolder counted as a whole, with nothing inside it named.
+  local folder=${1%/}
+  list_files "${folder:-/}" | awk -v prefix="$folder/" "$classify"'
+    {
+      relative = substr($0, length(prefix) + 1)
+      slash = index(relative, "/")
+      bucket = slash ? substr(relative, 1, slash) : "here"
+      buckets[bucket] = 1
+      counts[bucket, kind($0)]++
+    }
     END {
       split("markdown source text images pdf other", order, " ")
-      line = ""
-      for (i = 1; i <= 6; i++) {
-        count = counts[order[i]]
-        if (!count) continue
-        label = (order[i] == "images" && count == 1) ? "image" : order[i]
-        line = line (line ? " · " : "") count " " label
+      for (bucket in buckets) {
+        line = ""
+        for (i = 1; i <= 6; i++) {
+          count = counts[bucket, order[i]]
+          if (!count) continue
+          label = (order[i] == "images" && count == 1) ? "image" : order[i]
+          line = line (line ? " · " : "") count " " label
+        }
+        # The sort key puts the folder itself first, then its subfolders by name.
+        print ((bucket == "here") ? "0" : "1" bucket) "\t" bucket ": " line
       }
-      print line ? line : "nothing here"
+    }' | sort | cut -f2 | awk -v limit="$list_limit" '
+    NR <= limit { print }
+    END {
+      if (NR > limit) print "and " (NR - limit) " more folders"
+      if (!NR) print "nothing here"
     }'
 }
 
