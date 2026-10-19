@@ -13,19 +13,16 @@ A raven sees what kinds of files a folder holds, where they are, and what one of
   - an image: its resolution, `png, 1932×1912`; byte sizes don't matter
   - markdown, source and text: the exact token count, from the token counter, above a byte threshold; below it, `small`
   - a pdf: a joke, the easter egg
+- The kinds: images (png, jpg, gif, webp, svg), markdown (md), source (code, scripts and html), text (txt, json, csv and the like), pdf, and other for everything else.
+- The byte threshold for counting is 4 KB.
 - Noisy folders stay out, as in calm-grep: `.git`, `.venv`, `node_modules`, `__pycache__`.
 
 ## Steps
 
-- [ ] Settle the kinds and their extensions.
+- [x] Settle the kinds and their extensions.
 - [ ] Write `calm_find.sh`: the overview, the list of a kind, and `what`.
 - [ ] Image resolution from `file`, which names it for png, jpg, gif and webp, so no extra library.
 - [ ] Token counts through the token counter, above the threshold.
 - [ ] The pdf jokes, picked at random.
 - [ ] `SKILL.md` with the mark `hallmark_tool`, and a `deploy.bat`.
 - [ ] Test one at a time, on the hall and on this workspace.
-
-## Open questions
-
-- The byte threshold for counting: 4 KB, about a thousand tokens?
-- Are images, markdown, source, text, pdf and other the right kinds?
