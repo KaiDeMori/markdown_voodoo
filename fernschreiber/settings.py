@@ -11,6 +11,8 @@ N06BC01_KEY_HINTS = "[Space] mark  [^Enter] send to the hallmaster  [Esc] back"
 N06BC01_FIRST_LINE = "☕ N06BC01: please wake these ravens and ask them to schnackon"
 HALLMASTER_SEAT = "hallmaster"
 WAKE_PANE_WIDTH = 26
+CATALOG_KEY_HINTS = "[A] add  [Del] remove  [Esc] back"
+CATALOG_META_VARIABLE = "calm_email_catalog_meta"
 HELP_TEXT = """\
 fernschreiber keys
 
@@ -18,6 +20,7 @@ F1           Rabenschnack
 F2           this help; Esc goes back
 F3           NOTAR, a notice to all ravens; Esc goes back
 F4           N06BC01, waking ravens; Esc goes back
+F5           the catalog: letters and addresses; Esc goes back
 Ctrl+Q       quit
 
 In Rabenschnack
@@ -37,6 +40,11 @@ Up/Down      move
 Space        mark a seat to wake, or unmark it
 Ctrl+Enter   send the wake list to the hallmaster
 
+In the catalog
+A            add: a letter, a space, the address, then Enter
+Del          remove the selected letter, then y to confirm
+Esc          cancel, or go back
+
 ^ stands for Ctrl."""
 
 SEAT_PANE_WIDTH = 22
@@ -47,5 +55,6 @@ HISTORY_MAIL_COUNT = 20
 GIT_USR_BIN = r"C:\Program Files\Git\usr\bin"
 BASH = GIT_USR_BIN + r"\bash.exe"
 CALM_COMMS = "C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh"
+CALM_EMAIL = "C:/Users/devboese/markdown_voodoo/calm_email/calm_email.sh"
 HRAFNSMAL = Path("C:/haven/Hall/thing/Hrafnsmal")
 OWN_SEAT = "wally"

@@ -112,6 +112,12 @@ class Title_list(Static, can_focus=True):
             self.selected = max(0, min(len(self.titles) - 1, self.selected + step))
             self.redraw()
 
+    def set_titles(self, titles: list[str]) -> None:
+        """Takes fresh titles, and keeps the cursor where it was, or on the last one."""
+        self.titles = titles
+        self.selected = max(0, min(self.selected, len(titles) - 1))
+        self.redraw()
+
     def redraw(self, focused: bool | None = None) -> None:
         text = Text(f" {self.header}", style=header_style(self, focused))
         for index, title in enumerate(self.titles):
