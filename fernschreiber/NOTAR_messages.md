@@ -16,3 +16,9 @@ Skies are clear!
 A bit walks into a byte.
 *autsch*
 Why does that hurt?
+
+## N06BC01-protocoll working
+
+To all participating ravens: 🙏
+It worked perfectly.
+And makes wally-side much easier!
