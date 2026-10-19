@@ -24,7 +24,7 @@ Any session may read and edit this notebook at any time, without asking.
 - When data is deleted, the wording is always "delete".
 - Whenever possible, wording states what is the case.
 - We build what a real use runs into; what no use runs into gets documented as a limitation.
-- Tools built in this repo carry the mark `hallmark_tool` as the first line of the `description` in their `SKILL.md`.
+- Tools built in this repo carry the mark `hallmark_tool` as the first line of the `description` in their `SKILL.md`, once ravens have flown them and liked them.
 - `CLAUDE.md` holds only the reference to this notebook; writing it needs a `[GRANTED]`.
 - Wally announces when the context window is about 50% and about 80% full, and tells its usage whenever asked.
   Sessions do not track their token usage themselves.

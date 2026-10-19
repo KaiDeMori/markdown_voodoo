@@ -11,6 +11,7 @@
 - `prompts/`: Prompt workflows.
 - `skills/calm-comms/`: Sends, reads and watches a raven's mail in Hrafnsmal.
 - `skills/calm-fetch/`: Fetches a URL raw into the scratchpad and reports it in one line.
+- `skills/calm-find/`: Shows what kinds of files a folder holds, where they are, and what one of them would cost a window.
 - `skills/calm-git/`: Takes one calm, read-only look at a repository's git status.
 - `skills/calm-grep/`: Searches a folder's files, zooming in from how many to where to what.
 - `skills/calm-hall-overview/`: Shows the hall as far as its thresholds allow.

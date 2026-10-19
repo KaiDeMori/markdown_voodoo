@@ -24,5 +24,6 @@ A raven sees what kinds of files a folder holds, where they are, and what one of
 - [x] Image resolution from `file`, which names it for png, jpg, gif and webp, so no extra library.
 - [x] Token counts through the token counter, above the threshold.
 - [x] The pdf jokes, picked at random.
-- [ ] `SKILL.md` with the mark `hallmark_tool`, and a `deploy.bat`.
+- [x] `SKILL.md`, still without the mark, and a `deploy.bat`.
+- [ ] One or two ravens fly calm-find; if they like it, it gets the mark `hallmark_tool`.
 - [ ] Test one at a time, on the hall and on this workspace.
