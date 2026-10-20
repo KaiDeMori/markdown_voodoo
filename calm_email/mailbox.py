@@ -1,7 +1,7 @@
 """mailbox: the postmaster's calm look into the haven's mailbox, through IMAPClient.
 
 list: one line per mail, with the exact token count of its plain text, or no plain text.
-on: waits with IDLE for the first new mail from a letter in the catalog, or the timer, and exits.
+on: waits with IDLE for the first new mail from a label in the catalog, or the timer, and exits.
 The mailbox is only ever examined: nothing is marked, moved or deleted.
 Only text/plain parts are fetched; HTML never leaves the server.
 The password, the address, the server and the catalog arrive through the environment, never on a command line.
@@ -46,7 +46,7 @@ def text_of(value):
 
 
 def read_catalog():
-    # A letter stands for an address; the addresses never leave this tool.
+    # A label stands for an address; the addresses never leave this tool.
     letters = {}
     for line in os.environ.get("catalog", "").splitlines():
         parts = line.split("\t")
@@ -56,7 +56,7 @@ def read_catalog():
 
 
 def sender_label(envelope, letters):
-    # A sender in the catalog shows as their letter, anyone else only as their domain, so no address enters a window.
+    # A sender in the catalog shows as their label, anyone else only as their domain, so no address enters a window.
     if not envelope.from_:
         return "?"
     address = envelope.from_[0]
@@ -199,7 +199,7 @@ def new_mail_line(client, known_next_uid, letters):
     for _, data in sorted(fetched.items()):
         envelope = data[b"ENVELOPE"]
         label = sender_label(envelope, letters)
-        # Only a letter from the catalog wakes the postmaster; anything else waits for the next list.
+        # Only a label from the catalog wakes the postmaster; anything else waits for the next list.
         if label in letters.values():
             date = envelope.date.strftime("%Y-%m-%d %H:%M") if envelope.date else "?"
             return f"{data[b'SEQ']}  {date}  {label}  {decoded_subject(envelope.subject)}", current_next_uid

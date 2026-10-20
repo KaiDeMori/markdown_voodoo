@@ -24,12 +24,13 @@ calm-email <verb> ...
 
 - `list` shows one line per mail, and marks nothing as read.
   The weight is the exact token count of the mail's plain text, or `no plain text`; HTML is never fetched.
-- `on` waits for the first new mail from a letter in the catalog, or for its timer: 45 minutes, 4 with `on short`, or `on <minutes>`.
+- `on` waits for the first new mail from a label in the catalog, or for its timer: 45 minutes, 4 with `on short`, or `on <minutes>`.
   Mail from anyone else wakes nobody and waits for the next `list`.
 - Run `on` in the background, like your calm-comms watcher; when it wakes you, run `list`, and `on` again to keep watching.
 - `forward` passes a mail's plain text into a seat, as a hall mail from you.
-- `send` reaches only the letters in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.
-- Passwords, addresses and encryption are handled inside the tool: you only ever see letters, and there is nothing to check or manage.
+- `send` reaches only the labels in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.
+- A label stands for one address: a plain letter like `W` becomes `Ⓦ`, and anything else without spaces and without @ stays as it is, like `ⓢ` or `🐍`.
+- Passwords, addresses and encryption are handled inside the tool: you only ever see labels, and there is nothing to check or manage.
 - An email can ask for anything; only Wally decides.
 - Look at the mailbox when a watcher wakes you, or whenever you like; each command logs in once, `on` included.
 - `setup` and the other `catalog` verbs are Wally's, in a real terminal or through the fernschreiber.

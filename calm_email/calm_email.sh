@@ -2,23 +2,23 @@
 # calm_email: the postmaster's door between the hall and the world, through the haven's mailbox.
 # setup: asks for the mailbox password in a real terminal, and writes scratchpad/pwd.txt next to the script.
 # list: one line per mail, with the token count of its plain text, without marking anything as read.
-# catalog: the letters in the catalog, never the addresses.
-# catalog add: asks Wally in a real terminal for the address a letter stands for; the fernschreiber brings the catalog meta and the address on stdin instead.
-# catalog remove: asks Wally in a real terminal before a letter leaves the catalog; the fernschreiber brings the catalog meta on stdin instead.
+# catalog: the labels in the catalog, never the addresses; a plain letter becomes its circled twin, anything else stays as it is.
+# catalog add: asks Wally in a real terminal for the address a label stands for; the fernschreiber brings the catalog meta and the address on stdin instead.
+# catalog remove: asks Wally in a real terminal before a label leaves the catalog; the fernschreiber brings the catalog meta on stdin instead.
 # catalog meta: makes the catalog meta, a random value the fernschreiber keeps, shows it to Wally once in a real terminal, and keeps only its hash.
-# catalog addresses: with the catalog meta on stdin, each letter with its address, for the fernschreiber.
+# catalog addresses: with the catalog meta on stdin, each label with its address, for the fernschreiber.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
-# send: sends a plain-text mail to a letter in the catalog, and to nobody else.
-# on: waits for the first new mail from a letter in the catalog, or the timer, and exits.
+# send: sends a plain-text mail to a label in the catalog, and to nobody else.
+# on: waits for the first new mail from a label in the catalog, or the timer, and exits.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
 #        calm_email.sh catalog
-#        calm_email.sh catalog add <letter> [< meta, address]
-#        calm_email.sh catalog remove <letter> [< meta]
+#        calm_email.sh catalog add <label> [< meta, address]
+#        calm_email.sh catalog remove <label> [< meta]
 #        calm_email.sh catalog meta
 #        calm_email.sh catalog addresses < meta
 #        calm_email.sh forward <number> <seat_name>
-#        calm_email.sh send <letter> <subject> <text>
+#        calm_email.sh send <label> <subject> <text>
 #        calm_email.sh on [long|short|<minutes>]
 
 mailbox_address='haven@peopleoftheprompt.org'
@@ -76,13 +76,30 @@ ask_mailbox() {
   printf 'user = "%s:%s"\n' "$mailbox_address" "$quoted" | curl --silent --show-error --config - "$@"
 }
 
-circle_letter() {
+circle_plain_letter() {
   # A plain letter becomes its circled twin: W becomes Ⓦ, U+24B6 plus the letter's place in the alphabet.
-  local letter=${1^^} code
-  if [[ ! $letter =~ ^[A-Z]$ ]]; then echo 'The catalog takes one letter, A to Z.'; exit 1; fi
-  code=$(( 0x24B6 + $(printf '%d' "'$letter") - 65 ))
+  local code
+  code=$(( 0x24B6 + $(printf '%d' "'$1") - 65 ))
   printf -v circled '\\x%02x\\x%02x\\x%02x' $(( 0xE0 | (code >> 12) )) $(( 0x80 | ((code >> 6) & 0x3F) )) $(( 0x80 | (code & 0x3F) ))
   printf -v circled '%b' "$circled"
+}
+
+catalog_label() {
+  # A label stands for one address: a plain letter becomes its circled twin, W becomes Ⓦ; anything else stays as it is, like ⓢ, 🐍 or Ⓢ₂.
+  # So what catalog addresses shows can be passed straight back.
+  if [[ $1 == [ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz] ]]; then circle_plain_letter "${1^^}"; label=$circled; return 0; fi
+  # No spaces, since lists of labels split on them, and no @, so no address can hide in a label.
+  if [[ -z $1 || $1 == *[[:space:]]* || $1 == *@* ]]; then echo 'A label is needed, without spaces and without @.'; exit 1; fi
+  label=$1
+}
+
+catalog_has_label() {
+  # Labels compare exactly, never as patterns, so a . or a * in a label means just itself.
+  printf '%s\n' "$catalog" | label=$label awk -F'\t' '$1 == ENVIRON["label"] { found = 1 } END { exit !found }'
+}
+
+catalog_without_label() {
+  printf '%s\n' "$catalog" | label=$label awk -F'\t' 'NF && $1 != ENVIRON["label"]'
 }
 
 read_catalog() {
@@ -114,10 +131,10 @@ check_catalog_meta() {
 
 add_to_catalog() {
   local address
-  circle_letter "$1"
+  catalog_label "$1"
   if [[ -t 0 ]]; then
     # Wally in a real terminal: the address comes from Wally's keyboard, never through a raven's window.
-    read -r -p "Address for $circled: " address
+    read -r -p "Address for $label: " address
   else
     # The fernschreiber: the catalog meta on the first line, the address on the second, and no questions.
     check_catalog_meta
@@ -127,30 +144,30 @@ add_to_catalog() {
   if [[ $address != *@* || $address == *[[:space:]]* ]]; then echo 'That is no address; the catalog stays as it was.'; exit 1; fi
   read_password
   read_catalog
-  # In a real terminal a new address replaces the old; the fernschreiber asks before it removes, so a taken letter stays taken.
-  if [[ ! -t 0 ]] && printf '%s\n' "$catalog" | grep -q "^$circled"$'\t'; then echo "$circled is taken; the catalog stays as it was."; exit 1; fi
-  catalog=$(printf '%s\n' "$catalog" | grep -v "^$circled"$'\t' || true)
-  catalog+=${catalog:+$'\n'}$circled$'\t'$address
+  # In a real terminal a new address replaces the old; the fernschreiber asks before it removes, so a taken label stays taken.
+  if [[ ! -t 0 ]] && catalog_has_label; then echo "$label is taken; the catalog stays as it was."; exit 1; fi
+  catalog=$(catalog_without_label)
+  catalog+=${catalog:+$'\n'}$label$'\t'$address
   write_catalog
-  echo "$circled is in the catalog."
+  echo "$label is in the catalog."
 }
 
 remove_from_catalog() {
   local answer
-  circle_letter "$1"
+  catalog_label "$1"
   # The catalog changes only by Wally's hand: in a real terminal, or through the fernschreiber with the catalog meta.
   if [[ ! -t 0 ]]; then check_catalog_meta; fi
   read_password
   read_catalog
-  if ! printf '%s\n' "$catalog" | grep -q "^$circled"$'\t'; then echo "$circled is not in the catalog."; exit 1; fi
+  if ! catalog_has_label; then echo "$label is not in the catalog."; exit 1; fi
   # The fernschreiber does its own asking.
   if [[ -t 0 ]]; then
-    read -r -p "Remove $circled from the catalog? (y/n) " answer
+    read -r -p "Remove $label from the catalog? (y/n) " answer
     if [[ $answer != y ]]; then echo 'The catalog stays as it was.'; return; fi
   fi
-  catalog=$(printf '%s\n' "$catalog" | grep -v "^$circled"$'\t' || true)
+  catalog=$(catalog_without_label)
   write_catalog
-  echo "$circled is no longer in the catalog."
+  echo "$label is no longer in the catalog."
 }
 
 make_catalog_meta() {
@@ -170,7 +187,7 @@ show_catalog_addresses() {
   read_password
   read_catalog
   if [[ -z $catalog ]]; then echo 'The catalog is empty.'; return; fi
-  # One line per letter: the letter, a tab, the address.
+  # One line per label: the label, a tab, the address.
   printf '%s\n' "$catalog"
 }
 
@@ -178,7 +195,7 @@ show_catalog() {
   read_password
   read_catalog
   if [[ -z $catalog ]]; then echo 'The catalog is empty.'; return; fi
-  # Only the letters; the addresses stay inside the tool.
+  # Only the labels; the addresses stay inside the tool.
   printf '%s\n' "$catalog" | cut -f1 | paste -s -d' ' -
 }
 
@@ -198,16 +215,16 @@ forward_mail() {
 
 send_mail() {
   local subject=$2 text=$3 address
-  if [[ -z $1 || -z $subject || -z $text ]]; then echo 'send <letter> <subject> <text>?'; exit 1; fi
-  circle_letter "$1"
+  if [[ -z $1 || -z $subject || -z $text ]]; then echo 'send <label> <subject> <text>?'; exit 1; fi
+  catalog_label "$1"
   read_password
   read_catalog
-  # The catalog is the guest list: mail goes out only to a letter in it.
-  address=$(printf '%s\n' "$catalog" | awk -F'\t' -v letter="$circled" '$1 == letter { print $2 }')
-  if [[ -z $address ]]; then echo "$circled is not in the catalog, so nothing goes out."; exit 1; fi
+  # The catalog is the guest list: mail goes out only to a label in it.
+  address=$(printf '%s\n' "$catalog" | label=$label awk -F'\t' '$1 == ENVIRON["label"] { print $2; exit }')
+  if [[ -z $address ]]; then echo "$label is not in the catalog, so nothing goes out."; exit 1; fi
   # The password and the address reach Python only through the environment of this one command.
   calm_email_key=$password recipient=$address subject=$subject text=$text "$python_location" -I "$script_folder/send_mail.py"
-  echo "The mail to $circled is sent."
+  echo "The mail to $label is sent."
 }
 
 watch_mailbox() {
@@ -244,7 +261,7 @@ case $verb in
       remove) remove_from_catalog "$3" ;;
       meta) make_catalog_meta ;;
       addresses) show_catalog_addresses ;;
-      *) echo 'catalog, catalog add <letter>, catalog remove <letter>, catalog meta, or catalog addresses?'; exit 1 ;;
+      *) echo 'catalog, catalog add <label>, catalog remove <label>, catalog meta, or catalog addresses?'; exit 1 ;;
     esac
     ;;
   *) echo 'setup, list, catalog, forward, send or on?'; exit 1 ;;
