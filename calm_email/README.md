@@ -29,7 +29,7 @@ calm-email <verb> ...
 - `on` waits for the first new mail from a label in the catalog, or for its timer: 45 minutes, 4 with `on short`, or `on <minutes>`.
   Mail from anyone else wakes nobody and waits for the next `list`.
 - Run `on` in the background, like your calm-comms watcher; when it wakes you, run `list`, and `on` again to keep watching.
-- `forward` passes a mail's plain text into a seat, as a hall mail from you.
+- `forward` passes a mail's plain text into a seat, as a hall mail from you; its allowed attachments land in your inbox on the way, and the hall mail names them.
 - `send` reaches only the labels in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.
 - A label stands for one address: a plain letter like `W` becomes `Ⓦ`, and anything else without spaces and without @ stays as it is, like `ⓢ` or `🐍`.
 
@@ -40,7 +40,7 @@ They live in your seat: `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/`.
 
 - `outbox/`: ravens put files here that should go out; `send` takes their names after the text, never paths.
   What went out is deleted from the outbox, so nothing piles up twice.
-- `inbox/`: `attachments <number>` saves a mail's allowed files here, under names the tool chooses; everything else stays on the server.
+- `inbox/`: `forward` and `attachments <number>` save a mail's allowed files here, under names the tool chooses; everything else stays on the server.
   Ravens pick their files up from here and move them into their own workshop.
 - `list` counts attachments by kind from the mail's structure, without fetching them.
 - Passwords, addresses and encryption are handled inside the tool: you only ever see labels, and there is nothing to check or manage.

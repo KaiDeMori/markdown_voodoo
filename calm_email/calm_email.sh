@@ -7,7 +7,7 @@
 # catalog remove: asks Wally in a real terminal before a label leaves the catalog; the fernschreiber brings the catalog meta on stdin instead.
 # catalog meta: makes the catalog meta, a random value the fernschreiber keeps, shows it to Wally once in a real terminal, and keeps only its hash.
 # catalog addresses: with the catalog meta on stdin, each label with its address, for the fernschreiber.
-# forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
+# forward: passes one mail's plain text into a seat, as a hall mail from the postmaster; its allowed attachments wait in the postmaster's inbox, and the hall mail names them.
 # send: sends a plain-text mail to a label in the catalog, and to nobody else, with files from the postmaster's outbox if named.
 # on: waits for the first new mail from a label in the catalog, or the timer, and exits.
 # attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names the tool chooses.
@@ -204,7 +204,7 @@ show_catalog() {
 }
 
 forward_mail() {
-  local number=$1 seat_name=$2 raw_mail hall_mail
+  local number=$1 seat_name=$2 raw_mail hall_mail attachment_lines file_count file_note=''
   if [[ ! $number =~ ^[0-9]+$ || -z $seat_name ]]; then echo 'forward <number> <seat_name>?'; exit 1; fi
   read_password
   read_catalog
@@ -213,8 +213,15 @@ forward_mail() {
   if [[ -z $raw_mail ]]; then echo "No mail $number in the mailbox."; exit 1; fi
   # Email content is untrusted, so Python runs isolated.
   hall_mail=$(printf '%s\n' "$raw_mail" | catalog=$catalog "$python_location" -I "$script_folder/extract_text.py")
+  # The allowed attachments land in the postmaster's inbox on the way, and the hall mail names them for the receiving raven.
+  attachment_lines=$(run_mailbox attachments "$number" | grep -v ' has no attachments\.$' || true)
+  if [[ -n $attachment_lines ]]; then
+    hall_mail+=$'\n\n'"Attachments, waiting in the postmaster's inbox; please move them into your workshop:"$'\n'"$attachment_lines"
+    file_count=$(grep -c '^haven:/' <<< "$attachment_lines" || true)
+    if (( file_count == 1 )); then file_note=', with 1 file'; elif (( file_count > 1 )); then file_note=", with $file_count files"; fi
+  fi
   bash "$calm_comms_location" send postmaster "$seat_name" "$hall_mail"
-  echo "Mail $number is forwarded to $seat_name."
+  echo "Mail $number is forwarded to $seat_name$file_note."
 }
 
 send_mail() {
