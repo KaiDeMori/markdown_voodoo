@@ -1,4 +1,4 @@
-"""The catalog, on F5: calm-email's circled letters and their addresses, to see, add and remove."""
+"""The catalog, on F5: calm-email's letters and their addresses, to see, add and remove."""
 
 from textual import events
 from textual.app import ComposeResult
@@ -8,7 +8,7 @@ from textual.screen import Screen
 from textual.widgets import Input, Static
 
 import settings
-from calm_email import add_entry, catalog_meta, circled, read_catalog, remove_entry
+from calm_email import add_entry, catalog_meta, read_catalog, remove_entry
 from Widgets import Rule_line, Title_list, clock_text
 
 NOT_SET = f"{settings.CATALOG_META_VARIABLE} is not set in this terminal"
@@ -112,11 +112,10 @@ class Catalog_screen(Screen):
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         parts = event.value.split(maxsplit=1)
-        letter = circled(parts[0]) if parts else None
-        if letter is None or len(parts) < 2:
+        if len(parts) < 2:
             self.say("a letter, a space, then the address, like: T name@example.com")
             return
-        address = parts[1].strip()
+        letter, address = parts[0], parts[1].strip()
         self.change(lambda meta: add_entry(meta, letter, address))
 
     def change(self, verb) -> None:

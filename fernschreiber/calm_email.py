@@ -1,4 +1,4 @@
-"""The bridge to calm-email's catalog: the circled letters and their addresses, opened by Wally's value on stdin."""
+"""The bridge to calm-email's catalog: its letters and their addresses, opened by Wally's value on stdin; letters pass through as they are."""
 
 import os
 import subprocess
@@ -7,18 +7,6 @@ import settings
 
 # The same PATH as for calm-comms, for the same reason; see calm_comms.py.
 CALM_EMAIL_ENVIRONMENT = dict(os.environ, LANG="C.UTF-8", PATH=settings.GIT_USR_BIN + os.pathsep + os.environ.get("PATH", ""))
-CIRCLED_A = 0x24B6
-
-
-def circled(letter: str) -> str | None:
-    """T or t becomes Ⓣ; a circled capital stays as it is; anything else is no letter."""
-    if len(letter) != 1:
-        return None
-    if "A" <= letter.upper() <= "Z":
-        return chr(CIRCLED_A + ord(letter.upper()) - ord("A"))
-    if CIRCLED_A <= ord(letter) < CIRCLED_A + 26:
-        return letter
-    return None
 
 
 def catalog_meta() -> str | None:
