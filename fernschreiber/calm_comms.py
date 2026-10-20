@@ -50,8 +50,8 @@ def send_mail(target_seat: str, text: str) -> subprocess.CompletedProcess:
 
 
 def is_watching(state: list[str], now: datetime) -> bool:
-    """Whether an overview state names a running watcher: `present` in terminal mode, or `until 2026-10-17T12:09+02:00` that has not run out."""
-    if state == ["present"]:
+    """Whether an overview state names a raven that listens: `present` in terminal mode, `awake` while it re-arms, or `until 2026-10-17T12:09+02:00` that has not run out."""
+    if state in (["present"], ["awake"]):
         return True
     if len(state) != 2 or state[0] != "until":
         return False
