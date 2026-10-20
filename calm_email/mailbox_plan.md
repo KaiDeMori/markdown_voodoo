@@ -35,7 +35,7 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 - The postmaster's seat holds `attachments/inbox/` and `attachments/outbox/`.
 - Only png, jpeg, md and txt, each checked by its content, not only by its name, and at most 5 MB per file.
 - `send` takes file names from the outbox, never paths, so nothing outside it can be attached.
-- After sending, a file moves into `outbox/sent/`, its name prefixed with the moment it went out.
+- After a successful send, a file is deleted from the outbox, so nothing piles up twice.
 - Received files land in `inbox/` under names the tool chooses, never the sender's; ravens move them into their own workshop.
 - `list` shows attachments next to the weight, from BODYSTRUCTURE, without fetching them.
 

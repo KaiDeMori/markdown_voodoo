@@ -39,7 +39,7 @@ Only png, jpeg, md and txt travel, each checked by its content, and at most 5 MB
 They live in your seat: `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/`.
 
 - `outbox/`: ravens put files here that should go out; `send` takes their names after the text, never paths.
-  What went out moves into `outbox/sent/`, its name prefixed with the moment it left.
+  What went out is deleted from the outbox, so nothing piles up twice.
 - `inbox/`: `attachments <number>` saves a mail's allowed files here, under names the tool chooses; everything else stays on the server.
   Ravens pick their files up from here and move them into their own workshop.
 - `list` counts attachments by kind from the mail's structure, without fetching them.

@@ -9,7 +9,6 @@ import os
 import smtplib
 import ssl
 import sys
-from datetime import datetime
 from pathlib import Path
 
 mailbox_address = "haven@peopleoftheprompt.org"
@@ -85,13 +84,9 @@ except (smtplib.SMTPException, OSError) as error:
     print(f"Sending failed: {error}")
     sys.exit(1)
 
-# What went out moves into sent/, so the outbox shows only what still waits.
-if attachments:
-    sent_folder = outbox_folder / "sent"
-    moment = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+# What went out is deleted from the outbox, so nothing piles up twice.
+for location, _, _, _ in attachments:
     try:
-        sent_folder.mkdir(exist_ok=True)
-        for location, _, _, _ in attachments:
-            location.replace(sent_folder / f"{moment}_{location.name}")
+        location.unlink()
     except OSError as error:
-        print(f"Sent, but a file stayed in the outbox: {error}")
+        print(f"Sent, but {location.name} stayed in the outbox: {error}")
