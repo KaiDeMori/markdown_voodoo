@@ -10,6 +10,7 @@
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
 # send: sends a plain-text mail to a label in the catalog, and to nobody else, with files from the postmaster's outbox if named.
 # on: waits for the first new mail from a label in the catalog, or the timer, and exits.
+# attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names the tool chooses.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
 #        calm_email.sh catalog
@@ -20,6 +21,7 @@
 #        calm_email.sh forward <number> <seat_name>
 #        calm_email.sh send <label> <subject> <text> [file ...]
 #        calm_email.sh on [long|short|<minutes>]
+#        calm_email.sh attachments <number>
 
 mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
@@ -251,6 +253,7 @@ run_mailbox() {
   # The password, the address and the catalog reach mailbox.py only through the environment of this one command.
   # Mail content is untrusted, so Python runs isolated.
   calm_email_key=$password mailbox_address=$mailbox_address imap_host=${imap_host%%[:/]*} catalog=$catalog \
+    inbox_location="$attachments_location/inbox" \
     "$script_folder/.venv/Scripts/python.exe" -I "$script_folder/mailbox.py" "$@"
 }
 
@@ -260,6 +263,10 @@ case $verb in
   send) shift; send_mail "$@" ;;
   list) run_mailbox list ;;
   on) watch_mailbox "$2" ;;
+  attachments)
+    [[ ${2:-} =~ ^[0-9]+$ ]] || { echo 'attachments <number>?'; exit 1; }
+    run_mailbox attachments "$2"
+    ;;
   catalog)
     case $2 in
       '') show_catalog ;;
@@ -270,6 +277,6 @@ case $verb in
       *) echo 'catalog, catalog add <label>, catalog remove <label>, catalog meta, or catalog addresses?'; exit 1 ;;
     esac
     ;;
-  *) echo 'setup, list, catalog, forward, send or on?'; exit 1 ;;
+  *) echo 'setup, list, catalog, forward, send, on or attachments?'; exit 1 ;;
 # exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
 esac; exit
