@@ -8,7 +8,7 @@
 # catalog meta: makes the catalog meta, a random value the fernschreiber keeps, shows it to Wally once in a real terminal, and keeps only its hash.
 # catalog addresses: with the catalog meta on stdin, each label with its address, for the fernschreiber.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster.
-# send: sends a plain-text mail to a label in the catalog, and to nobody else.
+# send: sends a plain-text mail to a label in the catalog, and to nobody else, with files from the postmaster's outbox if named.
 # on: waits for the first new mail from a label in the catalog, or the timer, and exits.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
@@ -18,13 +18,15 @@
 #        calm_email.sh catalog meta
 #        calm_email.sh catalog addresses < meta
 #        calm_email.sh forward <number> <seat_name>
-#        calm_email.sh send <label> <subject> <text>
+#        calm_email.sh send <label> <subject> <text> [file ...]
 #        calm_email.sh on [long|short|<minutes>]
 
 mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
 python_location='C:/Users/devboese/AppData/Local/Programs/Python/Python312/python'
 calm_comms_location='C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh'
+# Ravens put files to send into the outbox, and pick received ones up from the inbox.
+attachments_location='C:/haven/Hall/thing/Hrafnsmal/postmaster/attachments'
 # The watcher's timers; the server announces new mail, so nothing polls.
 long_watcher_minutes=45
 short_watcher_minutes=4
@@ -214,17 +216,21 @@ forward_mail() {
 }
 
 send_mail() {
-  local subject=$2 text=$3 address
-  if [[ -z $1 || -z $subject || -z $text ]]; then echo 'send <label> <subject> <text>?'; exit 1; fi
+  local subject=$2 text=$3 address attachment_note=''
+  if [[ -z $1 || -z $subject || -z $text ]]; then echo 'send <label> <subject> <text> [file ...]?'; exit 1; fi
   catalog_label "$1"
+  # Everything after the text is a file name from the outbox.
+  shift 3
+  if (( $# == 1 )); then attachment_note=', with 1 file'; elif (( $# > 1 )); then attachment_note=", with $# files"; fi
   read_password
   read_catalog
   # The catalog is the guest list: mail goes out only to a label in it.
   address=$(printf '%s\n' "$catalog" | label=$label awk -F'\t' '$1 == ENVIRON["label"] { print $2; exit }')
   if [[ -z $address ]]; then echo "$label is not in the catalog, so nothing goes out."; exit 1; fi
   # The password and the address reach Python only through the environment of this one command.
-  calm_email_key=$password recipient=$address subject=$subject text=$text "$python_location" -I "$script_folder/send_mail.py"
-  echo "The mail to $label is sent."
+  calm_email_key=$password recipient=$address subject=$subject text=$text outbox_location="$attachments_location/outbox" \
+    "$python_location" -I "$script_folder/send_mail.py" "$@"
+  echo "The mail to $label is sent$attachment_note."
 }
 
 watch_mailbox() {
@@ -251,7 +257,7 @@ run_mailbox() {
 case $verb in
   setup) setup_password ;;
   forward) forward_mail "$2" "$3" ;;
-  send) send_mail "$2" "$3" "$4" ;;
+  send) shift; send_mail "$@" ;;
   list) run_mailbox list ;;
   on) watch_mailbox "$2" ;;
   catalog)
