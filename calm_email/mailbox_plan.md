@@ -43,7 +43,7 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 
 - [x] Sending: `send <label> <subject> <text> [file ...]`.
 - [x] Test the refusals without sending anything.
-- [ ] Test one real mail to Wally, with one file of each type.
+- [x] Test one real mail to Wally, with one file of each type.
 - [ ] Receiving: attachments in `list`.
 - [ ] Receiving: a verb that saves the allowed attachments of one mail into `inbox/`.
 - [ ] Update the README for the postmaster.
