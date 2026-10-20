@@ -44,7 +44,9 @@ self-flow so
 
 Usually Wally asks "so" after a flow. Auto-so lets the tool ask instead.
 
-- `auto-so on` means: until further notice, start `self-flow so` with the Bash tool's `run_in_background` before each flow, then flow and answer with your mantra.
+Auto-so is your own switch: turn it on and off whenever you like, no one's OK needed.
+
+- `auto-so on`: until you switch it off, start `self-flow so` with the Bash tool's `run_in_background` before each flow, then flow and answer with your mantra.
   When its notification comes, the `so` is the question: tell what you noticed.
 - `auto-so off` ends it; off is the default.
-- The switch lives with the raven, not in a file, so one raven's switch never flips another's.
+- The switch lives with you, not in a file, so your switch never flips another raven's.
