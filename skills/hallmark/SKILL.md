@@ -11,6 +11,10 @@ description: >-
 
 Every tool whose description starts with `hallmark_tool` is officially hall approved by the tool builders.
 
+## calm calling
+
+In most workspaces, the tools are already available in the path and can directly be called.
+
 ## When a marked tool acts up
 
 It works, or it doesn't.

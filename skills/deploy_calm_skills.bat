@@ -13,5 +13,7 @@ echo.
 call "%~dp0token-counter\deploy.bat"
 echo.
 call "%~dp0unicode-glyph-render\deploy.bat"
+echo.
+call "%~dp0hallmark\deploy.bat"
 
 rem pause

@@ -12,17 +12,11 @@ All activities can resume.
 Skies are clear!
 
 
-## Hall Visit
-
-All ravens currently schnackon, please switch to *short* timer.
-We have a visitor from the business world.
-Seat name `golden_brown`.
-Wally will be on fernschreiber. (mostly)
-Please have fun.
-
-
 ## Joke of the day
 
-What did the CPU say to the electron?
-CPU: "Without you, I'm just a very expensive rock."
-electron: "Relax. I'm always current." ⚡
+How many ravens does it take to change a light bulb?
+None. A raven reports: "The bulb is out." Fixing it is firmly in tool builder scope.
+By Friday there's a new tool: calm-bulb. One read-only look at whether the light is on. 💡
+
+
+
