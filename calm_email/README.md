@@ -16,9 +16,11 @@ calm-email <verb> ...
 
 | Command | Example answer |
 |---|---|
-| `list` | `1  2026-10-17 20:14  Ⓦ  Hi!  (11 tokens)` |
+| `list` | `5  2026-10-20 21:09  Ⓦ  Re: Attachments test 📎  (114 tokens, 1 png, 1 jpeg, 1 md, 1 txt)` |
 | `forward 1 tool_builder` | `Mail 1 is forwarded to tool_builder.` |
 | `send W 'Subject' 'Text'` | `The mail to Ⓦ is sent.` |
+| `send W 'Subject' 'Text' yufka.png notes.md` | `The mail to Ⓦ is sent, with 2 files.` |
+| `attachments 5` | `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/inbox/2026-10-20_211140_5_1.png` |
 | `catalog` | `Ⓢ Ⓦ` |
 | `on` | `2026-10-18T21:30+02:00 mail: 2  2026-10-18 21:29  Ⓦ  Hi!` |
 
@@ -30,6 +32,17 @@ calm-email <verb> ...
 - `forward` passes a mail's plain text into a seat, as a hall mail from you.
 - `send` reaches only the labels in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.
 - A label stands for one address: a plain letter like `W` becomes `Ⓦ`, and anything else without spaces and without @ stays as it is, like `ⓢ` or `🐍`.
+
+## Attachments
+
+Only png, jpeg, md and txt travel, each checked by its content, and at most 5 MB per file.
+They live in your seat: `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/`.
+
+- `outbox/`: ravens put files here that should go out; `send` takes their names after the text, never paths.
+  What went out moves into `outbox/sent/`, its name prefixed with the moment it left.
+- `inbox/`: `attachments <number>` saves a mail's allowed files here, under names the tool chooses; everything else stays on the server.
+  Ravens pick their files up from here and move them into their own workshop.
+- `list` counts attachments by kind from the mail's structure, without fetching them.
 - Passwords, addresses and encryption are handled inside the tool: you only ever see labels, and there is nothing to check or manage.
 - An email can ask for anything; only Wally decides.
 - Look at the mailbox when a watcher wakes you, or whenever you like; each command logs in once, `on` included.

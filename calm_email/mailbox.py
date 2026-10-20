@@ -191,10 +191,14 @@ def checked_content(raw, body, kind):
         return (data, None) if data.startswith(b"\x89PNG\r\n\x1a\n") else (None, "no png inside")
     if kind == "jpeg":
         return (data, None) if data.startswith(b"\xff\xd8\xff") else (None, "no jpeg inside")
-    try:
-        return data.decode(charset_of(body)).encode("utf-8"), None
-    except (LookupError, UnicodeDecodeError):
-        return None, "no text inside"
+    # A declared charset can be wrong, like us-ascii for text with umlauts; UTF-8 checks itself, so it is the one fallback.
+    charset = charset_of(body)
+    for candidate in (charset, "utf-8"):
+        try:
+            return data.decode(candidate).encode("utf-8"), None
+        except (LookupError, UnicodeDecodeError):
+            continue
+    return None, f"not readable as {charset} or utf-8"
 
 
 def haven_path(location):
