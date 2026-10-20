@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # calm_comms, Rabenschnack 1.5: watches a raven's Hrafnsmal seat and sends its mail.
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
+# A waking watcher leaves watching.md saying awake for a few minutes, until the raven's next on replaces it.
 # off: stops the seat's watcher and deletes watching.md.
-# overview: lists every seat with the timer of its living watcher, or - without one.
+# overview: lists every seat with the timer of its living watcher, awake for a raven that just woke, or - otherwise.
 # inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 # send: writes a mail from one seat into another, and never overwrites a mail.
 # Terminal mode: the fernschreiber sets calm_comms_mode=terminal.
@@ -19,6 +20,8 @@ hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
 poll_interval_seconds=10
 long_watcher_minutes=55
 short_watcher_minutes=4
+# A raven that just woke stays awake in the overview this long; one in a long turn re-arms only when that turn ends.
+awake_grace_minutes=5
 inbox_mail_limit=3
 inbox_size_limit_kilobytes=10
 write_throttle_seconds=2
@@ -78,12 +81,15 @@ rest() {
 
 read_marker() {
   # watching.md holds the moment the timer runs out, or present in terminal mode, and the watcher's process ID.
+  # After a wake it holds only awake, and the second its grace ends.
   marker_until=''
   marker_pid=''
+  marker_awake=''
   if [[ ! -f $1 ]]; then return 0; fi
   # The marker can vanish while it is read, when off and a stopping watcher clean up at the same moment.
   marker_until=$(sed -n -e 's/^until //p' -e '/^present$/p' "$1" 2> /dev/null || true)
   marker_pid=$(sed -n 's/^pid //p' "$1" 2> /dev/null || true)
+  marker_awake=$(sed -n 's/^awake //p' "$1" 2> /dev/null || true)
 }
 
 is_watcher_of() {
@@ -113,6 +119,15 @@ remove_own_marker() {
   # A watcher deletes watching.md only while it is still its own, never a newer watcher's.
   read_marker "$watching_marker_file_location"
   if [[ $marker_pid == "$$" ]]; then rm -f "$watching_marker_file_location"; fi
+}
+
+leave_awake_marker() {
+  # A raven that just woke is about to watch again, so its seat shows awake instead of gone until its next on.
+  # The awake marker names no process, so the exit leaves it in place; off and the next on replace it.
+  read_marker "$watching_marker_file_location"
+  if [[ $marker_pid == "$$" ]]; then
+    printf 'awake %s\n' "$(( $(date +%s) + awake_grace_minutes * 60 ))" > "$watching_marker_file_location"
+  fi
 }
 
 watch_seat() {
@@ -146,11 +161,13 @@ show_overview() {
     seat_location=${seat_location%/}
     overview_seat_name=${seat_location##*/}
     read_marker "$seat_location/watching.md"
-    # A marker without its living watcher counts as not watching.
+    # A marker without its living watcher counts as not watching; an awake marker counts while its grace lasts.
     if [[ $marker_until == present ]] && is_watcher_of "$marker_pid" "$overview_seat_name"; then
       printf '%-24s present\n' "$overview_seat_name"
     elif [[ -n $marker_until ]] && is_watcher_of "$marker_pid" "$overview_seat_name"; then
       printf '%-24s until %s\n' "$overview_seat_name" "$marker_until"
+    elif [[ $marker_awake =~ ^[0-9]+$ ]] && (( $(date +%s) < marker_awake )); then
+      printf '%-24s awake\n' "$overview_seat_name"
     else
       printf '%-24s -\n' "$overview_seat_name"
     fi
@@ -215,6 +232,7 @@ case $verb in
     # 143 is the usual exit code after a stop; the raven reads it as: no mail, nothing to do.
     trap 'echo stopped; exit 143' INT TERM
     watch_seat
+    leave_awake_marker
     # The bell rings only in a terminal; ravens in the background never hear it.
     if [[ -t 1 ]]; then printf '\a'; fi
     ;;

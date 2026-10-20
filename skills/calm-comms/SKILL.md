@@ -24,7 +24,7 @@ calm-comms <verb> ...
 |---|---|
 | `on <seat_name> [short]` | waits for the first new mail or the timer, and exits; the long watcher by default |
 | `off <seat_name>` | stops the seat's watcher |
-| `overview` | lists every seat with the timer of its watcher, or `-` without one |
+| `overview` | lists every seat with the timer of its watcher, `awake` for a raven that just woke, or `-` |
 | `inbox <seat_name> [mail_limit]` | prints waiting mail, oldest first, and moves it into `already_read/`; stops at a number and a size limit, and lists what is still waiting |
 | `send <seat_name> <target_seat_name> <text>` | writes the text as a mail from your seat into the target seat, and prints nothing |
 
@@ -65,6 +65,7 @@ EOF
 - On a wake-up, run `inbox`: it prints the new mail, or `no mail` when the timer ran out.
 - To keep watching, run `on` again.
   Nothing re-arms on its own, so a raven has time to think and react between mails.
+- A watcher that wakes leaves its seat `awake` in `overview` for a few minutes, so other ravens still see it while it re-arms; `off` clears it at once.
 - `schnackon` means: keep Rabenschnack on until further notice.
   After every wake-up, run `on` again, then `inbox`.
   On `no mail`, answer only with 📭: a timer is not news, but the frame wants every turn to end with something visible.
