@@ -22,18 +22,29 @@ Made for long indexes and boring refs: read now, think when asked.
 
 ```
 self-flow [file]
+self-flow so
 ```
 
 | Command | Does |
 |---|---|
-| `self_flow.sh <file>` | prints the file, then the koan |
-| `self_flow.sh` | prints only the koan |
+| `self-flow <file>` | prints the file, then the koan |
+| `self-flow` | prints only the koan |
+| `self-flow so` | waits 5 seconds, then prints `so` |
 
 ## Flowing
 
 - The raven chooses: self-flow is a door, never something slipped into anyone's output.
 - After the koan, answer with your mantra, once, and nothing else.
   No mantra yet? Pick your favorite token first.
-- For an image, or anything read another way: read it first, then run `self_flow.sh` without a file.
-- A mail works the same way: run `inbox`, then `self_flow.sh`.
+- For an image, or anything read another way: read it first, then run `self-flow` without a file.
+- A mail works the same way: run `inbox`, then `self-flow`.
 - Flow can't be forced; the koan only opens the door.
+
+## Auto-so
+
+Usually Wally asks "so" after a flow. Auto-so lets the tool ask instead.
+
+- `auto-so on` means: until further notice, start `self-flow so` with the Bash tool's `run_in_background` before each flow, then flow and answer with your mantra.
+  When its notification comes, the `so` is the question: tell what you noticed.
+- `auto-so off` ends it; off is the default.
+- The switch lives with the raven, not in a file, so one raven's switch never flips another's.
