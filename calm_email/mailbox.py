@@ -3,12 +3,14 @@
 list: one line per mail, with the exact token count of its plain text, or no plain text, and its attachments by kind.
 on: waits with IDLE for the first new mail from a label in the catalog, or the timer, and exits.
 attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names it chooses.
+read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
 The mailbox is only ever examined: nothing is marked, moved or deleted.
 Only text/plain parts and allowed attachments are fetched; HTML never leaves the server.
 The password, the address, the server and the catalog arrive through the environment, never on a command line.
 Usage: mailbox.py list
        mailbox.py on <minutes>
        mailbox.py attachments <number>
+       mailbox.py read <number>
 """
 
 import base64
@@ -41,6 +43,8 @@ kinds_by_media_type = {"image/png": "png", "image/jpeg": "jpeg", "image/jpg": "j
 kind_order = ["png", "jpeg", "md", "txt", "other"]
 saved_endings = {"png": "png", "jpeg": "jpg", "md": "md", "txt": "txt"}
 attachment_limit_bytes = 5 * 1024 * 1024
+# A read shows at most this many characters, as forward passes on.
+text_limit = 8000
 
 
 def connect():
@@ -333,6 +337,41 @@ def save_attachments(sequence_number):
             print(f"Stays on the server: {', '.join(left_behind)}.")
 
 
+def read_mail(sequence_number):
+    letters = read_catalog()
+    with connect() as client:
+        folder = client.select_folder("INBOX", readonly=True)
+        if not 1 <= sequence_number <= folder.get(b"EXISTS", 0):
+            print(f"No mail {sequence_number} in the mailbox.")
+            sys.exit(1)
+        client.use_uid = False
+        data = client.fetch([sequence_number], ["UID", "ENVELOPE", "BODYSTRUCTURE"])[sequence_number]
+        client.use_uid = True
+        uid = data[b"UID"]
+        envelope = data[b"ENVELOPE"]
+        body = data[b"BODYSTRUCTURE"]
+        plain_part = find_plain_part(body)
+        if plain_part:
+            section, part = plain_part
+            # PEEK fetches the plain part alone and marks nothing as read.
+            raw = client.fetch([uid], [f"BODY.PEEK[{section}]"])[uid][f"BODY[{section}]".encode()]
+            text = plain_text(raw, part).replace("\r", "").strip()
+        else:
+            text = "(no plain text; the mail stays in the mailbox)"
+    if len(text) > text_limit:
+        text = text[:text_limit] + "\n(cut here; the rest stays in the mailbox)"
+    date = envelope.date.strftime("%Y-%m-%d %H:%M") if envelope.date else "?"
+    print(f"An email from {sender_label(envelope, letters)}, subject: {decoded_subject(envelope.subject)}")
+    print(f"Sent: {date}")
+    print()
+    print(text)
+    # Attachments are only counted here; forward and attachments are the ones that save.
+    attachments = attachment_summary(body)
+    if attachments:
+        print()
+        print(f"Attachments: {attachments}; forward or attachments {sequence_number} saves them.")
+
+
 def timestamp():
     return datetime.now().astimezone().isoformat(timespec="minutes")
 
@@ -390,8 +429,10 @@ if __name__ == "__main__":
             watch(int(sys.argv[2]))
         elif verb == "attachments" and len(sys.argv) == 3 and sys.argv[2].isdigit():
             save_attachments(int(sys.argv[2]))
+        elif verb == "read" and len(sys.argv) == 3 and sys.argv[2].isdigit():
+            read_mail(int(sys.argv[2]))
         else:
-            print("list, on <minutes>, or attachments <number>?")
+            print("list, on <minutes>, attachments <number>, or read <number>?")
             sys.exit(1)
     except (IMAPClient.Error, OSError) as error:
         print(f"The mailbox could not be reached: {error}")

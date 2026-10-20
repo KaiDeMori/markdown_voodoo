@@ -50,7 +50,7 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 
 ## Still to talk about
 
-- [ ] `read <n>`: the plain text straight into the window.
+- [x] `read <n>`: the plain text straight into the window, marking and saving nothing.
 - [ ] Marking a mail as handled.
 - [ ] `reply <n> <text>`: an answer in the mail's thread.
 - [ ] `sent`: what went out.
