@@ -16,5 +16,7 @@ echo.
 call "%~dp0unicode-glyph-render\deploy.bat"
 echo.
 call "%~dp0self-flow\deploy.bat"
+echo.
+call "%~dp0calm-test\deploy.bat"
 
 pause
