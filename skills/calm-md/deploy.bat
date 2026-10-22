@@ -9,6 +9,7 @@ call :copy_file SKILL.md
 call :copy_file calm_md.sh
 call :copy_file calm_md.py
 call :copy_file requirements.txt
+call :copy_file piko_bello.json
 
 if not exist "%target%\.venv\Scripts\python.exe" (
     echo Creating the venv in %target%\.venv

@@ -34,17 +34,18 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - It starts quiet, with the heading rules only: MD001, MD003 with `atx`, MD022, MD024 among siblings, and MD025.
   A rule joins when a real doc runs into a real problem.
 - The linter knows front matter through its `front-matter` extension.
-- A pragma comment cannot silence a rule: calm-md blanks pymarkdownlnt's pragmas before the scan, keeping every line number.
+- A pragma comment cannot silence a rule: calm-md leaves pragma lines out of the scan and reports every issue with its line number in the original.
+- The front matter's `title` never counts as a heading; `piko_bello.json` names a field no doc uses, since an empty name is not allowed.
 - `write` checks the doc it would leave behind, and refuses if that doc has issues.
 - `--as-is` turns the linter off for one call: calm-md works as before, and still says in one line how many issues wait.
 
 ### Steps
 
-- [ ] Pin pymarkdownlnt in `requirements.txt`.
-- [ ] `piko_bello.json` with the five heading rules.
-- [ ] The check in `toc`, `read` and `write`, and `--as-is`.
-- [ ] Test a doc with each of the five issues, a pragma trying to silence one, front matter, and `--as-is`.
-- [ ] `SKILL.md`, and `deploy.bat` copying `piko_bello.json`.
+- [x] Pin pymarkdownlnt in `requirements.txt`.
+- [x] `piko_bello.json` with the five heading rules.
+- [x] The check in `toc`, `read` and `write`, and `--as-is`.
+- [x] Test a doc with each of the five issues, a pragma trying to silence one, front matter, and `--as-is`.
+- [x] `SKILL.md`, and `deploy.bat` copying `piko_bello.json`.
 - [ ] A raven flies it.
 
 ## Steps

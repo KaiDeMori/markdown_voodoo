@@ -1,0 +1,13 @@
+{
+  "plugins": {
+    "selectively_enable_rules": true,
+    "md001": { "enabled": true, "front_matter_title": "calm_md_ignores_front_matter_titles" },
+    "md003": { "enabled": true, "style": "atx" },
+    "md022": { "enabled": true },
+    "md024": { "enabled": true, "siblings_only": true },
+    "md025": { "enabled": true, "front_matter_title": "calm_md_ignores_front_matter_titles" }
+  },
+  "extensions": {
+    "front-matter": { "enabled": true }
+  }
+}

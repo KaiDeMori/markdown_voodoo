@@ -8,10 +8,14 @@ description: >-
 # calm-md
 
 ```
-calm-md toc <file> [title ...]
-calm-md read <file> <title> ...
-calm-md write <file> <title> ... < chapter
+calm-md toc [--as-is] <file> [title ...]
+calm-md read [--as-is] <file> <title> ...
+calm-md write [--as-is] <file> <title> ... < chapter
 ```
+
+calm-md works only on piko bello markdown.
+Before anything else, a linter checks the whole file by `piko_bello.json`; with issues, calm-md only lists them, like `3 issues, fix them and call again:`, one line each.
+Fix the doc, then call again: file by file, the hall's markdown gets cleaner.
 
 Start zoomed out, and zoom in only when the answer asks for it:
 
@@ -28,6 +32,10 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - `toc` shows at most 40 lines, then how many more; a title path after the file shows one chapter's part. A title longer than 60 characters is cut, with the count of what was cut.
 - `write` takes the chapter in the shape `read` gives it, heading line first, on stdin; empty input, and input that does not start with a heading line, are refused.
 - `write` changes only the chapter's lines, and the rest of the file stays byte for byte. The new lines take the file's own line endings, and a chapter followed by more ends with a blank line.
+- `write` checks the doc it would leave behind, and refuses if that doc would have issues, so a clean doc stays clean.
+- `--as-is` skips the check for one call: calm-md works anyway, and says on stderr how many issues wait.
+- A pragma comment cannot silence a rule; calm-md leaves it out of the check.
+- `piko_bello.json` starts quiet, with the heading rules only: one level at a time, `#` headings only, blank lines around headings, no title twice among siblings, one `#` title.
 - A chapter with backticks, `$` or apostrophes goes in through a quoted heredoc, as in calm-comms.
 - Files are read and written as UTF-8.
 - The limits are the variables at the top of `calm_md.py`.

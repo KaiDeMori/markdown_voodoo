@@ -1,2 +1,3 @@
 markdown-it-py==4.2.0
 mdit-py-plugins==0.6.1
+pymarkdownlnt==0.9.41

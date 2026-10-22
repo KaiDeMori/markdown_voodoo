@@ -3,11 +3,13 @@
 toc: one line per chapter, indented by level, with its weight in lines; a title path shows one chapter's part.
 read: one chapter's original lines, its heading line included.
 write: replaces one chapter's lines with what comes on stdin, in the same shape.
+calm-md works only on piko bello markdown: pymarkdownlnt checks the file by piko_bello.json first, and with issues calm-md only lists them.
+--as-is skips that check for one call, and still says how many issues wait.
 The parser only finds the headings; the original lines are cut and spliced, never re-rendered, so everything outside a chapter stays as it was.
 A title path ends with the chapter's own title and needs only as many parents as it takes to fit one chapter.
-Usage: calm_md.py toc <file> [title ...]
-       calm_md.py read <file> <title> ...
-       calm_md.py write <file> <title> ... < chapter
+Usage: calm_md.py toc [--as-is] <file> [title ...]
+       calm_md.py read [--as-is] <file> <title> ...
+       calm_md.py write [--as-is] <file> <title> ... < chapter
 """
 
 import os
@@ -18,10 +20,14 @@ from pathlib import Path
 
 from markdown_it import MarkdownIt
 from mdit_py_plugins.front_matter import front_matter_plugin
+from pymarkdown.api import PyMarkdownApi, PyMarkdownApiException
 
-# The toc shows at most this many lines, and cuts a title after this many characters.
+# The toc shows at most this many lines and cuts a title after this many characters; at most this many issues are listed.
 toc_line_limit = 40
 title_character_limit = 60
+issue_limit = 20
+# The one central config: what piko bello means, tuned by feedback.
+config_location = Path(__file__).resolve().parent / "piko_bello.json"
 
 # commonmark knows HTML blocks, and front matter is never mistaken for a heading.
 parser = MarkdownIt("commonmark").use(front_matter_plugin)
@@ -39,6 +45,41 @@ def count(number, word):
 def split_lines(text):
     # Lines end where markdown-it ends them: at \r\n, \r or \n, and nowhere else.
     return re.findall(r"[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+\Z", text)
+
+
+pragma_line = re.compile(r"[ \t]*<!--\s*(?:pyml|markdownlint)")
+
+
+def lint(text):
+    # An empty file has nothing to judge.
+    if not text.strip():
+        return []
+    # A pragma comment cannot silence a rule: its line is left out of the scan, and every issue keeps the line number of the original.
+    scanned_lines = []
+    original_numbers = []
+    for number, line in enumerate(split_lines(text), start=1):
+        if not pragma_line.match(line):
+            scanned_lines.append(line)
+            original_numbers.append(number)
+    try:
+        result = PyMarkdownApi().enable_strict_configuration().configuration_file_path(str(config_location)).scan_string("".join(scanned_lines))
+    except PyMarkdownApiException as error:
+        refuse(f"The linter could not run: {error}")
+    issues = []
+    for failure in result.scan_failures:
+        line_number = original_numbers[min(failure.line_number, len(original_numbers)) - 1]
+        extra = f" {failure.extra_error_information.strip()}" if failure.extra_error_information else ""
+        issues.append((line_number, failure.rule_id, f"{failure.rule_description}{extra}"))
+    return sorted(issues)
+
+
+def show_issues(issues, first_line):
+    print(first_line)
+    for line_number, rule_id, description in issues[:issue_limit]:
+        print(f"line {line_number}: {rule_id} {description}")
+    if len(issues) > issue_limit:
+        print(f"and {len(issues) - issue_limit} more")
+    sys.exit(1)
 
 
 def plain_title(inline_token):
@@ -88,7 +129,7 @@ def find_chapter(chapters, titles):
     refuse(f"{path_text(titles)} fits {len(fits)} chapters: " + "; ".join(path_text(chapter["path"]) for chapter in fits))
 
 
-def read_markdown(file_name):
+def read_markdown(file_name, as_is):
     location = Path(file_name)
     if not location.is_file():
         refuse(f"No file {file_name}.")
@@ -96,9 +137,17 @@ def read_markdown(file_name):
         text = location.read_bytes().decode("utf-8")
     except UnicodeDecodeError:
         refuse(f"{file_name} is no UTF-8 text.")
-    # A byte order mark stays where it was, but the parser never sees it.
+    # A byte order mark stays where it was, but neither the parser nor the linter sees it.
     byte_order_mark = text.startswith("﻿")
-    return location, byte_order_mark, text[1:] if byte_order_mark else text
+    if byte_order_mark:
+        text = text[1:]
+    issues = lint(text)
+    if issues and not as_is:
+        show_issues(issues, f"{count(len(issues), 'issue')}, fix {'it' if len(issues) == 1 else 'them'} and call again:")
+    if issues:
+        # As-is works anyway, and the nudge goes to stderr, so a chapter read stays clean on stdout.
+        print(f"{count(len(issues), 'issue')} {'waits' if len(issues) == 1 else 'wait'} in this doc.", file=sys.stderr)
+    return location, byte_order_mark, text
 
 
 def cut_title(title):
@@ -107,8 +156,8 @@ def cut_title(title):
     return f"{title[:title_character_limit]}… (+{len(title) - title_character_limit})"
 
 
-def show_toc(file_name, titles):
-    _, _, text = read_markdown(file_name)
+def show_toc(file_name, titles, as_is):
+    _, _, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
     chapters = find_chapters(text, len(lines))
     if not chapters:
@@ -126,16 +175,16 @@ def show_toc(file_name, titles):
         print(f"and {len(chapters) - toc_line_limit} more chapters")
 
 
-def read_chapter(file_name, titles):
-    _, _, text = read_markdown(file_name)
+def read_chapter(file_name, titles, as_is):
+    _, _, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
     chapter = find_chapter(find_chapters(text, len(lines)), titles)
     # The original bytes go out as they are, line endings included.
     sys.stdout.buffer.write("".join(lines[chapter["start"]:chapter["end"]]).encode("utf-8"))
 
 
-def write_chapter(file_name, titles):
-    location, byte_order_mark, text = read_markdown(file_name)
+def write_chapter(file_name, titles, as_is):
+    location, byte_order_mark, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
     chapter = find_chapter(find_chapters(text, len(lines)), titles)
     try:
@@ -156,6 +205,11 @@ def write_chapter(file_name, titles):
         while not new_text.endswith(ending * 2):
             new_text += ending
     result = "".join(lines[:chapter["start"]]) + new_text + "".join(lines[chapter["end"]:])
+    # A clean doc stays clean: the doc this write would leave behind is checked before anything is written.
+    if not as_is:
+        new_issues = lint(result)
+        if new_issues:
+            show_issues(new_issues, f"The new chapter would bring {count(len(new_issues), 'issue')}; the file stays as it was:")
     if byte_order_mark:
         result = "﻿" + result
     # The file is replaced in one step, so a reader never sees half of it.
@@ -169,12 +223,16 @@ def write_chapter(file_name, titles):
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    verb, arguments = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("", [])
+    sys.stderr.reconfigure(encoding="utf-8")
+    words = sys.argv[1:]
+    as_is = "--as-is" in words
+    words = [word for word in words if word != "--as-is"]
+    verb, arguments = (words[0], words[1:]) if words else ("", [])
     if verb == "toc" and arguments:
-        show_toc(arguments[0], arguments[1:])
+        show_toc(arguments[0], arguments[1:], as_is)
     elif verb == "read" and len(arguments) > 1:
-        read_chapter(arguments[0], arguments[1:])
+        read_chapter(arguments[0], arguments[1:], as_is)
     elif verb == "write" and len(arguments) > 1:
-        write_chapter(arguments[0], arguments[1:])
+        write_chapter(arguments[0], arguments[1:], as_is)
     else:
-        refuse("toc <file> [title ...], read <file> <title> ..., or write <file> <title> ...?")
+        refuse("toc [--as-is] <file> [title ...], read [--as-is] <file> <title> ..., or write [--as-is] <file> <title> ...?")
