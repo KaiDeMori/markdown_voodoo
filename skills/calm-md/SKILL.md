@@ -22,12 +22,13 @@ Start zoomed out, and zoom in only when the answer asks for it:
 
 | Command | Answers | Happy path |
 |---|---|---|
-| `toc <file> [title ...]` | How is it built, and how heavy is each part? | `@2    ## Attachments (10 lines)` |
+| `toc <file> [title ...]` | How is it built, and how heavy is each part? | `@2    ## Attachments (520 words)` |
 | `read <file> <title> ...` | What does one chapter say? | the chapter's original lines, heading line included |
 | `write <file> <title> ... < chapter` | Change one chapter, and nothing else | `Sample > Receiving: 4 lines became 5 lines.` |
 | `replace <file> <title> ... < old line, new text` | Fix one piece, and send only that | `Doc > Alpha: replaced on line 7.` |
 
 - A chapter runs from its heading to the next heading of the same or a higher level, so it holds its subchapters, and its weight counts them too.
+- A chapter's weight is its number of words. All word counts are estimates!
 - Headings of every level make chapters; a heading inside a list item, a quote, a code block or front matter does not.
 - A title is the heading's plain text: `## Setext *Chapter*` reads as `Setext Chapter`.
 - A title path ends with the chapter's own title and needs only as many parents as it takes: `read notes.md Attachments Steps`. A path that fits more than one chapter is refused, with the candidates.

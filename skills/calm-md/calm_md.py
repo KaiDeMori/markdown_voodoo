@@ -1,6 +1,6 @@
 """calm_md: a markdown file by chapter: its table of contents, one chapter to read, one chapter to write.
 
-toc: one line per chapter, indented by level, with its weight in lines; a title path shows one chapter's part.
+toc: one line per chapter, indented by level, with its weight in words, an estimate; a title path shows one chapter's part.
 read: one chapter's original lines, its heading line included.
 write: replaces one chapter's lines with what comes on stdin, in the same shape.
 replace: changes one piece of text inside one chapter: the old text on stdin's first line, the new text after it; the old text has to occur exactly once in the chapter.
@@ -171,6 +171,11 @@ def read_markdown(file_name, as_is):
     return location, byte_order_mark, text
 
 
+def word_count(lines):
+    # An estimate, and meant as one: whatever whitespace separates counts as a word, markdown signs included.
+    return len("".join(lines).split())
+
+
 def cut_title(title):
     if len(title) <= title_character_limit:
         return title
@@ -182,7 +187,7 @@ def show_toc(file_name, titles, as_is):
     lines = split_lines(text)
     chapters = find_chapters(text, len(lines))
     if not chapters:
-        print(f"no chapters, {count(len(lines), 'line')}")
+        print(f"no chapters, {count(word_count(lines), 'word')}")
         return
     if titles:
         root = find_chapter(chapters, titles)
@@ -192,7 +197,7 @@ def show_toc(file_name, titles, as_is):
     number_width = len(f"@{shown[-1]['number']}")
     for chapter in shown:
         indent = "  " * (chapter["level"] - top_level)
-        weight = count(chapter["end"] - chapter["start"], "line")
+        weight = count(word_count(lines[chapter["start"]:chapter["end"]]), "word")
         print(f"{'@' + str(chapter['number']):<{number_width}}  {indent}{'#' * chapter['level']} {cut_title(chapter['title'])} ({weight})")
     if len(chapters) > toc_line_limit:
         print(f"and {len(chapters) - toc_line_limit} more chapters")
