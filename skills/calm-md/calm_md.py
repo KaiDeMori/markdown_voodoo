@@ -8,6 +8,7 @@ calm-md works only on piko bello markdown: pymarkdownlnt checks the file by piko
 --as-is skips that check for one call, and still says how many issues wait.
 The parser only finds the headings; the original lines are cut and spliced, never re-rendered, so everything outside a chapter stays as it was.
 A title path ends with the chapter's own title and needs only as many parents as it takes to fit one chapter.
+Every chapter has a number, its place in reading order, written @3; numbers are for looking, in toc and read, and write and replace take titles.
 Usage: calm_md.py toc [--as-is] <file> [title ...]
        calm_md.py read [--as-is] <file> <title> ...
        calm_md.py write [--as-is] <file> <title> ... < chapter
@@ -114,8 +115,10 @@ def find_chapters(text, line_count):
         chapters.append(chapter)
         parents.append(chapter)
     # A chapter ends where the next heading of the same or a higher level begins, so it holds its subchapters.
+    # Its number is its place in reading order, counted fresh with every call.
     for position, chapter in enumerate(chapters):
         chapter["end"] = next((later["start"] for later in chapters[position + 1:] if later["level"] <= chapter["level"]), line_count)
+        chapter["number"] = position + 1
     return chapters
 
 
@@ -123,7 +126,22 @@ def path_text(path):
     return " > ".join(path)
 
 
+def is_number(titles):
+    return len(titles) == 1 and re.fullmatch(r"@\d+", titles[0]) is not None
+
+
+def refuse_numbers(titles, verb):
+    # Changing takes a title: a number can shift between two calls, a title cannot point at the wrong chapter.
+    if any(re.fullmatch(r"@\d+", title) for title in titles):
+        refuse(f"{verb} takes the chapter's title, not its number, so a number that shifted never changes the wrong chapter.")
+
+
 def find_chapter(chapters, titles):
+    if is_number(titles):
+        number = int(titles[0][1:])
+        if 1 <= number <= len(chapters):
+            return chapters[number - 1]
+        refuse(f"There is no chapter {titles[0]}; the doc has {count(len(chapters), 'chapter')}.")
     fits = [chapter for chapter in chapters if chapter["path"][-len(titles):] == titles]
     if len(fits) == 1:
         return fits[0]
@@ -170,10 +188,12 @@ def show_toc(file_name, titles, as_is):
         root = find_chapter(chapters, titles)
         chapters = [chapter for chapter in chapters if root["start"] <= chapter["start"] < root["end"]]
     top_level = min(chapter["level"] for chapter in chapters)
-    for chapter in chapters[:toc_line_limit]:
+    shown = chapters[:toc_line_limit]
+    number_width = len(f"@{shown[-1]['number']}")
+    for chapter in shown:
         indent = "  " * (chapter["level"] - top_level)
         weight = count(chapter["end"] - chapter["start"], "line")
-        print(f"{indent}{'#' * chapter['level']} {cut_title(chapter['title'])} ({weight})")
+        print(f"{'@' + str(chapter['number']):<{number_width}}  {indent}{'#' * chapter['level']} {cut_title(chapter['title'])} ({weight})")
     if len(chapters) > toc_line_limit:
         print(f"and {len(chapters) - toc_line_limit} more chapters")
 
@@ -187,6 +207,7 @@ def read_chapter(file_name, titles, as_is):
 
 
 def write_chapter(file_name, titles, as_is):
+    refuse_numbers(titles, "write")
     location, byte_order_mark, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
     chapter = find_chapter(find_chapters(text, len(lines)), titles)
@@ -233,6 +254,7 @@ def line_number_at(text, index, first_line):
 
 
 def replace_in_chapter(file_name, titles, as_is):
+    refuse_numbers(titles, "replace")
     location, byte_order_mark, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
     chapter = find_chapter(find_chapters(text, len(lines)), titles)

@@ -68,7 +68,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 
 ### Steps
 
-- [ ] Numbers in `toc`, and `@3` in `toc` and `read`.
+- [x] Numbers in `toc`, and `@3` in `toc` and `read`.
 - [ ] Word weights instead of line weights, and the one sentence in the skill.
 - [ ] The zoom: one level for a doc bigger than a page, the inside counts, and pages.
 - [ ] `find`.

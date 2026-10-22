@@ -22,7 +22,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 
 | Command | Answers | Happy path |
 |---|---|---|
-| `toc <file> [title ...]` | How is it built, and how heavy is each part? | `  ## Attachments (10 lines)` |
+| `toc <file> [title ...]` | How is it built, and how heavy is each part? | `@2    ## Attachments (10 lines)` |
 | `read <file> <title> ...` | What does one chapter say? | the chapter's original lines, heading line included |
 | `write <file> <title> ... < chapter` | Change one chapter, and nothing else | `Sample > Receiving: 4 lines became 5 lines.` |
 | `replace <file> <title> ... < old line, new text` | Fix one piece, and send only that | `Doc > Alpha: replaced on line 7.` |
@@ -31,6 +31,8 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - Headings of every level make chapters; a heading inside a list item, a quote, a code block or front matter does not.
 - A title is the heading's plain text: `## Setext *Chapter*` reads as `Setext Chapter`.
 - A title path ends with the chapter's own title and needs only as many parents as it takes: `read notes.md Attachments Steps`. A path that fits more than one chapter is refused, with the candidates.
+- Every chapter in the toc has a number, its place in reading order, like `@3`; `toc` and `read` take it instead of a title path, and the next chapter is `@4`.
+  `write` and `replace` take titles only, so a number that shifted never changes the wrong chapter.
 - `toc` shows at most 40 lines, then how many more; a title path after the file shows one chapter's part. A title longer than 60 characters is cut, with the count of what was cut.
 - `write` takes the chapter in the shape `read` gives it, heading line first, on stdin; empty input, and input that does not start with a heading line, are refused.
 - `write` changes only the chapter's lines, and the rest of the file stays byte for byte. The new lines take the file's own line endings, and a chapter followed by more ends with a blank line.
