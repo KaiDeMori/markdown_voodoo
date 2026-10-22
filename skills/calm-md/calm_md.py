@@ -3,6 +3,7 @@
 toc: one line per chapter, indented by level, with its weight in lines; a title path shows one chapter's part.
 read: one chapter's original lines, its heading line included.
 write: replaces one chapter's lines with what comes on stdin, in the same shape.
+replace: changes one piece of text inside one chapter: the old text on stdin's first line, the new text after it; the old text has to occur exactly once in the chapter.
 calm-md works only on piko bello markdown: pymarkdownlnt checks the file by piko_bello.json first, and with issues calm-md only lists them.
 --as-is skips that check for one call, and still says how many issues wait.
 The parser only finds the headings; the original lines are cut and spliced, never re-rendered, so everything outside a chapter stays as it was.
@@ -10,6 +11,7 @@ A title path ends with the chapter's own title and needs only as many parents as
 Usage: calm_md.py toc [--as-is] <file> [title ...]
        calm_md.py read [--as-is] <file> <title> ...
        calm_md.py write [--as-is] <file> <title> ... < chapter
+       calm_md.py replace [--as-is] <file> <title> ... < old line, new text
 """
 
 import os
@@ -59,7 +61,8 @@ def lint(text):
     original_numbers = []
     for number, line in enumerate(split_lines(text), start=1):
         if not pragma_line.match(line):
-            scanned_lines.append(line)
+            # The linter reads \r\n as two line breaks, so it sees every line ending as \n; the line count stays the same.
+            scanned_lines.append(re.sub(r"\r\n|\r", "\n", line))
             original_numbers.append(number)
     try:
         result = PyMarkdownApi().enable_strict_configuration().configuration_file_path(str(config_location)).scan_string("".join(scanned_lines))
@@ -205,11 +208,17 @@ def write_chapter(file_name, titles, as_is):
         while not new_text.endswith(ending * 2):
             new_text += ending
     result = "".join(lines[:chapter["start"]]) + new_text + "".join(lines[chapter["end"]:])
-    # A clean doc stays clean: the doc this write would leave behind is checked before anything is written.
+    save_checked(location, byte_order_mark, result, as_is, "The new chapter")
+    old_count = chapter["end"] - chapter["start"]
+    print(f"{path_text(chapter['path'])}: {count(old_count, 'line')} became {count(len(split_lines(new_text)), 'line')}.")
+
+
+def save_checked(location, byte_order_mark, result, as_is, what_changes):
+    # A clean doc stays clean: the doc a change would leave behind is checked before anything is written.
     if not as_is:
         new_issues = lint(result)
         if new_issues:
-            show_issues(new_issues, f"The new chapter would bring {count(len(new_issues), 'issue')}; the file stays as it was:")
+            show_issues(new_issues, f"{what_changes} would bring {count(len(new_issues), 'issue')}; the file stays as it was:")
     if byte_order_mark:
         result = "﻿" + result
     # The file is replaced in one step, so a reader never sees half of it.
@@ -217,8 +226,45 @@ def write_chapter(file_name, titles, as_is):
     with os.fdopen(handle, "wb") as temporary_file:
         temporary_file.write(result.encode("utf-8"))
     os.replace(temporary_name, location)
-    old_count = chapter["end"] - chapter["start"]
-    print(f"{path_text(chapter['path'])}: {count(old_count, 'line')} became {count(len(split_lines(new_text)), 'line')}.")
+
+
+def line_number_at(text, index, first_line):
+    return first_line + len(re.findall(r"\r\n|\r|\n", text[:index])) + 1
+
+
+def replace_in_chapter(file_name, titles, as_is):
+    location, byte_order_mark, text = read_markdown(file_name, as_is)
+    lines = split_lines(text)
+    chapter = find_chapter(find_chapters(text, len(lines)), titles)
+    try:
+        given = sys.stdin.buffer.read().decode("utf-8").lstrip("﻿")
+    except UnicodeDecodeError:
+        refuse("The replacement is no UTF-8 text.")
+    # The old text is the first line, the new text everything after it, so a one-word fix sends only a few words.
+    given_lines = split_lines(given)
+    if len(given_lines) < 2:
+        refuse("replace takes the old text on the first line of stdin and the new text after it; the file stays as it was.")
+    old_text = re.sub(r"(?:\r\n|\r|\n)\Z", "", given_lines[0])
+    if not old_text:
+        refuse("The old text is empty; the file stays as it was.")
+    ending = "\r\n" if "\r\n" in text else "\n"
+    new_text = re.sub(r"\r\n|\r|\n", ending, re.sub(r"(?:\r\n|\r|\n)\Z", "", "".join(given_lines[1:])))
+    chapter_text = "".join(lines[chapter["start"]:chapter["end"]])
+    places = [match.start() for match in re.finditer(re.escape(old_text), chapter_text)]
+    if not places:
+        refuse(f"The old text is not in {path_text(chapter['path'])}; the file stays as it was.")
+    if len(places) > 1:
+        line_numbers = sorted({line_number_at(chapter_text, place, chapter["start"]) for place in places})
+        where = f"line {line_numbers[0]}" if len(line_numbers) == 1 else f"lines {', '.join(map(str, line_numbers))}"
+        refuse(f"The old text is {len(places)} times in {path_text(chapter['path'])}, on {where}; give more of it, so it fits once.")
+    new_chapter_text = chapter_text[:places[0]] + new_text + chapter_text[places[0] + len(old_text):]
+    # The chapter keeps its heading line, so it never joins the chapter before it.
+    first_token = next(iter(parser.parse(new_chapter_text)), None)
+    if first_token is None or first_token.type != "heading_open":
+        refuse("The chapter would lose its heading line; the file stays as it was.")
+    result = "".join(lines[:chapter["start"]]) + new_chapter_text + "".join(lines[chapter["end"]:])
+    save_checked(location, byte_order_mark, result, as_is, "The replacement")
+    print(f"{path_text(chapter['path'])}: replaced on line {line_number_at(chapter_text, places[0], chapter['start'])}.")
 
 
 if __name__ == "__main__":
@@ -234,5 +280,7 @@ if __name__ == "__main__":
         read_chapter(arguments[0], arguments[1:], as_is)
     elif verb == "write" and len(arguments) > 1:
         write_chapter(arguments[0], arguments[1:], as_is)
+    elif verb == "replace" and len(arguments) > 1:
+        replace_in_chapter(arguments[0], arguments[1:], as_is)
     else:
-        refuse("toc [--as-is] <file> [title ...], read [--as-is] <file> <title> ..., or write [--as-is] <file> <title> ...?")
+        refuse("toc [--as-is] <file> [title ...], read, write or replace [--as-is] <file> <title> ...?")

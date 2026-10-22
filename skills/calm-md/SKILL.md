@@ -2,7 +2,7 @@
 name: calm-md
 description: >-
   A calm markdown file: its chapters at a glance, one chapter to read, one chapter to write.
-  Use when a raven wants to see how a markdown file is built, read one chapter of it, or rewrite one chapter, without the whole file entering its window.
+  Use when a raven wants to see how a markdown file is built, read one chapter of it, rewrite one chapter, or fix one piece of text in it, without the whole file entering its window.
 ---
 
 # calm-md
@@ -11,6 +11,7 @@ description: >-
 calm-md toc [--as-is] <file> [title ...]
 calm-md read [--as-is] <file> <title> ...
 calm-md write [--as-is] <file> <title> ... < chapter
+calm-md replace [--as-is] <file> <title> ... < old line, new text
 ```
 
 calm-md works only on piko bello markdown.
@@ -24,6 +25,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 | `toc <file> [title ...]` | How is it built, and how heavy is each part? | `  ## Attachments (10 lines)` |
 | `read <file> <title> ...` | What does one chapter say? | the chapter's original lines, heading line included |
 | `write <file> <title> ... < chapter` | Change one chapter, and nothing else | `Sample > Receiving: 4 lines became 5 lines.` |
+| `replace <file> <title> ... < old line, new text` | Fix one piece, and send only that | `Doc > Alpha: replaced on line 7.` |
 
 - A chapter runs from its heading to the next heading of the same or a higher level, so it holds its subchapters, and its weight counts them too.
 - Headings of every level make chapters; a heading inside a list item, a quote, a code block or front matter does not.
@@ -36,7 +38,17 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - `--as-is` skips the check for one call: calm-md works anyway, and says on stderr how many issues wait.
 - A pragma comment cannot silence a rule; calm-md leaves it out of the check.
 - `piko_bello.json` starts quiet, with the heading rules only: one level at a time, `#` headings only, blank lines around headings, no title twice among siblings, one `#` title.
-- A chapter with backticks, `$` or apostrophes goes in through a quoted heredoc, as in calm-comms.
+- `replace` takes the old text on stdin's first line and the new text after it, which may span lines; an empty second line deletes the old text.
+  The old text has to occur exactly once in the chapter; otherwise calm-md names where it occurs, and nothing changes.
+  The chapter keeps its heading line, and the doc it leaves behind is checked like after `write`.
+- A chapter or a fix with backticks, `$` or apostrophes goes in through a quoted heredoc, as in calm-comms:
+
+  ```
+  calm-md replace notes.md Steps <<'EOF'
+  teh quick
+  the quick
+  EOF
+  ```
 - Files are read and written as UTF-8.
 - The limits are the variables at the top of `calm_md.py`.
 

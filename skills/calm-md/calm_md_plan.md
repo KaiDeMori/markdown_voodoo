@@ -21,6 +21,8 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
   - `calm-md read <file> <title> ...`: the chapter's original lines, its heading line included.
   - `calm-md write <file> <title> ...`: replaces the chapter's lines with what comes on stdin, in the same shape, so a chapter can be read, changed and written back.
     Empty input is refused, and so is input that does not start with a heading line.
+  - `calm-md replace <file> <title> ...`: the old text on stdin's first line, the new text after it; the old text occurs exactly once in the chapter, and the chapter keeps its heading line.
+    The Packorator's flight log asked for it: a one-word fix should not send a whole chapter back.
 - Later: an override that turns every cap off, and maybe a verb that removes a chapter.
 
 ## Linting
@@ -34,6 +36,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - It starts quiet, with the heading rules only: MD001, MD003 with `atx`, MD022, MD024 among siblings, and MD025.
   A rule joins when a real doc runs into a real problem.
 - The linter knows front matter through its `front-matter` extension.
+- The linter reads \r\n as two line breaks, so it gets every line ending as \n; the line numbers stay the same.
 - A pragma comment cannot silence a rule: calm-md leaves pragma lines out of the scan and reports every issue with its line number in the original.
 - The front matter's `title` never counts as a heading; `piko_bello.json` names a field no doc uses, since an empty name is not allowed.
 - `write` checks the doc it would leave behind, and refuses if that doc has issues.
