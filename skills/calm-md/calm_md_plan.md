@@ -15,7 +15,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - A chapter path is a list of titles ending with the chapter's own, with only as many parents as it takes, like `"Attachments" "Steps"`; a path that fits more than one chapter is refused, with the candidates.
 - A written chapter followed by more ends with a blank line, so an underlined heading below never swallows its last line.
 - Three verbs to start:
-  - `calm-md toc <file> [title ...]`: one line per chapter, indented by level, at most 40 lines, then `and N more`; a title path shows one chapter's part.
+  - `calm-md toc <file> [title ...]`: one line per chapter, indented by level; the zoom and its pages are under "Zoom, numbers and find".
     A title longer than 60 characters is cut, with the count of omitted characters, like `… (+23)`.
     Each line ends with its chapter's weight in words, subchapters included, like `## Attachments (520 words)`.
   - `calm-md read <file> <title> ...`: the chapter's original lines, its heading line included.
@@ -70,7 +70,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 
 - [x] Numbers in `toc`, and `@3` in `toc` and `read`.
 - [x] Word weights instead of line weights, and the one sentence in the skill.
-- [ ] The zoom: one level for a doc bigger than a page, the inside counts, and pages.
+- [x] The zoom: one level for a doc bigger than a page, the inside counts, and pages.
 - [ ] `find`.
 - [ ] Test each on a big flat doc and a deep one, with LF and CRLF.
 - [ ] `SKILL.md`, and a raven flies it.

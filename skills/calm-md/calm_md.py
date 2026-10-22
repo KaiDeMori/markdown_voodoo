@@ -1,6 +1,7 @@
 """calm_md: a markdown file by chapter: its table of contents, one chapter to read, one chapter to write.
 
 toc: one line per chapter, indented by level, with its weight in words, an estimate; a title path shows one chapter's part.
+The toc shows the whole tree while it fits on a page; a bigger one shows where you are and the level right below, page by page.
 read: one chapter's original lines, its heading line included.
 write: replaces one chapter's lines with what comes on stdin, in the same shape.
 replace: changes one piece of text inside one chapter: the old text on stdin's first line, the new text after it; the old text has to occur exactly once in the chapter.
@@ -9,7 +10,7 @@ calm-md works only on piko bello markdown: pymarkdownlnt checks the file by piko
 The parser only finds the headings; the original lines are cut and spliced, never re-rendered, so everything outside a chapter stays as it was.
 A title path ends with the chapter's own title and needs only as many parents as it takes to fit one chapter.
 Every chapter has a number, its place in reading order, written @3; numbers are for looking, in toc and read, and write and replace take titles.
-Usage: calm_md.py toc [--as-is] <file> [title ...]
+Usage: calm_md.py toc [--as-is] [--page <number>] <file> [title ...]
        calm_md.py read [--as-is] <file> <title> ...
        calm_md.py write [--as-is] <file> <title> ... < chapter
        calm_md.py replace [--as-is] <file> <title> ... < old line, new text
@@ -25,8 +26,8 @@ from markdown_it import MarkdownIt
 from mdit_py_plugins.front_matter import front_matter_plugin
 from pymarkdown.api import PyMarkdownApi, PyMarkdownApiException
 
-# The toc shows at most this many lines and cuts a title after this many characters; at most this many issues are listed.
-toc_line_limit = 40
+# A page of the toc holds this many chapters, a title is cut after this many characters, and at most this many issues are listed.
+page_line_limit = 100
 title_character_limit = 60
 issue_limit = 20
 # The one central config: what piko bello means, tuned by feedback.
@@ -111,14 +112,20 @@ def find_chapters(text, line_count):
         title = plain_title(tokens[index + 1])
         while parents and parents[-1]["level"] >= level:
             parents.pop()
-        chapter = {"level": level, "title": title, "start": token.map[0], "path": [parent["title"] for parent in parents] + [title]}
+        # Its number is its place in reading order, counted fresh with every call.
+        chapter = {
+            "number": len(chapters) + 1,
+            "level": level,
+            "title": title,
+            "start": token.map[0],
+            "parent": parents[-1]["number"] if parents else None,
+            "path": [parent["title"] for parent in parents] + [title],
+        }
         chapters.append(chapter)
         parents.append(chapter)
     # A chapter ends where the next heading of the same or a higher level begins, so it holds its subchapters.
-    # Its number is its place in reading order, counted fresh with every call.
     for position, chapter in enumerate(chapters):
         chapter["end"] = next((later["start"] for later in chapters[position + 1:] if later["level"] <= chapter["level"]), line_count)
-        chapter["number"] = position + 1
     return chapters
 
 
@@ -182,25 +189,57 @@ def cut_title(title):
     return f"{title[:title_character_limit]}… (+{len(title) - title_character_limit})"
 
 
-def show_toc(file_name, titles, as_is):
+def show_toc(file_name, titles, as_is, page):
     _, _, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
     chapters = find_chapters(text, len(lines))
     if not chapters:
         print(f"no chapters, {count(word_count(lines), 'word')}")
         return
-    if titles:
-        root = find_chapter(chapters, titles)
-        chapters = [chapter for chapter in chapters if root["start"] <= chapter["start"] < root["end"]]
-    top_level = min(chapter["level"] for chapter in chapters)
-    shown = chapters[:toc_line_limit]
-    number_width = len(f"@{shown[-1]['number']}")
-    for chapter in shown:
+    root = find_chapter(chapters, titles) if titles else None
+    view = [chapter for chapter in chapters if root is None or root["start"] <= chapter["start"] < root["end"]]
+    inside = {}
+    for chapter in chapters:
+        if chapter["parent"] is not None:
+            inside[chapter["parent"]] = inside.get(chapter["parent"], 0) + 1
+
+    def toc_line(chapter, top_level, number_width, with_inside):
         indent = "  " * (chapter["level"] - top_level)
         weight = count(word_count(lines[chapter["start"]:chapter["end"]]), "word")
-        print(f"{'@' + str(chapter['number']):<{number_width}}  {indent}{'#' * chapter['level']} {cut_title(chapter['title'])} ({weight})")
-    if len(chapters) > toc_line_limit:
-        print(f"and {len(chapters) - toc_line_limit} more chapters")
+        if with_inside and inside.get(chapter["number"]):
+            weight += f", {inside[chapter['number']]} inside"
+        return f"{'@' + str(chapter['number']):<{number_width}}  {indent}{'#' * chapter['level']} {cut_title(chapter['title'])} ({weight})"
+
+    def number_width(shown):
+        return max(len(f"@{chapter['number']}") for chapter in shown)
+
+    # The whole tree, while it fits on a page.
+    if len(view) <= page_line_limit:
+        if page > 1:
+            refuse("This toc fits on one page.")
+        top_level = min(chapter["level"] for chapter in view)
+        for chapter in view:
+            print(toc_line(chapter, top_level, number_width(view), False))
+        return
+    # Too big for a page: where you are, and the level right below it; a piko bello doc starts at its one title.
+    if root is None:
+        top_chapters = [chapter for chapter in chapters if chapter["parent"] is None]
+        if len(top_chapters) == 1:
+            root = top_chapters[0]
+    level = [chapter for chapter in chapters if chapter["parent"] == (root["number"] if root else None)]
+    pages = (len(level) + page_line_limit - 1) // page_line_limit
+    if page > pages:
+        refuse(f"This level has {count(pages, 'page')}.")
+    shown = level[(page - 1) * page_line_limit:page * page_line_limit]
+    width = number_width(shown + ([root] if root else []))
+    top_level = root["level"] if root else min(chapter["level"] for chapter in shown)
+    print(f"{count(len(view), 'chapter')}, more than a page: one level shown; zoom in with a title path or a number.")
+    if root:
+        print(toc_line(root, top_level, width, True))
+    for chapter in shown:
+        print(toc_line(chapter, top_level, width, True))
+    if pages > 1:
+        print(f"page {page} of {pages}")
 
 
 def read_chapter(file_name, titles, as_is):
@@ -300,9 +339,18 @@ if __name__ == "__main__":
     words = sys.argv[1:]
     as_is = "--as-is" in words
     words = [word for word in words if word != "--as-is"]
+    page = 1
+    if "--page" in words:
+        position = words.index("--page")
+        if position + 1 >= len(words) or not words[position + 1].isdigit() or int(words[position + 1]) < 1:
+            refuse("--page takes a page number, like --page 2.")
+        page = int(words[position + 1])
+        del words[position:position + 2]
     verb, arguments = (words[0], words[1:]) if words else ("", [])
+    if page > 1 and verb != "toc":
+        refuse("--page belongs to toc.")
     if verb == "toc" and arguments:
-        show_toc(arguments[0], arguments[1:], as_is)
+        show_toc(arguments[0], arguments[1:], as_is, page)
     elif verb == "read" and len(arguments) > 1:
         read_chapter(arguments[0], arguments[1:], as_is)
     elif verb == "write" and len(arguments) > 1:
@@ -310,4 +358,4 @@ if __name__ == "__main__":
     elif verb == "replace" and len(arguments) > 1:
         replace_in_chapter(arguments[0], arguments[1:], as_is)
     else:
-        refuse("toc [--as-is] <file> [title ...], read, write or replace [--as-is] <file> <title> ...?")
+        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write or replace [--as-is] <file> <title> ...?")
