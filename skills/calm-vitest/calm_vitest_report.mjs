@@ -1,8 +1,8 @@
-// calm_test_report: reads a Vitest JSON report and tells how the run went, in as few lines as the question needs.
+// calm_vitest_report: reads a Vitest JSON report and tells how the run went, in as few lines as the question needs.
 // A sentence is the first line of a failure's message; failures that say the same sentence count once.
-// Usage: node calm_test_report.mjs <report> overview <line_limit>
-//        node calm_test_report.mjs <report> where <file>
-//        node calm_test_report.mjs <report> what <file> <test name>
+// Usage: node calm_vitest_report.mjs <report> overview <line_limit>
+//        node calm_vitest_report.mjs <report> where <file>
+//        node calm_vitest_report.mjs <report> what <file> <test name>
 
 import { readFileSync } from "node:fs";
 import { isAbsolute, relative } from "node:path";
