@@ -5,6 +5,7 @@ The toc shows the whole tree while it fits on a page; a bigger one shows where y
 read: one chapter's original lines, its heading line included.
 write: replaces one chapter's lines with what comes on stdin, in the same shape.
 replace: changes one piece of text inside one chapter: the old text on stdin's first line, the new text after it; the old text has to occur exactly once in the chapter.
+find: the places where words start with one word, case-insensitive, each with its chapter and five words on either side; more than ten give only their count.
 calm-md works only on piko bello markdown: pymarkdownlnt checks the file by piko_bello.json first, and with issues calm-md only lists them.
 --as-is skips that check for one call, and still says how many issues wait.
 The parser only finds the headings; the original lines are cut and spliced, never re-rendered, so everything outside a chapter stays as it was.
@@ -14,7 +15,10 @@ Usage: calm_md.py toc [--as-is] [--page <number>] <file> [title ...]
        calm_md.py read [--as-is] <file> <title> ...
        calm_md.py write [--as-is] <file> <title> ... < chapter
        calm_md.py replace [--as-is] <file> <title> ... < old line, new text
+       calm_md.py find [--as-is] <file> <word> [title ...]
 """
+
+import bisect
 
 import os
 import re
@@ -29,6 +33,9 @@ from pymarkdown.api import PyMarkdownApi, PyMarkdownApiException
 # A page of the toc holds this many chapters, a title is cut after this many characters, and at most this many issues are listed.
 page_line_limit = 100
 title_character_limit = 60
+# find shows at most this many hits, each with up to this many words on either side, from its own line.
+hit_limit = 10
+context_words = 5
 issue_limit = 20
 # The one central config: what piko bello means, tuned by feedback.
 config_location = Path(__file__).resolve().parent / "piko_bello.json"
@@ -176,6 +183,55 @@ def read_markdown(file_name, as_is):
         # As-is works anyway, and the nudge goes to stderr, so a chapter read stays clean on stdout.
         print(f"{count(len(issues), 'issue')} {'waits' if len(issues) == 1 else 'wait'} in this doc.", file=sys.stderr)
     return location, byte_order_mark, text
+
+
+def find_word(file_name, word, titles, as_is):
+    if not word or re.search(r"\s", word):
+        refuse("find takes one word.")
+    _, _, text = read_markdown(file_name, as_is)
+    lines = split_lines(text)
+    chapters = find_chapters(text, len(lines))
+    line_starts = [0]
+    for line in lines:
+        line_starts.append(line_starts[-1] + len(line))
+    first_line, end_line = 0, len(lines)
+    if titles:
+        root = find_chapter(chapters, titles)
+        first_line, end_line = root["start"], root["end"]
+    # A hit is a word that starts with the word looked for, in any case: fox finds Foxes, and the leaves other alone.
+    pattern = re.compile(rf"(?<!\w){re.escape(word)}", re.IGNORECASE)
+    hits = list(pattern.finditer(text, line_starts[first_line], line_starts[end_line]))
+    if not hits:
+        print("no hits")
+        return
+    if len(hits) > hit_limit:
+        print(f"{len(hits)} hits, more than {hit_limit}: try a longer word, or a title path.")
+        return
+    found = []
+    for hit in hits:
+        line_index = bisect.bisect_right(line_starts, hit.start()) - 1
+        # The innermost chapter holds the hit: the last one in reading order whose lines include it.
+        holder = None
+        for chapter in chapters:
+            if chapter["start"] <= line_index < chapter["end"]:
+                holder = chapter
+        # The context counts whole words around the word the hit is in, and stays on the hit's own line.
+        line_text = text[line_starts[line_index]:line_starts[line_index + 1]]
+        offset = hit.start() - line_starts[line_index]
+        word_start = re.search(r"\S*\Z", line_text[:offset]).start()
+        before = line_text[:word_start].split()
+        after = line_text[word_start:].split()
+        context = " ".join(before[-context_words:] + after[:context_words + 1])
+        if len(before) > context_words:
+            context = "..." + context
+        if len(after) > context_words + 1:
+            context += "..."
+        found.append((holder, context))
+    width = max([len(f"@{holder['number']}") for holder, _ in found if holder] or [2])
+    for holder, context in found:
+        where = f"{'@' + str(holder['number']):<{width}}  {path_text(holder['path'])}" if holder else f"{'':<{width}}  (before the first chapter)"
+        print(f"{where}: {context}")
+    print(count(len(hits), "hit"))
 
 
 def word_count(lines):
@@ -357,5 +413,7 @@ if __name__ == "__main__":
         write_chapter(arguments[0], arguments[1:], as_is)
     elif verb == "replace" and len(arguments) > 1:
         replace_in_chapter(arguments[0], arguments[1:], as_is)
+    elif verb == "find" and len(arguments) > 1:
+        find_word(arguments[0], arguments[1], arguments[2:], as_is)
     else:
-        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write or replace [--as-is] <file> <title> ...?")
+        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write or replace [--as-is] <file> <title> ..., or find [--as-is] <file> <word> [title ...]?")

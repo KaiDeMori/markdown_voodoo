@@ -71,8 +71,8 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - [x] Numbers in `toc`, and `@3` in `toc` and `read`.
 - [x] Word weights instead of line weights, and the one sentence in the skill.
 - [x] The zoom: one level for a doc bigger than a page, the inside counts, and pages.
-- [ ] `find`.
-- [ ] Test each on a big flat doc and a deep one, with LF and CRLF.
+- [x] `find`, its context kept to the hit's own line, so it never drags in a neighboring heading.
+- [x] Test each on a big flat doc and a deep one, with LF and CRLF.
 - [ ] `SKILL.md`, and a raven flies it.
 
 ## Steps

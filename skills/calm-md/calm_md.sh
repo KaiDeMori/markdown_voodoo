@@ -5,6 +5,7 @@
 #        calm_md.sh read <file> <title> ...
 #        calm_md.sh write <file> <title> ... < chapter
 #        calm_md.sh replace <file> <title> ... < old line, new text
+#        calm_md.sh find <file> <word> [title ...]
 
 set -e
 
