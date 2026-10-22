@@ -49,6 +49,26 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 - [x] Receiving: `attachments <number>` saves the allowed attachments of one mail into `inbox/`; a wrong declared charset falls back to UTF-8.
 - [x] Update the README for the postmaster.
 
+## Unknown senders
+
+### Decided
+
+- The haven's address goes to more people, so mail from senders outside the catalog waits in the IMAP folder `unknown` until Wally has looked.
+- calm-email sorts, on every `list` and in `on`: mail from outside the catalog moves from INBOX into `unknown`, and once its sender has a label, it moves back.
+- A sorted mail wakes nobody, and the catalog stays the one list to look after.
+- Moving is undone by moving back, so sorting needs no lock; nothing is ever deleted.
+- Wally and the postmaster both read `unknown`: Wally on the provider's side, the postmaster with `list` and `read`.
+- The postmaster decides whether and what to answer, and no answer is an option; `send` still reaches only labels, and an HTML-only mail can get the polite reply.
+- Addresses stay inside the tool, in `unknown` too: a mail is named by its number and subject, and Wally sees the address on the provider's side.
+
+### Steps
+
+- [ ] The folder `unknown`, created by the tool if it isn't there yet.
+- [ ] Sorting in `list` and in `on`, both ways.
+- [ ] `list unknown` and `read unknown <number>` for the postmaster.
+- [ ] Test with one mail from a sender outside the catalog.
+- [ ] README for the postmaster.
+
 ## Still to talk about
 
 - [x] `read <n>`: the plain text straight into the window, marking and saving nothing.
