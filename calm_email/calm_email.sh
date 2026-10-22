@@ -241,9 +241,13 @@ send_mail() {
   address=$(printf '%s\n' "$catalog" | label=$label awk -F'\t' '$1 == ENVIRON["label"] { print $2; exit }')
   if [[ -z $address ]]; then echo "$label is not in the catalog, so nothing goes out."; exit 1; fi
   # The password and the address reach Python only through the environment of this one command.
-  calm_email_key=$password recipient=$address subject=$subject text=$text outbox_location="$attachments_location/outbox" \
-    "$python_location" -I "$script_folder/send_mail.py" "$@"
+  # send_mail.py also files a copy in the Sent folder, so it runs in the venv that knows IMAPClient.
+  local imap_host=${imap_location#imaps://} output
+  output=$(calm_email_key=$password recipient=$address subject=$subject text=$text outbox_location="$attachments_location/outbox" \
+    imap_host=${imap_host%%[:/]*} "$script_folder/.venv/Scripts/python.exe" -I "$script_folder/send_mail.py" "$@") \
+    || { echo "$output"; exit 1; }
   echo "The mail to $label is sent$attachment_note."
+  if [[ -n $output ]]; then echo "$output"; fi
 }
 
 watch_mailbox() {

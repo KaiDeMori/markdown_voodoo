@@ -1,5 +1,7 @@
 """Sends one plain-text mail from the haven's mailbox, with files from the postmaster's outbox; everything else arrives through the environment.
 
+Every mail that went out gets a copy in the provider's Sent folder, where the mailbox's own backup keeps it.
+An answer names the mail it answers in in_reply_to, so it lands in that mail's thread.
 Usage: send_mail.py [file ...]
 """
 
@@ -10,6 +12,9 @@ import smtplib
 import ssl
 import sys
 from pathlib import Path
+
+from imapclient import IMAPClient
+from imapclient.imapclient import SEEN, SENT
 
 mailbox_address = "haven@peopleoftheprompt.org"
 smtp_host = "mail.manitu.de"
@@ -69,6 +74,9 @@ message["To"] = os.environ["recipient"]
 message["Subject"] = os.environ["subject"]
 message["Date"] = email.utils.formatdate(localtime=True)
 message["Message-ID"] = email.utils.make_msgid(domain="peopleoftheprompt.org")
+if os.environ.get("in_reply_to"):
+    message["In-Reply-To"] = os.environ["in_reply_to"]
+    message["References"] = os.environ["in_reply_to"]
 message.set_content(os.environ["text"])
 for location, data, maintype, subtype in attachments:
     if maintype == "text":
@@ -90,3 +98,16 @@ for location, _, _, _ in attachments:
         location.unlink()
     except OSError as error:
         print(f"Sent, but {location.name} stayed in the outbox: {error}")
+
+# The copy goes where any mail program puts it: into the folder the server marks as Sent, read already.
+try:
+    with IMAPClient(os.environ["imap_host"], ssl=True, timeout=60) as client:
+        client.login(mailbox_address, os.environ["calm_email_key"])
+        sent_folder = client.find_special_folder(SENT)
+        if sent_folder:
+            client.append(sent_folder, message.as_bytes(), flags=(SEEN,))
+            print(f"A copy is in {sent_folder}.")
+        else:
+            print("Sent, but the server names no Sent folder, so there is no copy.")
+except (IMAPClient.Error, OSError, KeyError) as error:
+    print(f"Sent, but the copy for the Sent folder failed: {error}")

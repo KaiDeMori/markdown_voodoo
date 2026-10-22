@@ -12,6 +12,7 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 - The token count is exact, from the counting endpoint; the plain text goes to Anthropic for it.
 - The haven has one address, and more and more senders are expected.
 - The polite reply goes back to the sender, with `placeholder_wording` for now.
+- Every mail the haven sends gets a copy in the folder the server marks as Sent, so the provider's backup holds all of the haven's mail; `send_mail.py` does all the sending, the polite reply included.
 
 ## Steps
 

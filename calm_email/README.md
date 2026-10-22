@@ -36,6 +36,7 @@ calm-email <verb> ...
   It goes out to the world, so it goes only when you call it, one mail at a time; a mail with plain text is refused.
 - `forward` passes a mail's plain text into a seat, as a hall mail from you; its allowed attachments land in your inbox on the way, and the hall mail names them.
   To read a mail, use `read`; `forward` is for passing it on.
+- Every mail the haven sends, polite replies included, gets a copy in the provider's Sent folder, where the mailbox's backup keeps it; the answer to `send` names the folder.
 - `send` reaches only the labels in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.
 - A label stands for one address: a plain letter like `W` becomes `Ⓦ`, and anything else without spaces and without @ stays as it is, like `ⓢ` or `🐍`.
 

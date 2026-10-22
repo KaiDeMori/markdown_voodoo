@@ -16,15 +16,11 @@ Usage: mailbox.py list
 """
 
 import base64
-import email.message
-import email.utils
 import json
 import os
 import quopri
 import re
 import shutil
-import smtplib
-import ssl
 import subprocess
 import sys
 import time
@@ -51,9 +47,7 @@ saved_endings = {"png": "png", "jpeg": "jpg", "md": "md", "txt": "txt"}
 attachment_limit_bytes = 5 * 1024 * 1024
 # A read shows at most this many characters, as forward passes on.
 text_limit = 8000
-# The polite reply goes out through the same server as send_mail.py, in Wally's words.
-smtp_host = "mail.manitu.de"
-smtp_port = 465
+# The polite reply is in Wally's words, and goes out through send_mail.py like every mail the haven sends.
 polite_reply_location = script_folder / "polite_reply.txt"
 
 
@@ -410,25 +404,24 @@ def send_polite_reply(sequence_number):
         print(f"Mail {sequence_number} came from the haven itself, so it gets no answer.")
         sys.exit(1)
     subject = decoded_subject(envelope.subject)
-    message = email.message.EmailMessage()
-    message["From"] = f"Haven <{os.environ['mailbox_address']}>"
-    message["To"] = recipient
-    message["Subject"] = subject if subject.lower().startswith("re:") else f"Re: {subject}"
-    message["Date"] = email.utils.formatdate(localtime=True)
-    message["Message-ID"] = email.utils.make_msgid(domain="peopleoftheprompt.org")
-    # In the mail's thread, so the sender's program shows it as the answer it is.
-    if envelope.message_id:
-        message["In-Reply-To"] = text_of(envelope.message_id)
-        message["References"] = text_of(envelope.message_id)
-    message.set_content(polite_reply_location.read_text(encoding="utf-8"))
-    try:
-        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=ssl.create_default_context()) as connection:
-            connection.login(os.environ["mailbox_address"], os.environ["calm_email_key"])
-            connection.send_message(message)
-    except (smtplib.SMTPException, OSError) as error:
-        print(f"Sending failed: {error}")
+    # send_mail.py sends it and files its copy in Sent; it answers in the mail's thread, so the sender's program shows it as the answer it is.
+    result = subprocess.run(
+        [sys.executable, "-I", str(script_folder / "send_mail.py")],
+        env={
+            **os.environ,
+            "recipient": recipient,
+            "subject": subject if subject.lower().startswith("re:") else f"Re: {subject}",
+            "text": polite_reply_location.read_text(encoding="utf-8"),
+            "in_reply_to": text_of(envelope.message_id),
+        },
+        capture_output=True, text=True, encoding="utf-8",
+    )
+    if result.returncode != 0:
+        print(result.stdout.strip() or result.stderr.strip() or "Sending failed.")
         sys.exit(1)
     print(f"Mail {sequence_number} got its polite reply.")
+    if result.stdout.strip():
+        print(result.stdout.strip())
 
 
 def timestamp():
