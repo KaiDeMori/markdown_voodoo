@@ -23,6 +23,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 
 - Run it where the suite lives, in the folder with `package.json`; it uses that project's own Vitest and never downloads anything.
 - A block is a `describe`; a sentence is the first line of a failure's message, and failures that say the same sentence count once.
+- Quoted values count as blanks, so `'conversation_halting'` and `'conversation_moved'` in the same words make one sentence in two variants; `what` still gives one test's exact words.
 - The overview shows red files first, at most 20 lines, then how many more.
 - `where` and `what` read the last run's report, so zooming in never runs the suite again.
 - A file is named by its path, its label from the overview, or the end of it: `where data_and_storage` is enough when only one file fits.

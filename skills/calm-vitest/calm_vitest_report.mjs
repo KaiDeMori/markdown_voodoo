@@ -1,5 +1,6 @@
 // calm_vitest_report: reads a Vitest JSON report and tells how the run went, in as few lines as the question needs.
-// A sentence is the first line of a failure's message; failures that say the same sentence count once.
+// A sentence is the first line of a failure's message, with quoted values as blanks; failures that say the same sentence count once.
+// So 'conversation_halting' and 'conversation_moved' in the same words make one sentence in two variants.
 // Usage: node calm_vitest_report.mjs <report> overview <line_limit>
 //        node calm_vitest_report.mjs <report> where <file>
 //        node calm_vitest_report.mjs <report> what <file> <test name>
@@ -52,8 +53,21 @@ function failed_tests(file) {
   return file.assertionResults.filter((test) => test.status === "failed");
 }
 
-function sentence_of(test) {
+function variant_of(test) {
   return first_line(test.failureMessages?.[0]);
+}
+
+function sentence_of(test) {
+  // A quote counts only when it stands apart from a word, so the apostrophe in doesn't stays text.
+  return variant_of(test)
+    .replace(/(^|\W)'[^']*'(?=\W|$)/g, "$1'…'")
+    .replace(/(^|\W)"[^"]*"(?=\W|$)/g, '$1"…"')
+    .replace(/(^|\W)`[^`]*`(?=\W|$)/g, "$1`…`");
+}
+
+function sentences_text(sentence_count, variant_count) {
+  const sentences = count(sentence_count, "sentence");
+  return variant_count > sentence_count ? `${sentences} in ${count(variant_count, "variant")}` : sentences;
 }
 
 function file_line(file) {
@@ -68,7 +82,8 @@ function file_line(file) {
   }
   const blocks = new Set(failed.map(block_of));
   const sentences = new Set(failed.map(sentence_of));
-  return `${label}: ${count(blocks.size, "block")} red, ${count(failed.length, "test")}, ${count(sentences.size, "sentence")}`;
+  const variants = new Set(failed.map(variant_of));
+  return `${label}: ${count(blocks.size, "block")} red, ${count(failed.length, "test")}, ${sentences_text(sentences.size, variants.size)}`;
 }
 
 function show_overview(line_limit) {
@@ -128,15 +143,21 @@ function show_where(wanted) {
     }
     const sentences = blocks.get(block);
     const sentence = sentence_of(test);
-    sentences.set(sentence, (sentences.get(sentence) ?? 0) + 1);
+    if (!sentences.has(sentence)) {
+      sentences.set(sentence, { times: 0, variants: new Set() });
+    }
+    sentences.get(sentence).times += 1;
+    sentences.get(sentence).variants.add(variant_of(test));
   }
   const shown_blocks = [...blocks].slice(0, block_limit);
   for (const [block, sentences] of shown_blocks) {
-    const tests = [...sentences.values()].reduce((sum, times) => sum + times, 0);
-    console.log(`${block}: ${count(tests, "test")}, ${count(sentences.size, "sentence")}`);
+    const tests = [...sentences.values()].reduce((sum, sentence) => sum + sentence.times, 0);
+    const variants = [...sentences.values()].reduce((sum, sentence) => sum + sentence.variants.size, 0);
+    console.log(`${block}: ${count(tests, "test")}, ${sentences_text(sentences.size, variants)}`);
     const shown_sentences = [...sentences].slice(0, sentences_per_block);
-    for (const [sentence, times] of shown_sentences) {
-      console.log(`  ${times}  ${cut(sentence)}`);
+    for (const [sentence, { times, variants: sentence_variants }] of shown_sentences) {
+      const variant_note = sentence_variants.size > 1 ? ` (${sentence_variants.size} variants)` : "";
+      console.log(`  ${times}  ${cut(sentence)}${variant_note}`);
     }
     if (sentences.size > shown_sentences.length) {
       console.log(`  and ${sentences.size - shown_sentences.length} more sentences`);

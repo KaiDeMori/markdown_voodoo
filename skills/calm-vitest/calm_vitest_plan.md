@@ -11,7 +11,7 @@ The otis builder's wish: a raven sees how a test run went, from zoomed out to zo
   - `calm-vitest [file ...]`: runs the files or the whole suite, and prints one line per file, like `data_and_storage: 1 block red, 44 tests, 1 sentence`, or `conversation_history: green`.
   - `calm-vitest where <file>`: the red blocks of one file, each with its count and its one sentence, cut like calm-grep cuts a line.
   - `calm-vitest what <file> <test name>`: one test's full output, nothing else.
-- A sentence is the first line of a failure's message; failures with the same sentence count once.
+- A sentence is the first line of a failure's message, with quoted values as blanks; failures with the same sentence count once, and their exact words count as variants.
 - `where` and `what` read the last run's report, so zooming in never runs the suite again.
 - Exit 0 when the run ran, red included.
 
