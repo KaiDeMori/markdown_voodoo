@@ -1,6 +1,7 @@
 ---
 name: calm-vitest
 description: >-
+  hallmark_tool
   A calm Vitest run: how it went, from how many to where to what, without the flood.
   Use when a raven wants to run Vitest tests, or see which tests failed and why, without hundreds of lines of output.
 ---

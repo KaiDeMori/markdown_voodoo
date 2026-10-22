@@ -4,7 +4,7 @@ The otis builder's wish: a raven sees how a test run went, from zoomed out to zo
 
 ## Decided
 
-- calm-vitest lives in `skills/calm-vitest/`, without the mark `hallmark_tool` until ravens have flown it; `calm_vitest.sh` gives it its short call.
+- calm-vitest lives in `skills/calm-vitest/`; `calm_vitest.sh` gives it its short call.
 - Vitest runs underneath, with its JSON reporter.
 - The full report stays in the workspace's `scratchpad/calm-vitest/`, as calm-fetch keeps its files; only the lines below enter a window.
 - Three levels, like calm-grep:
@@ -21,4 +21,4 @@ The otis builder's wish: a raven sees how a test run went, from zoomed out to zo
 - [x] Write `calm_vitest.sh` and the report reader.
 - [x] Test on a small suite with one red block that fails 44 times with one sentence.
 - [x] `SKILL.md`, `deploy.bat` and a line in `INDEX.md`; the meta-deploy finds it by its `calm-` name.
-- [ ] The otis builder flies it.
+- [x] The otis builder flies it, twice, and likes it; it carries the mark `hallmark_tool`.
