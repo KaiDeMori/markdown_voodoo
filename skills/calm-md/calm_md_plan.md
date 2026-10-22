@@ -12,7 +12,8 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - Headings of every level make chapters, except a heading nested inside a list item or a quote, which stays text.
 - Front matter and the lines before the first heading belong to no chapter.
 - A heading's title is its plain text: inline markup joined into text.
-- A chapter path is a list of titles from the top, like `"Attachments" "Steps"`; a path that fits more than one chapter is refused, with the candidates.
+- A chapter path is a list of titles ending with the chapter's own, with only as many parents as it takes, like `"Attachments" "Steps"`; a path that fits more than one chapter is refused, with the candidates.
+- A written chapter followed by more ends with a blank line, so an underlined heading below never swallows its last line.
 - Three verbs to start:
   - `calm-md toc <file> [title ...]`: one line per chapter, indented by level, at most 40 lines, then `and N more`; a title path shows one chapter's part.
     A title longer than 60 characters is cut, with the count of omitted characters, like `… (+23)`.
@@ -25,8 +26,8 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 ## Steps
 
 - [x] Settle the open questions with Wally.
-- [ ] Set up `skills/calm-md/.venv` with markdown-it-py and mdit-py-plugins from a `requirements.txt`.
-- [ ] Write `calm_md.py`, the parser and the three verbs, and `calm_md.sh`, the short call into the venv.
-- [ ] Test on one file with `#` and underlined headings, front matter, a `#` in a code fence and in a list, CRLF line endings, and two chapters with the same title under different parents.
-- [ ] `SKILL.md`, a `deploy.bat` that creates the venv like the token counter's, and a line in `INDEX.md`; the meta-deploy finds it by its `calm-` name.
+- [x] Set up `skills/calm-md/.venv` with markdown-it-py and mdit-py-plugins from a `requirements.txt`.
+- [x] Write `calm_md.py`, the parser and the three verbs, and `calm_md.sh`, the short call into the venv.
+- [x] Test on one file with `#` and underlined headings, front matter, a `#` in a code fence and in a list, CRLF line endings, and two chapters with the same title under different parents.
+- [x] `SKILL.md`, a `deploy.bat` that creates the venv like the token counter's, and a line in `INDEX.md`; the meta-deploy finds it by its `calm-` name.
 - [ ] A raven flies it.
