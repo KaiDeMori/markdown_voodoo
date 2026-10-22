@@ -14,20 +14,17 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - A heading's title is its plain text: inline markup joined into text.
 - A chapter path is a list of titles from the top, like `"Attachments" "Steps"`; a path that fits more than one chapter is refused, with the candidates.
 - Three verbs to start:
-  - `calm-md toc <file>`: one line per chapter, indented by level; a long title is cut, with the count of omitted characters.
-  - `calm-md read <file> <title> ...`: the chapter's original lines.
-  - `calm-md write <file> <title> ...`: replaces the chapter's lines with what comes on stdin.
-
-## Open questions
-
-- The caps of `toc`: how long may a title be, and how many lines may the toc have?
-- Does `toc` show each chapter's weight, like its number of lines, so a raven knows the size before it reads?
-- Do `read` and `write` include the chapter's heading line, so a chapter can be read, changed and written back as it is?
-- Is an empty stdin for `write` refused, so a chapter is never emptied by accident?
+  - `calm-md toc <file> [title ...]`: one line per chapter, indented by level, at most 40 lines, then `and N more`; a title path shows one chapter's part.
+    A title longer than 60 characters is cut, with the count of omitted characters, like `… (+23)`.
+    Each line ends with its chapter's weight in lines, subchapters included, like `## Attachments (42 lines)`.
+  - `calm-md read <file> <title> ...`: the chapter's original lines, its heading line included.
+  - `calm-md write <file> <title> ...`: replaces the chapter's lines with what comes on stdin, in the same shape, so a chapter can be read, changed and written back.
+    Empty input is refused, and so is input that does not start with a heading line.
+- Later: an override that turns every cap off, and maybe a verb that removes a chapter.
 
 ## Steps
 
-- [ ] Settle the open questions with Wally.
+- [x] Settle the open questions with Wally.
 - [ ] Set up `skills/calm-md/.venv` with markdown-it-py and mdit-py-plugins from a `requirements.txt`.
 - [ ] Write `calm_md.py`, the parser and the three verbs, and `calm_md.sh`, the short call into the venv.
 - [ ] Test on one file with `#` and underlined headings, front matter, a `#` in a code fence and in a list, CRLF line endings, and two chapters with the same title under different parents.
