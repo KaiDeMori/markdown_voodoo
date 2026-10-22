@@ -12,6 +12,7 @@
 # on: waits for the first new mail from a label in the catalog, or the timer, and exits.
 # attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names the tool chooses.
 # read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
+# polite: answers one mail without plain text with the polite reply, in its thread; it goes out only when the postmaster calls it.
 # Usage: calm_email.sh setup
 #        calm_email.sh list
 #        calm_email.sh catalog
@@ -24,6 +25,7 @@
 #        calm_email.sh on [long|short|<minutes>]
 #        calm_email.sh attachments <number>
 #        calm_email.sh read <number>
+#        calm_email.sh polite <number>
 
 mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
@@ -272,7 +274,7 @@ case $verb in
   send) shift; send_mail "$@" ;;
   list) run_mailbox list ;;
   on) watch_mailbox "$2" ;;
-  attachments|read)
+  attachments|read|polite)
     [[ ${2:-} =~ ^[0-9]+$ ]] || { echo "$verb <number>?"; exit 1; }
     run_mailbox "$verb" "$2"
     ;;
@@ -286,6 +288,6 @@ case $verb in
       *) echo 'catalog, catalog add <label>, catalog remove <label>, catalog meta, or catalog addresses?'; exit 1 ;;
     esac
     ;;
-  *) echo 'setup, list, read, catalog, forward, send, on or attachments?'; exit 1 ;;
+  *) echo 'setup, list, read, polite, catalog, forward, send, on or attachments?'; exit 1 ;;
 # exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
 esac; exit

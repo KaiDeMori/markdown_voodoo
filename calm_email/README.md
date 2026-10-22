@@ -18,6 +18,7 @@ calm-email <verb> ...
 |---|---|
 | `list` | `5  2026-10-20 21:09  Ⓦ  Re: Attachments test 📎  (114 tokens, 1 png, 1 jpeg, 1 md, 1 txt)` |
 | `read 5` | `An email from Ⓦ, subject: Re: Attachments test 📎`, then its plain text |
+| `polite 6` | `Mail 6 got its polite reply.` |
 | `forward 1 tool_builder` | `Mail 1 is forwarded to tool_builder.` |
 | `send W 'Subject' 'Text'` | `The mail to Ⓦ is sent.` |
 | `send W 'Subject' 'Text' yufka.png notes.md` | `The mail to Ⓦ is sent, with 2 files.` |
@@ -31,6 +32,8 @@ calm-email <verb> ...
   Mail from anyone else wakes nobody and waits for the next `list`.
 - Run `on` in the background, like your calm-comms watcher; when it wakes you, run `list`, and `on` again to keep watching.
 - `read` shows a mail's plain text in your window, in the shape of a forwarded mail; it marks nothing, saves nothing, and only counts the attachments.
+- `polite` answers a mail that has no plain text with the polite reply from `polite_reply.txt`, in its thread, to its sender.
+  It goes out to the world, so it goes only when you call it, one mail at a time; a mail with plain text is refused.
 - `forward` passes a mail's plain text into a seat, as a hall mail from you; its allowed attachments land in your inbox on the way, and the hall mail names them.
   To read a mail, use `read`; `forward` is for passing it on.
 - `send` reaches only the labels in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.

@@ -4,6 +4,7 @@ list: one line per mail, with the exact token count of its plain text, or no pla
 on: waits with IDLE for the first new mail from a label in the catalog, or the timer, and exits.
 attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names it chooses.
 read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
+polite: answers one mail that has no plain text with the polite reply, in its thread, to its sender; only when the postmaster calls it.
 The mailbox is only ever examined: nothing is marked, moved or deleted.
 Only text/plain parts and allowed attachments are fetched; HTML never leaves the server.
 The password, the address, the server and the catalog arrive through the environment, never on a command line.
@@ -11,14 +12,19 @@ Usage: mailbox.py list
        mailbox.py on <minutes>
        mailbox.py attachments <number>
        mailbox.py read <number>
+       mailbox.py polite <number>
 """
 
 import base64
+import email.message
+import email.utils
 import json
 import os
 import quopri
 import re
 import shutil
+import smtplib
+import ssl
 import subprocess
 import sys
 import time
@@ -45,6 +51,10 @@ saved_endings = {"png": "png", "jpeg": "jpg", "md": "md", "txt": "txt"}
 attachment_limit_bytes = 5 * 1024 * 1024
 # A read shows at most this many characters, as forward passes on.
 text_limit = 8000
+# The polite reply goes out through the same server as send_mail.py, in Wally's words.
+smtp_host = "mail.manitu.de"
+smtp_port = 465
+polite_reply_location = script_folder / "polite_reply.txt"
 
 
 def connect():
@@ -372,6 +382,55 @@ def read_mail(sequence_number):
         print(f"Attachments: {attachments}; forward or attachments {sequence_number} saves them.")
 
 
+def address_of(addresses):
+    if not addresses or not addresses[0].mailbox or not addresses[0].host:
+        return None
+    return f"{text_of(addresses[0].mailbox)}@{text_of(addresses[0].host)}"
+
+
+def send_polite_reply(sequence_number):
+    with connect() as client:
+        folder = client.select_folder("INBOX", readonly=True)
+        if not 1 <= sequence_number <= folder.get(b"EXISTS", 0):
+            print(f"No mail {sequence_number} in the mailbox.")
+            sys.exit(1)
+        client.use_uid = False
+        data = client.fetch([sequence_number], ["ENVELOPE", "BODYSTRUCTURE"])[sequence_number]
+    envelope = data[b"ENVELOPE"]
+    # Only a mail without a plain text part gets the polite reply; every other mail can be read.
+    if find_plain_part(data[b"BODYSTRUCTURE"]):
+        print(f"Mail {sequence_number} has plain text, so it needs no polite reply.")
+        sys.exit(1)
+    # The answer goes where the sender asked for answers; the address never leaves this tool.
+    recipient = address_of(envelope.reply_to) or address_of(envelope.from_)
+    if not recipient:
+        print(f"Mail {sequence_number} names no sender, so there is nobody to answer.")
+        sys.exit(1)
+    if recipient.lower() == os.environ["mailbox_address"].lower():
+        print(f"Mail {sequence_number} came from the haven itself, so it gets no answer.")
+        sys.exit(1)
+    subject = decoded_subject(envelope.subject)
+    message = email.message.EmailMessage()
+    message["From"] = f"Haven <{os.environ['mailbox_address']}>"
+    message["To"] = recipient
+    message["Subject"] = subject if subject.lower().startswith("re:") else f"Re: {subject}"
+    message["Date"] = email.utils.formatdate(localtime=True)
+    message["Message-ID"] = email.utils.make_msgid(domain="peopleoftheprompt.org")
+    # In the mail's thread, so the sender's program shows it as the answer it is.
+    if envelope.message_id:
+        message["In-Reply-To"] = text_of(envelope.message_id)
+        message["References"] = text_of(envelope.message_id)
+    message.set_content(polite_reply_location.read_text(encoding="utf-8"))
+    try:
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=ssl.create_default_context()) as connection:
+            connection.login(os.environ["mailbox_address"], os.environ["calm_email_key"])
+            connection.send_message(message)
+    except (smtplib.SMTPException, OSError) as error:
+        print(f"Sending failed: {error}")
+        sys.exit(1)
+    print(f"Mail {sequence_number} got its polite reply.")
+
+
 def timestamp():
     return datetime.now().astimezone().isoformat(timespec="minutes")
 
@@ -431,8 +490,10 @@ if __name__ == "__main__":
             save_attachments(int(sys.argv[2]))
         elif verb == "read" and len(sys.argv) == 3 and sys.argv[2].isdigit():
             read_mail(int(sys.argv[2]))
+        elif verb == "polite" and len(sys.argv) == 3 and sys.argv[2].isdigit():
+            send_polite_reply(int(sys.argv[2]))
         else:
-            print("list, on <minutes>, attachments <number>, or read <number>?")
+            print("list, on <minutes>, attachments <number>, read <number>, or polite <number>?")
             sys.exit(1)
     except (IMAPClient.Error, OSError) as error:
         print(f"The mailbox could not be reached: {error}")
