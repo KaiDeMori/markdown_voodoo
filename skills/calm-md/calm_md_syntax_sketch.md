@@ -50,6 +50,7 @@ page 2 of 3
 ## Numbers
 
 A number is a chapter's place in reading order, so the next chapter is one higher.
+Numbers are for looking; changing takes the chapter's title.
 
 ```
 $ calm-md read notes.md @3
@@ -58,10 +59,10 @@ $ calm-md read notes.md @3
 
 $ calm-md read notes.md @4
 
-$ calm-md replace notes.md @3 <<'EOF'
+$ calm-md replace notes.md Attachments Steps <<'END'
 teh quick
 the quick
-EOF
+END
 ```
 
 ## find
@@ -80,8 +81,8 @@ $ calm-md find notes.md fox Attachments
 1 hit
 ```
 
-## To juggle
+## Decided
 
-- `@3` for a number, since `#3` would start a comment in bash.
-- `find` matches whole words, so `fox` misses `foxes`; or should it match inside words too?
-- Numbers change when a chapter is added above; is that fine, since every call parses fresh?
+- `@3` names a chapter by its number, since `#3` would start a comment in bash; line numbers stay written out, like `line 4`, and are only shown.
+- `find` matches word starts, case-insensitive: `fox` finds `foxes`, and `the` leaves `other` alone.
+- Numbers are for looking, in `toc`, `read` and `find`; `write` and `replace` take titles, so a number that shifted never changes the wrong chapter.

@@ -51,6 +51,30 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - [x] `SKILL.md`, and `deploy.bat` copying `piko_bello.json`.
 - [ ] A raven flies it.
 
+## Zoom, numbers and find
+
+### Decided
+
+- The examples are in `calm_md_syntax_sketch.md`.
+- `toc` shows the whole tree while it fits on a page of 100 lines; a bigger doc shows one level, says so in its first line, and zooms in by title or by number.
+- A chapter's weight is its word count, split on whitespace; the skill says once: "All word counts are estimates!"
+- A chapter with chapters inside says how many, like `(2300 words, 30 inside)`.
+- A level with more than 100 chapters comes in pages: `--page 2`, and the last line says `page 2 of 3`.
+- Every chapter has a number, its place in reading order, written `@3`; the next chapter is one higher.
+- Numbers are for looking, in `toc`, `read` and `find`; `write` and `replace` take titles, so a number that shifted never changes the wrong chapter.
+- Line numbers stay written out, like `line 4`, and are only shown.
+- `find <file> <word> [title ...]`: one line per hit, with its number, its title path and five words on each side; word starts, case-insensitive.
+  More than 10 hits give only the count, like `23 hits, more than 10: try a longer word, or a title path.`
+
+### Steps
+
+- [ ] Numbers in `toc`, and `@3` in `toc` and `read`.
+- [ ] Word weights instead of line weights, and the one sentence in the skill.
+- [ ] The zoom: one level for a doc bigger than a page, the inside counts, and pages.
+- [ ] `find`.
+- [ ] Test each on a big flat doc and a deep one, with LF and CRLF.
+- [ ] `SKILL.md`, and a raven flies it.
+
 ## Steps
 
 - [x] Settle the open questions with Wally.
