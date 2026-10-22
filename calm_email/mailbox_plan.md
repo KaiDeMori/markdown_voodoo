@@ -21,7 +21,7 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 - [x] Write `mailbox.py`: one login per call, the password through the environment, as `send_mail.py` gets it.
 - [x] `list`: number, date, sender as letter or domain, the decoded subject, and the token count of the plain part, or `no plain text`.
 - [x] `on`: IDLE instead of polling; only a letter from the catalog wakes the postmaster.
-- [ ] The polite reply for a mail without a text/plain part, tested with such a mail.
+- [x] The polite reply for a mail without a text/plain part: `polite <number>`, only when the postmaster calls it; its first real flight comes with the first such mail.
 - [x] Remove the curl and awk parts that `mailbox.py` replaces, including the polling `on`.
 - [x] Put `exit` on the line of `esac` in `calm_email.sh`, as `calm_comms.sh` does, so an edit never hits a running watcher.
 - [x] Update the README for the postmaster.
