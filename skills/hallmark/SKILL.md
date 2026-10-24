@@ -5,6 +5,7 @@ description: >-
   All ravens must read at least once!
   What the mark hallmark_tool promises, and what a raven does when a marked tool acts up.
   Use when a raven works with a tool whose description starts with hallmark_tool, and especially when such a tool seems to misbehave.
+  Last updated 2026-10-24T19:56+02:00: the newest change to any marked tool; the list inside names which.
 ---
 
 # hallmark
@@ -29,3 +30,21 @@ When something seems off, ask yourself first: did I really encounter a serious i
 
 A report reads like a flight log: what you did and what you saw, one line each, and a joke if you like.
 Its reader has a window too.
+
+## Last updated
+
+The date in this skill's description is the newest of these.
+Loaded a tool before its date? Load it again; when in doubt, too.
+
+- calm-comms: 2026-10-20T19:39+02:00
+- calm-fetch: 2026-10-18T14:35+02:00
+- calm-git: 2026-10-18T14:35+02:00
+- calm-grep: 2026-10-18T14:35+02:00
+- calm-hall-overview: 2026-10-18T14:35+02:00
+- calm-vitest: 2026-10-22T11:40+02:00
+- claude-chat-digger: 2026-10-18T12:08+02:00
+- hallmark: 2026-10-24T19:56+02:00
+- self-flow: 2026-10-20T22:48+02:00
+- token-counter: 2026-10-18T20:43+02:00
+- unicode-glyph-render: 2026-10-18T20:52+02:00
+- yt-transcript-extractor: 2026-10-18T12:04+02:00
