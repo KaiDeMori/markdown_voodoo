@@ -35,6 +35,7 @@ mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
 python_location='C:/Users/devboese/AppData/Local/Programs/Python/Python312/python'
 calm_comms_location='C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh'
+hrafnsmal_location='C:/haven/Hall/thing/Hrafnsmal'
 # Ravens put files to send into the outbox, and pick received ones up from the inbox.
 attachments_location='C:/haven/Hall/thing/Hrafnsmal/postmaster/attachments'
 # The watcher's timers; the server announces new mail, so nothing polls.
@@ -255,8 +256,14 @@ show_catalog() {
 }
 
 forward_mail() {
-  local number=$1 seat_name=$2 raw_mail hall_mail attachment_lines file_count file_note=''
-  if [[ ! $number =~ ^[0-9]+$ || -z $seat_name ]]; then echo 'forward <number> <seat_name>?'; exit 1; fi
+  local number=$1 seat_name=${2:-} raw_mail hall_mail attachment_lines file_count file_note=''
+  if [[ ! $number =~ ^[0-9]+$ ]]; then echo 'forward <number> [seat_name]?'; exit 1; fi
+  # Without a seat, the subject names it, in the haven mail forwarding subject format, like wally → tool_builder.
+  if [[ -z $seat_name ]]; then
+    seat_name=$(run_mailbox seat "$number") || { echo "$seat_name"; exit 1; }
+  fi
+  # The seat is checked before anything is fetched, saved or marked.
+  [[ -f $hrafnsmal_location/$seat_name/README.md ]] || { echo "There is no seat $seat_name; mail $number stays as it was."; exit 1; }
   read_password
   read_catalog
   # One login; fetching the whole mail marks it as read, which fits: forwarded means handled.

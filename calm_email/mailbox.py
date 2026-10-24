@@ -7,6 +7,7 @@ read: shows one mail's plain text, in the shape of a forwarded mail; it marks no
 polite: answers one mail that has no plain text with the polite reply, in its thread, to its sender; only when the postmaster calls it.
 Mail from senders outside the catalog waits in the folder unknown: list and on move it there, and back once its sender has a label.
 list, read and polite take unknown as their last word, to work in that folder; its attachments stay on the server.
+seat: the seat a mail's subject names in the haven mail forwarding subject format, like wally → tool_builder; only for senders in the catalog.
 Moving keeps every flag; nothing is ever marked or deleted.
 Only text/plain parts and allowed attachments are fetched; HTML never leaves the server.
 The password, the address, the server and the catalog arrive through the environment, never on a command line.
@@ -15,6 +16,7 @@ Usage: mailbox.py list [unknown]
        mailbox.py attachments <number>
        mailbox.py read <number> [unknown]
        mailbox.py polite <number> [unknown]
+       mailbox.py seat <number>
 """
 
 import base64
@@ -51,6 +53,9 @@ attachment_limit_bytes = 5 * 1024 * 1024
 text_limit = 8000
 # The polite reply is in Wally's words, and goes out through send_mail.py like every mail the haven sends.
 polite_reply_location = script_folder / "polite_reply.txt"
+# The haven mail forwarding subject format: a short name, one space, any arrow, one space, a seat's exact name; trailing whitespace is fine, and nothing else.
+arrow_pattern = r"(?:[-=~]+>|[←-⇿➔-➿⟰-⟿⤀-⥿⬀-⯿]️?)"
+forwarding_subject = re.compile(rf"\S+ {arrow_pattern} ([A-Za-z0-9_-]+)[ \t]*")
 
 
 def connect():
@@ -486,6 +491,26 @@ def send_polite_reply(sequence_number, in_unknown):
         print(result.stdout.strip())
 
 
+def subject_seat(sequence_number):
+    letters = read_catalog()
+    with connect() as client:
+        # Only the envelope is looked at, so a mail whose subject names no seat stays as it was.
+        folder = client.select_folder("INBOX", readonly=True)
+        if not 1 <= sequence_number <= folder.get(b"EXISTS", 0):
+            print(f"No mail {sequence_number} in the mailbox.")
+            sys.exit(1)
+        client.use_uid = False
+        envelope = client.fetch([sequence_number], ["ENVELOPE"])[sequence_number][b"ENVELOPE"]
+    if sender_label(envelope, letters) not in letters.values():
+        print(f"Mail {sequence_number} comes from outside the catalog, so its subject names no seat; forward {sequence_number} <seat> if it should go on.")
+        sys.exit(1)
+    match = forwarding_subject.fullmatch(decoded_subject(envelope.subject))
+    if not match:
+        print(f"Mail {sequence_number}'s subject is not in the forwarding format; forward {sequence_number} <seat> if it should go on.")
+        sys.exit(1)
+    print(match.group(1))
+
+
 def timestamp():
     return datetime.now().astimezone().isoformat(timespec="minutes")
 
@@ -558,8 +583,10 @@ if __name__ == "__main__":
             read_mail(number, in_unknown)
         elif verb == "polite" and number is not None:
             send_polite_reply(number, in_unknown)
+        elif verb == "seat" and number is not None and not in_unknown:
+            subject_seat(number)
         else:
-            print("list [unknown], on <minutes>, attachments <number>, read [unknown] <number>, or polite [unknown] <number>?")
+            print("list [unknown], on <minutes>, attachments <number>, read [unknown] <number>, polite [unknown] <number>, or seat <number>?")
             sys.exit(1)
     except (IMAPClient.Error, OSError) as error:
         print(f"The mailbox could not be reached: {error}")
