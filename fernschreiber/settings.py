@@ -10,7 +10,7 @@ NOTAR_FIRST_LINE = "📯 NOTAR: notice to all ravens"
 N06BC01_KEY_HINTS = "[Space] mark  [^Enter] send to the hallmaster  [Esc] back"
 N06BC01_FIRST_LINE = "☕ N06BC01: please wake these ravens and ask them to schnackon"
 HALLMASTER_SEAT = "hallmaster"
-CATALOG_KEY_HINTS = "[A] add  [Del] remove  [Esc] back"
+CATALOG_KEY_HINTS = "[A] add  [N] note  [Del] remove  [Esc] back"
 CATALOG_META_VARIABLE = "calm_email_catalog_meta"
 HELP_TEXT = """\
 fernschreiber keys
@@ -43,6 +43,7 @@ Ctrl+Enter   send the wake list to the hallmaster
 
 In the catalog
 A            add: a letter, a space, the address, then Enter
+N            the selected label's note: edit, then Enter; empty clears it
 Del          remove the selected letter, then y to confirm
 Esc          cancel, or go back
 

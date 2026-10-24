@@ -75,7 +75,9 @@ class Title_list(Static, can_focus=True):
     def redraw(self, focused: bool | None = None) -> None:
         text = Text(f" {self.header}", style=header_style(self, focused))
         for index, title in enumerate(self.titles):
-            text.append(f"\n{'>' if index == self.selected else ' '} {title}")
+            # A title may be a styled Text, which keeps its styles here.
+            text.append(f"\n{'>' if index == self.selected else ' '} ")
+            text.append(title)
         self.update(text)
 
 
