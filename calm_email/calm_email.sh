@@ -256,12 +256,8 @@ show_catalog() {
 }
 
 forward_mail() {
-  local number=$1 seat_name=${2:-} raw_mail hall_mail attachment_lines file_count file_note=''
-  if [[ ! $number =~ ^[0-9]+$ ]]; then echo 'forward <number> [seat_name]?'; exit 1; fi
-  # Without a seat, the subject names it, in the haven mail forwarding subject format, like wally → tool_builder.
-  if [[ -z $seat_name ]]; then
-    seat_name=$(run_mailbox seat "$number") || { echo "$seat_name"; exit 1; }
-  fi
+  local number=$1 seat_name=$2 raw_mail hall_mail attachment_lines file_count file_note=''
+  if [[ ! $number =~ ^[0-9]+$ || -z $seat_name ]]; then echo 'forward <number> <seat_name>?'; exit 1; fi
   # The seat is checked before anything is fetched, saved or marked.
   [[ -f $hrafnsmal_location/$seat_name/README.md ]] || { echo "There is no seat $seat_name; mail $number stays as it was."; exit 1; }
   read_password
