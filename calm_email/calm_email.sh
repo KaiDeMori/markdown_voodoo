@@ -14,7 +14,7 @@
 # read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
 # polite: answers one mail without plain text with the polite reply, in its thread; it goes out only when the postmaster calls it.
 # Usage: calm_email.sh setup
-#        calm_email.sh list
+#        calm_email.sh list [unknown]
 #        calm_email.sh catalog
 #        calm_email.sh catalog add <label> [< meta, address]
 #        calm_email.sh catalog remove <label> [< meta]
@@ -24,8 +24,8 @@
 #        calm_email.sh send <label> <subject> <text> [file ...]
 #        calm_email.sh on [long|short|<minutes>]
 #        calm_email.sh attachments <number>
-#        calm_email.sh read <number>
-#        calm_email.sh polite <number>
+#        calm_email.sh read [unknown] <number>
+#        calm_email.sh polite [unknown] <number>
 
 mailbox_address='haven@peopleoftheprompt.org'
 imap_location='imaps://mail.manitu.de:993/INBOX'
@@ -276,11 +276,20 @@ case $verb in
   setup) setup_password ;;
   forward) forward_mail "$2" "$3" ;;
   send) shift; send_mail "$@" ;;
-  list) run_mailbox list ;;
+  list)
+    [[ -z ${2:-} || $2 == unknown ]] || { echo 'list, or list unknown?'; exit 1; }
+    run_mailbox list ${2:+"$2"}
+    ;;
   on) watch_mailbox "$2" ;;
   attachments|read|polite)
-    [[ ${2:-} =~ ^[0-9]+$ ]] || { echo "$verb <number>?"; exit 1; }
-    run_mailbox "$verb" "$2"
+    # read and polite also work in the folder unknown, like read unknown 3; attachments stay on the server there.
+    if [[ $verb != attachments && ${2:-} == unknown ]]; then
+      [[ ${3:-} =~ ^[0-9]+$ ]] || { echo "$verb unknown <number>?"; exit 1; }
+      run_mailbox "$verb" "$3" unknown
+    else
+      [[ ${2:-} =~ ^[0-9]+$ ]] || { echo "$verb <number>?"; exit 1; }
+      run_mailbox "$verb" "$2"
+    fi
     ;;
   catalog)
     case $2 in

@@ -63,11 +63,11 @@ The postmaster reads only plain text, weighs it before it enters a window, and w
 
 ### Steps
 
-- [ ] The folder `unknown`, created by the tool if it isn't there yet.
-- [ ] Sorting in `list` and in `on`, both ways.
-- [ ] `list unknown` and `read unknown <number>` for the postmaster.
+- [x] The folder `unknown`, created by the tool if it isn't there yet, under the server's own prefix.
+- [x] Sorting in `list` and in `on`, both ways.
+- [x] `list unknown`, `read unknown <number>` and `polite unknown <number>` for the postmaster.
 - [ ] Test with one mail from a sender outside the catalog.
-- [ ] README for the postmaster.
+- [x] README for the postmaster.
 
 ## Still to talk about
 

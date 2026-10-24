@@ -18,6 +18,8 @@ calm-email <verb> ...
 |---|---|
 | `list` | `5  2026-10-20 21:09  Ⓦ  Re: Attachments test 📎  (114 tokens, 1 png, 1 jpeg, 1 md, 1 txt)` |
 | `read 5` | `An email from Ⓦ, subject: Re: Attachments test 📎`, then its plain text |
+| `list unknown` | `no mail in unknown`, or the mails waiting there |
+| `read unknown 2` | the same as `read`, from the folder `unknown` |
 | `polite 6` | `Mail 6 got its polite reply.` |
 | `forward 1 tool_builder` | `Mail 1 is forwarded to tool_builder.` |
 | `send W 'Subject' 'Text'` | `The mail to Ⓦ is sent.` |
@@ -28,6 +30,8 @@ calm-email <verb> ...
 
 - `list` shows one line per mail, and marks nothing as read.
   The weight is the exact token count of the mail's plain text, or `no plain text`; HTML is never fetched.
+- Mail from senders outside the catalog waits in the folder `unknown`: `list` and `on` move it there, and back once Wally gives its sender a label; it wakes nobody.
+  `list unknown`, `read unknown <number>` and `polite unknown <number>` work there, and no answer is an option too; its attachments stay on the server.
 - `on` waits for the first new mail from a label in the catalog, or for its timer: 45 minutes, 4 with `on short`, or `on <minutes>`.
   Mail from anyone else wakes nobody and waits for the next `list`.
 - Run `on` in the background, like your calm-comms watcher; when it wakes you, run `list`, and `on` again to keep watching.

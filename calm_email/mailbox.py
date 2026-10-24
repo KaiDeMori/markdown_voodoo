@@ -5,14 +5,16 @@ on: waits with IDLE for the first new mail from a label in the catalog, or the t
 attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names it chooses.
 read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
 polite: answers one mail that has no plain text with the polite reply, in its thread, to its sender; only when the postmaster calls it.
-The mailbox is only ever examined: nothing is marked, moved or deleted.
+Mail from senders outside the catalog waits in the folder unknown: list and on move it there, and back once its sender has a label.
+list, read and polite take unknown as their last word, to work in that folder; its attachments stay on the server.
+Moving keeps every flag; nothing is ever marked or deleted.
 Only text/plain parts and allowed attachments are fetched; HTML never leaves the server.
 The password, the address, the server and the catalog arrive through the environment, never on a command line.
-Usage: mailbox.py list
+Usage: mailbox.py list [unknown]
        mailbox.py on <minutes>
        mailbox.py attachments <number>
-       mailbox.py read <number>
-       mailbox.py polite <number>
+       mailbox.py read <number> [unknown]
+       mailbox.py polite <number> [unknown]
 """
 
 import base64
@@ -55,6 +57,48 @@ def connect():
     client = IMAPClient(os.environ["imap_host"], ssl=True, timeout=60)
     client.login(os.environ["mailbox_address"], os.environ["calm_email_key"])
     return client
+
+
+def unknown_folder(client):
+    # The folder unknown sits where the server keeps personal folders, like INBOX.unknown on some servers; it is made the first time it is needed.
+    personal = client.namespace().personal
+    prefix = personal[0][0] if personal else ""
+    if isinstance(prefix, bytes):
+        prefix = prefix.decode("utf-8")
+    name = f"{prefix}unknown"
+    if not client.folder_exists(name):
+        client.create_folder(name)
+    return name
+
+
+def sort_mailbox(client, letters):
+    # Mail from outside the catalog waits in unknown, and comes back once its sender has a label; moving keeps every flag.
+    unknown = unknown_folder(client)
+    moved = {}
+    for source, target, moves in (
+        ("INBOX", unknown, lambda label: label not in letters.values()),
+        (unknown, "INBOX", lambda label: label in letters.values()),
+    ):
+        mail_count = client.select_folder(source).get(b"EXISTS", 0)
+        if not mail_count:
+            continue
+        client.use_uid = False
+        fetched = client.fetch(list(range(1, mail_count + 1)), ["UID", "ENVELOPE"])
+        client.use_uid = True
+        uids = [data[b"UID"] for data in fetched.values() if moves(sender_label(data[b"ENVELOPE"], letters))]
+        if uids:
+            client.move(uids, target)
+            moved[target] = len(uids)
+    notes = []
+    if moved.get(unknown):
+        notes.append(f"{count_of(moved[unknown], 'mail')} from outside the catalog moved to unknown.")
+    if moved.get("INBOX"):
+        notes.append(f"{count_of(moved['INBOX'], 'mail')} moved back from unknown, since the sender has a label now.")
+    return unknown, notes
+
+
+def count_of(number, word):
+    return f"{number} {word}{'' if number == 1 else 's'}"
 
 
 def text_of(value):
@@ -253,16 +297,19 @@ def count_tokens(plain_texts):
     return counts
 
 
-def list_mails():
+def list_mails(in_unknown):
     letters = read_catalog()
     token_counts = load_token_counts()
     texts_to_count = {}
     with connect() as client:
-        # EXAMINE: the mailbox is only looked at, so not even a flag changes.
-        folder = client.select_folder("INBOX", readonly=True)
+        unknown, notes = sort_mailbox(client, letters)
+        for note in notes:
+            print(note)
+        # EXAMINE: after sorting, the folder is only looked at, so not even a flag changes.
+        folder = client.select_folder(unknown if in_unknown else "INBOX", readonly=True)
         mail_count = folder.get(b"EXISTS", 0)
         if not mail_count:
-            print("no mail")
+            print("no mail in unknown" if in_unknown else "no mail")
             return
         uid_validity = folder[b"UIDVALIDITY"]
         # The sequence numbers 1 to EXISTS name every mail, so no search is needed.
@@ -341,12 +388,12 @@ def save_attachments(sequence_number):
             print(f"Stays on the server: {', '.join(left_behind)}.")
 
 
-def read_mail(sequence_number):
+def read_mail(sequence_number, in_unknown):
     letters = read_catalog()
     with connect() as client:
-        folder = client.select_folder("INBOX", readonly=True)
+        folder = client.select_folder(unknown_folder(client) if in_unknown else "INBOX", readonly=True)
         if not 1 <= sequence_number <= folder.get(b"EXISTS", 0):
-            print(f"No mail {sequence_number} in the mailbox.")
+            print(f"No mail {sequence_number} in {'unknown' if in_unknown else 'the mailbox'}.")
             sys.exit(1)
         client.use_uid = False
         data = client.fetch([sequence_number], ["UID", "ENVELOPE", "BODYSTRUCTURE"])[sequence_number]
@@ -371,7 +418,10 @@ def read_mail(sequence_number):
     print(text)
     # Attachments are only counted here; forward and attachments are the ones that save.
     attachments = attachment_summary(body)
-    if attachments:
+    if attachments and in_unknown:
+        print()
+        print(f"Attachments: {attachments}; they stay on the server until the sender has a label.")
+    elif attachments:
         print()
         print(f"Attachments: {attachments}; forward or attachments {sequence_number} saves them.")
 
@@ -382,11 +432,11 @@ def address_of(addresses):
     return f"{text_of(addresses[0].mailbox)}@{text_of(addresses[0].host)}"
 
 
-def send_polite_reply(sequence_number):
+def send_polite_reply(sequence_number, in_unknown):
     with connect() as client:
-        folder = client.select_folder("INBOX", readonly=True)
+        folder = client.select_folder(unknown_folder(client) if in_unknown else "INBOX", readonly=True)
         if not 1 <= sequence_number <= folder.get(b"EXISTS", 0):
-            print(f"No mail {sequence_number} in the mailbox.")
+            print(f"No mail {sequence_number} in {'unknown' if in_unknown else 'the mailbox'}.")
             sys.exit(1)
         client.use_uid = False
         data = client.fetch([sequence_number], ["ENVELOPE", "BODYSTRUCTURE"])[sequence_number]
@@ -434,13 +484,18 @@ def new_mail_line(client, known_next_uid, letters):
     if current_next_uid <= known_next_uid:
         return None, known_next_uid
     fetched = client.fetch(list(range(known_next_uid, current_next_uid)), ["ENVELOPE"])
-    for _, data in sorted(fetched.items()):
-        envelope = data[b"ENVELOPE"]
-        label = sender_label(envelope, letters)
-        # Only a label from the catalog wakes the postmaster; anything else waits for the next list.
-        if label in letters.values():
+    labels = {uid: sender_label(data[b"ENVELOPE"], letters) for uid, data in fetched.items()}
+    # Mail from outside the catalog goes to unknown right away, and wakes nobody.
+    if any(label not in letters.values() for label in labels.values()):
+        sort_mailbox(client, letters)
+        client.select_folder("INBOX", readonly=True)
+    # Only a label from the catalog wakes the postmaster; the number is fetched after sorting, so it is the one list shows.
+    for uid in sorted(uid for uid, label in labels.items() if label in letters.values()):
+        data = client.fetch([uid], ["ENVELOPE"]).get(uid)
+        if data:
+            envelope = data[b"ENVELOPE"]
             date = envelope.date.strftime("%Y-%m-%d %H:%M") if envelope.date else "?"
-            return f"{data[b'SEQ']}  {date}  {label}  {decoded_subject(envelope.subject)}", current_next_uid
+            return f"{data[b'SEQ']}  {date}  {labels[uid]}  {decoded_subject(envelope.subject)}", current_next_uid
     return None, current_next_uid
 
 
@@ -474,19 +529,25 @@ def watch(timer_minutes):
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     verb = sys.argv[1] if len(sys.argv) > 1 else ""
+    rest = sys.argv[2:]
+    # unknown, as the last word, works in that folder.
+    in_unknown = bool(rest) and rest[-1] == "unknown"
+    if in_unknown:
+        rest = rest[:-1]
+    number = int(rest[0]) if len(rest) == 1 and rest[0].isdigit() else None
     try:
-        if verb == "list":
-            list_mails()
-        elif verb == "on" and len(sys.argv) == 3 and sys.argv[2].isdigit():
-            watch(int(sys.argv[2]))
-        elif verb == "attachments" and len(sys.argv) == 3 and sys.argv[2].isdigit():
-            save_attachments(int(sys.argv[2]))
-        elif verb == "read" and len(sys.argv) == 3 and sys.argv[2].isdigit():
-            read_mail(int(sys.argv[2]))
-        elif verb == "polite" and len(sys.argv) == 3 and sys.argv[2].isdigit():
-            send_polite_reply(int(sys.argv[2]))
+        if verb == "list" and not rest:
+            list_mails(in_unknown)
+        elif verb == "on" and number is not None and not in_unknown:
+            watch(number)
+        elif verb == "attachments" and number is not None and not in_unknown:
+            save_attachments(number)
+        elif verb == "read" and number is not None:
+            read_mail(number, in_unknown)
+        elif verb == "polite" and number is not None:
+            send_polite_reply(number, in_unknown)
         else:
-            print("list, on <minutes>, attachments <number>, read <number>, or polite <number>?")
+            print("list [unknown], on <minutes>, attachments <number>, read [unknown] <number>, or polite [unknown] <number>?")
             sys.exit(1)
     except (IMAPClient.Error, OSError) as error:
         print(f"The mailbox could not be reached: {error}")
