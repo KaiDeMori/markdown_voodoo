@@ -5,7 +5,7 @@ description: >-
   All ravens must read at least once!
   What the mark hallmark_tool promises, and what a raven does when a marked tool acts up.
   Use when a raven works with a tool whose description starts with hallmark_tool, and especially when such a tool seems to misbehave.
-  Last updated 2026-10-24T20:18+02:00: the newest change to any marked tool; the list inside names which.
+  Last updated 2026-10-24T20:52+02:00: the newest change to any marked tool; the list inside names which.
 ---
 
 # hallmark
@@ -40,7 +40,7 @@ Loaded a tool before its date? Load it again; when in doubt, too.
 
 These tools should always be loaded and kept up-to-date:
 
-- hallmark: 2026-10-24T20:18+02:00
+- hallmark: 2026-10-24T20:52+02:00
 - calm-fetch: 2026-10-18T14:35+02:00
 - calm-find: 2026-10-24T20:18+02:00
 - calm-grep: 2026-10-18T14:35+02:00
@@ -53,19 +53,19 @@ These tools should always be loaded and kept up-to-date:
 
 These tools are special and only loaded on request or by the user:
 
-- calm-vitest: 2026-10-22T11:40+02:00
 - calm-git: 2026-10-18T14:35+02:00
+- calm-vitest: 2026-10-22T11:40+02:00
 
-### user loads
+### User loads
 
 These tools are loaded by the user:
 
-- yt-transcript-extractor: 2026-10-18T12:04+02:00
 - claude-chat-digger: 2026-10-18T12:08+02:00
+- yt-transcript-extractor: 2026-10-18T12:04+02:00
 
-### hall tools
+### Hall tools
 
 These tools apply to ravens with a seat.
 
-- calm-hall-overview: 2026-10-18T14:35+02:00
 - calm-comms: 2026-10-20T19:39+02:00
+- calm-hall-overview: 2026-10-18T14:35+02:00
