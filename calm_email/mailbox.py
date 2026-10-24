@@ -110,9 +110,19 @@ def read_catalog():
     letters = {}
     for line in os.environ.get("catalog", "").splitlines():
         parts = line.split("\t")
-        if len(parts) == 2:
+        if len(parts) >= 2:
             letters[parts[1].strip().lower()] = parts[0]
     return letters
+
+
+def read_notes():
+    # A label may have a note about the person, the third field of its line; notes are for every raven, addresses for none.
+    notes = {}
+    for line in os.environ.get("catalog", "").splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 3 and parts[2].strip():
+            notes[parts[0]] = parts[2].strip()
+    return notes
 
 
 def sender_label(envelope, letters):
@@ -412,7 +422,9 @@ def read_mail(sequence_number, in_unknown):
     if len(text) > text_limit:
         text = text[:text_limit] + "\n(cut here; the rest stays in the mailbox)"
     date = envelope.date.strftime("%Y-%m-%d %H:%M") if envelope.date else "?"
-    print(f"An email from {sender_label(envelope, letters)}, subject: {decoded_subject(envelope.subject)}")
+    label = sender_label(envelope, letters)
+    note = read_notes().get(label)
+    print(f"An email from {label}{f' ({note})' if note else ''}, subject: {decoded_subject(envelope.subject)}")
     print(f"Sent: {date}")
     print()
     print(text)

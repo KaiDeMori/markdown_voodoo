@@ -10,16 +10,21 @@ text_limit = 8000
 sys.stdout.reconfigure(encoding="utf-8")
 message = email.message_from_binary_file(sys.stdin.buffer, policy=email.policy.default)
 
-# A sender in the catalog shows as their letter, anyone else only as their domain.
+# A sender in the catalog shows as their label, with their note if they have one; anyone else only as their domain.
 letters = {}
+notes = {}
 for line in os.environ.get("catalog", "").splitlines():
     parts = line.split("\t")
-    if len(parts) == 2:
+    if len(parts) >= 2:
         letters[parts[1].strip().lower()] = parts[0]
+        if len(parts) >= 3 and parts[2].strip():
+            notes[parts[0]] = parts[2].strip()
 sender_label = "?"
 if message["From"] is not None and message["From"].addresses:
     sender_address = message["From"].addresses[0]
     sender_label = letters.get(sender_address.addr_spec.lower(), "@" + sender_address.domain)
+if sender_label in notes:
+    sender_label = f"{sender_label} ({notes[sender_label]})"
 
 # Only the plain text travels; HTML and attachments stay in the mailbox.
 body = message.get_body(preferencelist=("plain",))

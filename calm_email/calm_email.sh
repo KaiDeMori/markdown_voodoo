@@ -6,7 +6,9 @@
 # catalog add: asks Wally in a real terminal for the address a label stands for; the fernschreiber brings the catalog meta and the address on stdin instead.
 # catalog remove: asks Wally in a real terminal before a label leaves the catalog; the fernschreiber brings the catalog meta on stdin instead.
 # catalog meta: makes the catalog meta, a random value the fernschreiber keeps, shows it to Wally once in a real terminal, and keeps only its hash.
-# catalog addresses: with the catalog meta on stdin, each label with its address, for the fernschreiber.
+# catalog addresses: with the catalog meta on stdin, each label with its address and its note, for the fernschreiber.
+# catalog note: asks Wally in a real terminal for a label's note about the person; the fernschreiber brings the catalog meta and the note on stdin instead.
+# who: every label with its note, or one label's note; for every raven, and never with an address.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster; its allowed attachments wait in the postmaster's inbox, and the hall mail names them.
 # send: sends a plain-text mail to a label in the catalog, and to nobody else, with files from the postmaster's outbox if named.
 # on: waits for the first new mail from a label in the catalog, or the timer, and exits.
@@ -20,6 +22,8 @@
 #        calm_email.sh catalog remove <label> [< meta]
 #        calm_email.sh catalog meta
 #        calm_email.sh catalog addresses < meta
+#        calm_email.sh catalog note <label> [< meta, note]
+#        calm_email.sh who [label]
 #        calm_email.sh forward <number> <seat_name>
 #        calm_email.sh send <label> <subject> <text> [file ...]
 #        calm_email.sh on [long|short|<minutes>]
@@ -154,10 +158,53 @@ add_to_catalog() {
   read_catalog
   # In a real terminal a new address replaces the old; the fernschreiber asks before it removes, so a taken label stays taken.
   if [[ ! -t 0 ]] && catalog_has_label; then echo "$label is taken; the catalog stays as it was."; exit 1; fi
+  # A new address keeps the label's note.
+  note=$(printf '%s\n' "$catalog" | label=$label awk -F'\t' '$1 == ENVIRON["label"] { print $3; exit }')
   catalog=$(catalog_without_label)
-  catalog+=${catalog:+$'\n'}$label$'\t'$address
+  catalog+=${catalog:+$'\n'}$label$'\t'$address${note:+$'\t'$note}
   write_catalog
   echo "$label is in the catalog."
+}
+
+note_in_catalog() {
+  local note
+  catalog_label "$1"
+  if [[ -t 0 ]]; then
+    # Wally in a real terminal: the note comes from Wally's keyboard.
+    read -r -p "Note for $label, empty to clear it: " note
+  else
+    # The fernschreiber: the catalog meta on the first line, the note on the second, and no questions.
+    check_catalog_meta
+    IFS= read -r note || true
+    note=${note%$'\r'}
+  fi
+  if [[ $note == *$'\t'* ]]; then echo 'A note is one line without tabs; the catalog stays as it was.'; exit 1; fi
+  read_password
+  read_catalog
+  if ! catalog_has_label; then echo "$label is not in the catalog."; exit 1; fi
+  # The note is the third field of the label's line; an empty note takes the field away.
+  catalog=$(printf '%s\n' "$catalog" | label=$label note=$note awk -F'\t' -v OFS='\t' '
+    NF {
+      if ($1 == ENVIRON["label"]) {
+        $3 = ENVIRON["note"]
+        if (ENVIRON["note"] == "") NF = 2
+      }
+      print
+    }')
+  write_catalog
+  if [[ -n $note ]]; then echo "$label has its note."; else echo "$label has no note now."; fi
+}
+
+show_notes() {
+  read_password
+  read_catalog
+  if [[ -z $catalog ]]; then echo 'The catalog is empty.'; return; fi
+  # One line per label with its note; the addresses stay inside the tool.
+  if [[ -n ${1:-} ]]; then
+    catalog_label "$1"
+    catalog_has_label || { echo "$label is not in the catalog."; exit 1; }
+  fi
+  printf '%s\n' "$catalog" | label=${label:-} awk -F'\t' 'NF && (ENVIRON["label"] == "" || $1 == ENVIRON["label"]) { print $1 ": " ($3 == "" ? "(no note)" : $3) }'
 }
 
 remove_from_catalog() {
@@ -195,8 +242,8 @@ show_catalog_addresses() {
   read_password
   read_catalog
   if [[ -z $catalog ]]; then echo 'The catalog is empty.'; return; fi
-  # One line per label: the label, a tab, the address.
-  printf '%s\n' "$catalog"
+  # One line per label: the label, the address and the note, each after a tab; a label without a note ends with an empty third column.
+  printf '%s\n' "$catalog" | awk -F'\t' -v OFS='\t' 'NF { print $1, $2, $3 }'
 }
 
 show_catalog() {
@@ -298,9 +345,11 @@ case $verb in
       remove) remove_from_catalog "$3" ;;
       meta) make_catalog_meta ;;
       addresses) show_catalog_addresses ;;
-      *) echo 'catalog, catalog add <label>, catalog remove <label>, catalog meta, or catalog addresses?'; exit 1 ;;
+      note) note_in_catalog "$3" ;;
+      *) echo 'catalog, catalog add <label>, catalog remove <label>, catalog note <label>, catalog meta, or catalog addresses?'; exit 1 ;;
     esac
     ;;
-  *) echo 'setup, list, read, polite, catalog, forward, send, on or attachments?'; exit 1 ;;
+  who) show_notes "${2:-}" ;;
+  *) echo 'setup, list, read, polite, catalog, who, forward, send, on or attachments?'; exit 1 ;;
 # exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
 esac; exit

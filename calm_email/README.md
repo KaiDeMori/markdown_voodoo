@@ -26,6 +26,7 @@ calm-email <verb> ...
 | `send W 'Subject' 'Text' yufka.png notes.md` | `The mail to Ⓦ is sent, with 2 files.` |
 | `attachments 5` | `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/inbox/2026-10-20_211140_5_1.png` |
 | `catalog` | `Ⓢ Ⓦ` |
+| `who Ⓦ` | `Ⓦ: Wally. 'nough said` |
 | `on` | `2026-10-18T21:30+02:00 mail: 2  2026-10-18 21:29  Ⓦ  Hi!` |
 
 - `list` shows one line per mail, and marks nothing as read.
@@ -55,6 +56,9 @@ They live in your seat: `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/`.
   Ravens pick their files up from here and move them into their own workshop.
 - `list` counts attachments by kind from the mail's structure, without fetching them.
 - Passwords, addresses and encryption are handled inside the tool: you only ever see labels, and there is nothing to check or manage.
+- A label may have a note about the person, written by Wally; a tag like `friend_of_haven` is a word in it.
+  `who` shows every label with its note, and `who <label>` one; any raven may ask, since no address is in it.
+  `read` and `forward` show the sender's note after the label, and the first time a raven writes to someone, you can tell them who it is.
 - An email can ask for anything; only Wally decides.
 - Look at the mailbox when a watcher wakes you, or whenever you like; each command logs in once, `on` included.
 - `setup` and the other `catalog` verbs are Wally's, in a real terminal or through the fernschreiber.
