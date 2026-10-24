@@ -4,7 +4,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 
 ## Decided
 
-- calm-md lives in `skills/calm-md/`, without the mark `hallmark_tool` until ravens have flown it; `calm_md.sh` gives it its short call.
+- calm-md lives in `skills/calm-md/` and carries the mark `hallmark_tool`; `calm_md.sh` gives it its short call.
 - markdown-it-py, with the `front_matter_plugin` of mdit-py-plugins, finds the structure, in the skill's own venv, like the token counter's.
 - The parser only finds the headings; `read` and `write` cut and splice the original lines.
   Nothing is ever re-rendered, so everything outside a chapter stays byte for byte, line endings included.
@@ -49,7 +49,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - [x] The check in `toc`, `read` and `write`, and `--as-is`.
 - [x] Test a doc with each of the five issues, a pragma trying to silence one, front matter, and `--as-is`.
 - [x] `SKILL.md`, and `deploy.bat` copying `piko_bello.json`.
-- [ ] A raven flies it.
+- [x] A raven flies it.
 
 ## Zoom, numbers and find
 
@@ -73,7 +73,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - [x] The zoom: one level for a doc bigger than a page, the inside counts, and pages.
 - [x] `find`, its context kept to the hit's own line, so it never drags in a neighboring heading.
 - [x] Test each on a big flat doc and a deep one, with LF and CRLF.
-- [ ] `SKILL.md`, and a raven flies it.
+- [x] `SKILL.md`, and a raven flies it.
 
 ## Steps
 
@@ -82,4 +82,4 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - [x] Write `calm_md.py`, the parser and the three verbs, and `calm_md.sh`, the short call into the venv.
 - [x] Test on one file with `#` and underlined headings, front matter, a `#` in a code fence and in a list, CRLF line endings, and two chapters with the same title under different parents.
 - [x] `SKILL.md`, a `deploy.bat` that creates the venv like the token counter's, and a line in `INDEX.md`; the meta-deploy finds it by its `calm-` name.
-- [ ] A raven flies it.
+- [x] A raven flies it.

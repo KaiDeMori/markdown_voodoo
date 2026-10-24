@@ -25,5 +25,5 @@ A raven sees what kinds of files a folder holds, where they are, and what one of
 - [x] Token counts through the token counter, above the threshold.
 - [x] The pdf jokes, picked at random.
 - [x] `SKILL.md`, still without the mark, and a `deploy.bat`.
-- [ ] One or two ravens fly calm-find; if they like it, it gets the mark `hallmark_tool`.
-- [ ] Test one at a time, on the hall and on this workspace.
+- [x] One or two ravens fly calm-find; if they like it, it gets the mark `hallmark_tool`.
+- [x] Test one at a time, on the hall and on this workspace.

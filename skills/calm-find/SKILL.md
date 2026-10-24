@@ -1,6 +1,7 @@
 ---
 name: calm-find
 description: >-
+  hallmark_tool
   A calm find: what kinds of files a folder holds, where they are, and what one of them would cost a window.
   Use when a raven wants to know what is in a folder, where its images, markdown or source are, or how heavy a file is before reading it.
 ---

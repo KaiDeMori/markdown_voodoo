@@ -1,6 +1,7 @@
 ---
 name: calm-md
 description: >-
+  hallmark_tool
   A calm markdown file: its chapters at a glance, one chapter to read, one chapter to write.
   Use when a raven wants to see how a markdown file is built, read one chapter of it, rewrite one chapter, fix one piece of text in it, or find where a word comes up, without the whole file entering its window.
 ---
