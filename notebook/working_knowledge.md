@@ -13,6 +13,7 @@ Any session may read and edit this notebook at any time, without asking.
 - Only verified claims.
 - One sentence per line.
 - Keep it lean.
+- `open/` holds one short file per open idea or finding; a file is deleted once its item is done.
 
 ## Working with Wally
 
