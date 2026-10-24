@@ -379,7 +379,13 @@ def replace_in_chapter(file_name, titles, as_is):
         line_numbers = sorted({line_number_at(chapter_text, place, chapter["start"]) for place in places})
         where = f"line {line_numbers[0]}" if len(line_numbers) == 1 else f"lines {', '.join(map(str, line_numbers))}"
         refuse(f"The old text is {len(places)} times in {path_text(chapter['path'])}, on {where}; give more of it, so it fits once.")
-    new_chapter_text = chapter_text[:places[0]] + new_text + chapter_text[places[0] + len(old_text):]
+    start, end = places[0], places[0] + len(old_text)
+    # An empty new text takes a whole line with it, its line ending included, so an item taken out of a list leaves no gap.
+    if not new_text and (start == 0 or chapter_text[start - 1] in "\r\n"):
+        line_ending = re.match(r"\r\n|\r|\n", chapter_text[end:])
+        if line_ending:
+            end += line_ending.end()
+    new_chapter_text = chapter_text[:start] + new_text + chapter_text[end:]
     # The chapter keeps its heading line, so it never joins the chapter before it.
     first_token = next(iter(parser.parse(new_chapter_text)), None)
     if first_token is None or first_token.type != "heading_open":

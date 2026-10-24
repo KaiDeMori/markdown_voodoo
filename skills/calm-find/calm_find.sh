@@ -49,9 +49,10 @@ list_files() {
 show_overview() {
   # A map one level down: the folder's own files, then each subfolder counted as a whole, with nothing inside it named.
   local folder=${1%/}
-  list_files "${folder:-/}" | awk -v prefix="$folder/" "$classify"'
+  # The prefix reaches awk through the environment, which awk never reads as escapes.
+  list_files "${folder:-/}" | prefix="$folder/" awk "$classify"'
     {
-      relative = substr($0, length(prefix) + 1)
+      relative = substr($0, length(ENVIRON["prefix"]) + 1)
       slash = index(relative, "/")
       bucket = slash ? substr(relative, 1, slash) : "here"
       buckets[bucket] = 1
@@ -119,18 +120,23 @@ show_what() {
   esac
 }
 
-case ${1:-} in
+# Windows paths like C:\Users come with backslashes; every path turns them into forward slashes before anything else sees it.
+verb=${1:-}
+path_argument=${2:-}
+path_argument=${path_argument//\\//}
+case $verb in
   what)
-    [[ -n ${2:-} ]] || { echo 'what <file>?'; exit 1; }
-    show_what "$2"
+    [[ -n $path_argument ]] || { echo 'what <file>?'; exit 1; }
+    show_what "$path_argument"
     ;;
   markdown|source|text|images|pdf|other)
-    [[ -d ${2:-.} ]] || { echo "No folder ${2:-.}."; exit 1; }
-    show_kind "$1" "${2:-.}"
+    [[ -d ${path_argument:-.} ]] || { echo "No folder ${path_argument:-.}."; exit 1; }
+    show_kind "$verb" "${path_argument:-.}"
     ;;
   *)
-    [[ -d ${1:-.} ]] || { echo "No folder $1; a kind is markdown, source, text, images, pdf or other."; exit 1; }
-    show_overview "${1:-.}"
+    folder=${verb//\\//}
+    [[ -d ${folder:-.} ]] || { echo "No folder $folder; a kind is markdown, source, text, images, pdf or other."; exit 1; }
+    show_overview "${folder:-.}"
     ;;
 # exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
 esac; exit

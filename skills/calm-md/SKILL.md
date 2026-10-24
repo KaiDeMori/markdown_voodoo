@@ -45,7 +45,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - `--as-is` skips the check for one call: calm-md works anyway, and says on stderr how many issues wait.
 - A pragma comment cannot silence a rule; calm-md leaves it out of the check.
 - `piko_bello.json` starts quiet, with the heading rules only: one level at a time, `#` headings only, blank lines around headings, no title twice among siblings, one `#` title.
-- `replace` takes the old text on stdin's first line and the new text after it, which may span lines; an empty second line deletes the old text.
+- `replace` takes the old text on stdin's first line and the new text after it, which may span lines; an empty second line deletes the old text, and its line too when the old text is a whole line, so a list keeps no gap.
   The old text has to occur exactly once in the chapter; otherwise calm-md names where it occurs, and nothing changes.
   The chapter keeps its heading line, and the doc it leaves behind is checked like after `write`.
 - `find` looks for words that start with the given word, in any case: `fox` finds `Foxes` and `(fox)`, and leaves `outfox` alone.
