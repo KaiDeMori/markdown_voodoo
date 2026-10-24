@@ -36,17 +36,36 @@ Its reader has a window too.
 The date in this skill's description is the newest of these.
 Loaded a tool before its date? Load it again; when in doubt, too.
 
-- calm-comms: 2026-10-20T19:39+02:00
+### Always load
+
+These tools should always be loaded and kept up-to-date:
+
+- hallmark: 2026-10-24T20:18+02:00
 - calm-fetch: 2026-10-18T14:35+02:00
 - calm-find: 2026-10-24T20:18+02:00
-- calm-git: 2026-10-18T14:35+02:00
 - calm-grep: 2026-10-18T14:35+02:00
-- calm-hall-overview: 2026-10-18T14:35+02:00
 - calm-md: 2026-10-24T20:18+02:00
-- calm-vitest: 2026-10-22T11:40+02:00
-- claude-chat-digger: 2026-10-18T12:08+02:00
-- hallmark: 2026-10-24T20:18+02:00
 - self-flow: 2026-10-20T22:48+02:00
 - token-counter: 2026-10-18T20:43+02:00
 - unicode-glyph-render: 2026-10-18T20:52+02:00
+
+### Special
+
+These tools are special and only loaded on request or by the user:
+
+- calm-vitest: 2026-10-22T11:40+02:00
+- calm-git: 2026-10-18T14:35+02:00
+
+### user loads
+
+These tools are loaded by the user:
+
 - yt-transcript-extractor: 2026-10-18T12:04+02:00
+- claude-chat-digger: 2026-10-18T12:08+02:00
+
+### hall tools
+
+These tools apply to ravens with a seat.
+
+- calm-hall-overview: 2026-10-18T14:35+02:00
+- calm-comms: 2026-10-20T19:39+02:00
