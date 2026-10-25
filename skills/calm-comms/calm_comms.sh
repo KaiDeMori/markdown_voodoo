@@ -7,7 +7,7 @@
 # inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 # send: writes a mail from one seat into another, and never overwrites a mail.
 # group: writes a mail from one seat to every other member of a group, and keeps a copy as the group's thread.
-# join and leave: add a seat to a group's MEMBERS.txt or take it out, and wake nobody.
+# join and leave: create or delete a seat's own file in a group's members folder, and wake nobody.
 # Terminal mode: the fernschreiber sets calm_comms_mode=terminal.
 # Then nothing pauses, inbox has no limits, and on stays present without a timer, printing one line per mail as it lands.
 # A watcher in terminal mode stays only while its stdin stays open, so a crashed terminal leaves no ghost.
@@ -22,7 +22,7 @@
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
-# Each group is a folder here: its MEMBERS.txt names one seat per line, and the folder keeps the thread.
+# Each group is a folder here: its members folder holds one empty file per member, named after the seat, and the group's folder keeps the thread.
 group_chat_location="$haven_location/Hall/thing/group_chat"
 poll_interval_seconds=10
 long_watcher_minutes=55
@@ -233,25 +233,20 @@ send_mail() {
 
 check_group() {
   if [[ -z $1 ]]; then echo "$verb <seat_name> <group_name>?"; exit 1; fi
-  if [[ $1 == */* || $1 == *\\* || $1 == . || $1 == .. || ! -f $group_chat_location/$1/MEMBERS.txt ]]; then echo "There is no group $1 in group_chat."; exit 1; fi
+  if [[ $1 == */* || $1 == *\\* || $1 == . || $1 == .. || ! -d $group_chat_location/$1/members ]]; then echo "There is no group $1 in group_chat."; exit 1; fi
 }
 
 read_members() {
-  # MEMBERS.txt names one seat per line; empty lines are skipped, and spaces around a name don't count.
-  # The names land in the caller's members.
-  local member
+  # The members folder holds one empty file per member, named after the seat; the names land in the caller's members.
+  local member_location
   members=()
-  while IFS= read -r member || [[ -n $member ]]; do
-    member=${member//[[:space:]]/}
-    if [[ -n $member ]]; then members+=("$member"); fi
-  done < "$group_chat_location/$1/MEMBERS.txt"
+  for member_location in "$group_chat_location/$1/members"/*; do
+    if [[ -f $member_location ]]; then members+=("${member_location##*/}"); fi
+  done
 }
 
-write_members() {
-  # The caller's members are written anew, one seat per line, and replace the old list in one step.
-  local members_file_location="$group_chat_location/$target_seat_name/MEMBERS.txt"
-  if (( ${#members[@]} > 0 )); then printf '%s\n' "${members[@]}" > "$members_file_location.new"; else : > "$members_file_location.new"; fi
-  mv -f "$members_file_location.new" "$members_file_location"
+member_count() {
+  if (( $1 == 1 )); then echo '1 member'; else echo "$1 members"; fi
 }
 
 send_group() {
@@ -282,34 +277,28 @@ send_group() {
     printf '%s\nFrom: %s\nTo: %s\n%s\n' "$stamp" "$seat_name" "$target_seat_name" "$mail_text" > "$location"
   done
   reached_count=$(( ${#locations[@]} - 1 ))
-  if (( reached_count == 1 )); then echo "To $target_seat_name: 1 member reached."; else echo "To $target_seat_name: $reached_count members reached."; fi
+  echo "To $target_seat_name: $(member_count "$reached_count") reached."
   throttle
 }
 
 join_group() {
-  local member
+  local member_location="$group_chat_location/$target_seat_name/members/$seat_name"
   local -a members=()
+  if [[ -e $member_location ]]; then echo "$seat_name is already in $target_seat_name."; return 0; fi
+  # Every member has a file of its own, so two ravens who join at the same moment never touch the same file.
+  : > "$member_location"
   read_members "$target_seat_name"
-  for member in "${members[@]}"; do
-    if [[ $member == "$seat_name" ]]; then echo "$seat_name is already in $target_seat_name."; return 0; fi
-  done
-  members+=("$seat_name")
-  write_members
-  echo "$seat_name joined $target_seat_name: ${#members[@]} members."
+  echo "$seat_name joined $target_seat_name: $(member_count "${#members[@]}")."
   throttle
 }
 
 leave_group() {
-  local member was_member=''
-  local -a members=() staying=()
+  local member_location="$group_chat_location/$target_seat_name/members/$seat_name"
+  local -a members=()
+  if [[ ! -e $member_location ]]; then echo "$seat_name is not in $target_seat_name."; return 0; fi
+  rm -f "$member_location"
   read_members "$target_seat_name"
-  for member in "${members[@]}"; do
-    if [[ $member == "$seat_name" ]]; then was_member=yes; else staying+=("$member"); fi
-  done
-  if [[ -z $was_member ]]; then echo "$seat_name is not in $target_seat_name."; return 0; fi
-  members=("${staying[@]}")
-  write_members
-  echo "$seat_name left $target_seat_name: ${#members[@]} members."
+  echo "$seat_name left $target_seat_name: $(member_count "${#members[@]}")."
   throttle
 }
 
@@ -358,7 +347,7 @@ case $verb in
     target_seat_name=$3
     check_seat "$seat_name"
     # A group mail reaches every member, so it has a verb of its own; a seat of the same name still goes first.
-    if [[ -n $target_seat_name && ! -f $hrafnsmal_location/$target_seat_name/README.md && -f $group_chat_location/$target_seat_name/MEMBERS.txt ]]; then
+    if [[ -n $target_seat_name && ! -f $hrafnsmal_location/$target_seat_name/README.md && -d $group_chat_location/$target_seat_name/members ]]; then
       echo "$target_seat_name is a group: a mail there reaches every member. Use group."; exit 1
     fi
     check_seat "$target_seat_name"

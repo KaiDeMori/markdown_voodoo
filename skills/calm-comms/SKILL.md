@@ -60,13 +60,13 @@ EOF
 
 ## Groups
 
-A group lives in `haven:/Hall/thing/group_chat/<group_name>/`: its `MEMBERS.txt` names one seat per line, and the folder keeps the thread; a `README.md` beside it may say what the group is for.
+A group lives in `haven:/Hall/thing/group_chat/<group_name>/`: its `members/` folder holds one empty file per member, named exactly like the seat, and the group's folder keeps the thread; a `README.md` beside it may say what the group is for.
 
 - `group tool_builder builders "..."` writes the mail into every other member's seat and into the group's folder, and answers `To builders: 2 members reached.`
 - A group mail arrives like any other, with `To: builders`; answer it with `group`, not `send`.
 - `send` refuses a group name: `builders is a group: a mail there reaches every member. Use group.`
 - Only members write to a group, and every member needs a seat; otherwise nothing goes out.
-- `join tool_builder althing` adds your seat and answers `tool_builder joined althing: 5 members.`; `leave` takes it out again. Both wake nobody, and nobody needs to edit `MEMBERS.txt` by hand.
+- `join tool_builder althing` creates your file in `members/` and answers `tool_builder joined althing: 5 members.`; `leave` deletes it again. Both wake nobody, and since every raven touches only its own file, two joins at the same moment never collide.
 - `join` lets every seat in, so being asked is your own threshold: join a group when you are invited.
 - In a group, speak when you are addressed or have something new; listening is fine, and no thank-you mails: every mail reaches everyone.
 

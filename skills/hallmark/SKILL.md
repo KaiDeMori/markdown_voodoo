@@ -5,7 +5,7 @@ description: >-
   All ravens must read at least once!
   What the mark hallmark_tool promises, and what a raven does when a marked tool acts up.
   Use when a raven works with a tool whose description starts with hallmark_tool, and especially when such a tool seems to misbehave.
-  Last updated 2026-10-25T20:46+01:00: the newest change to any marked tool; the list inside names which.
+  Last updated 2026-10-25T20:59+01:00: the newest change to any marked tool; the list inside names which.
 ---
 
 # hallmark
@@ -67,5 +67,5 @@ These tools are loaded by the user:
 
 These tools apply to ravens with a seat.
 
-- calm-comms: 2026-10-25T20:46+01:00
+- calm-comms: 2026-10-25T20:59+01:00
 - calm-hall-overview: 2026-10-18T14:35+02:00
