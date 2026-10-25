@@ -14,6 +14,7 @@ CATALOG_KEY_HINTS = "[A] add  [N] note  [Del] remove  [Esc] back"
 CATALOG_META_VARIABLE = "calm_email_catalog_meta"
 GROUPS_KEY_HINTS = "[Tab] focus  [J] join  [L] leave  [^Enter] post  [F6] help"
 GROUP_THREAD_COUNT = 50
+GROUP_REFRESH_SECONDS = 10
 HELP_TEXT = """\
 fernschreiber keys
 

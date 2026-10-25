@@ -72,6 +72,15 @@ def read_groups() -> list[Group]:
     return groups
 
 
+def group_snapshot() -> tuple:
+    """What the groups look like right now: each group's name, its members and its thread files; equal snapshots mean nothing changed."""
+    snapshot = []
+    for group in read_groups():
+        threads = tuple(sorted(file.name for file in (settings.GROUP_CHAT / group.name).glob("*.md")))
+        snapshot.append((group.name, tuple(group.members), threads))
+    return tuple(snapshot)
+
+
 def thread_files(group_name: str) -> list[Path]:
     """A group's thread: its mail files, oldest first."""
     folder = settings.GROUP_CHAT / group_name

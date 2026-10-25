@@ -8,7 +8,7 @@ from textual.screen import Screen
 from textual.widgets import Static, TextArea
 
 import settings
-from calm_comms import Group, join_or_leave, read_groups, send_mail, thread_files
+from calm_comms import Group, group_snapshot, join_or_leave, read_groups, send_mail, thread_files
 from Mail import read_mail
 from Widgets import Message_area, Rule_line, Title_list, clock_text
 
@@ -32,6 +32,7 @@ class Groups_screen(Screen):
         super().__init__()
         self.groups: list[Group] = []
         self.shown_group = ""
+        self.last_snapshot: tuple = ()
         self.busy = False
 
     def compose(self) -> ComposeResult:
@@ -59,11 +60,13 @@ class Groups_screen(Screen):
         self.group_list.focus()
         self.app.groups = self
         self.reload()
+        # A calm look every few seconds: a join, a leave or a post elsewhere shows up without a key.
+        self.set_interval(settings.GROUP_REFRESH_SECONDS, self.check_for_changes)
 
     def on_screen_resume(self) -> None:
         self.app.tick()
         if hasattr(self, "group_list"):
-            self.reload()
+            self.check_for_changes()
 
     def say(self, line: str) -> None:
         self.status_label.update(line)
@@ -74,9 +77,15 @@ class Groups_screen(Screen):
 
     # Reading
 
+    def check_for_changes(self) -> None:
+        """Reloads only when the groups look different from the last time they were shown."""
+        if group_snapshot() != self.last_snapshot:
+            self.reload()
+
     def reload(self) -> None:
         """Reads the groups again, keeps the cursor on the same group, and shows its thread."""
         previous = self.selected.name if self.selected else ""
+        self.last_snapshot = group_snapshot()
         self.groups = read_groups()
         names = [group.name for group in self.groups]
         if previous in names:
@@ -120,8 +129,8 @@ class Groups_screen(Screen):
         self.thread.scroll_end(animate=False)
 
     def mail_arrived(self) -> None:
-        """Called by the app whenever mail came in: the thread may have grown."""
-        self.show_thread()
+        """Called by the app whenever mail came in: the thread may have grown, so no need to wait for the next look."""
+        self.reload()
 
     # Keys
 
