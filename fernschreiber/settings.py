@@ -3,7 +3,7 @@
 from pathlib import Path
 
 TITLE = "RABENSCHNACK"
-KEY_HINTS = "[Tab] focus  [^Enter] send  [F2] help  [^Q] quit"
+KEY_HINTS = "[Tab] focus  [^Enter] send  [F6] help  [^Q] quit"
 NOTAR_KEY_HINTS = "[Up/Down] pick  [^Enter] send to all watching  [Esc] back"
 NOTAR_MESSAGES_FILE = Path(__file__).with_name("NOTAR_messages.md")
 NOTAR_FIRST_LINE = "📯 NOTAR: notice to all ravens"
@@ -12,17 +12,17 @@ N06BC01_FIRST_LINE = "☕ N06BC01: please wake these ravens and ask them to schn
 HALLMASTER_SEAT = "hallmaster"
 CATALOG_KEY_HINTS = "[A] add  [N] note  [Del] remove  [Esc] back"
 CATALOG_META_VARIABLE = "calm_email_catalog_meta"
-GROUPS_KEY_HINTS = "[Tab] focus  [J] join  [L] leave  [^Enter] post  [F2] help"
+GROUPS_KEY_HINTS = "[Tab] focus  [J] join  [L] leave  [^Enter] post  [F6] help"
 GROUP_THREAD_COUNT = 50
 HELP_TEXT = """\
 fernschreiber keys
 
 F1           Rabenschnack
-F2           this help; Esc goes back
+F2           the groups: their threads, and posting to them
 F3           NOTAR, a notice to all ravens; Esc goes back
 F4           N06BC01, waking ravens; Esc goes back
 F5           the catalog: letters and addresses; Esc goes back
-F6           the groups: their threads, and posting to them
+F6           this help; Esc goes back
 Ctrl+Q       quit
 
 In Rabenschnack

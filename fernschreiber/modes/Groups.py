@@ -1,4 +1,4 @@
-"""The groups, on F6: every group in group_chat, the thread of the selected one, and posting to it."""
+"""The groups, on F2: every group in group_chat, the thread of the selected one, and posting to it."""
 
 from rich.text import Text
 from textual.app import ComposeResult

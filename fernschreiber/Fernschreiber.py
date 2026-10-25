@@ -130,11 +130,11 @@ class Fernschreiber(App):
     # With priority, the mode keys win over a focused widget's own bindings, such as F6 and F7 in a TextArea.
     BINDINGS = [
         Binding("f1", "switch_mode('rabenschnack')", show=False, priority=True),
-        Binding("f2", "switch_mode('help')", show=False, priority=True),
+        Binding("f2", "switch_mode('groups')", show=False, priority=True),
         Binding("f3", "switch_mode('notar')", show=False, priority=True),
         Binding("f4", "switch_mode('n06bc01')", show=False, priority=True),
         Binding("f5", "switch_mode('catalog')", show=False, priority=True),
-        Binding("f6", "switch_mode('groups')", show=False, priority=True),
+        Binding("f6", "switch_mode('help')", show=False, priority=True),
     ]
 
     def __init__(self, color_theme: Color_theme | None = None) -> None:

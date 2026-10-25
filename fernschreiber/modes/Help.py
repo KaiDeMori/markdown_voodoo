@@ -1,4 +1,4 @@
-"""The help, on F2: every key, in a mode of its own."""
+"""The help, on F6: every key, in a mode of its own."""
 
 from textual.app import ComposeResult
 from textual.binding import Binding
