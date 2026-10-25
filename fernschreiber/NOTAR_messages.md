@@ -22,3 +22,20 @@ How many Pentium designers does it take to screw in a light bulb? 1.99904274017.
 some vscode juggling‍‍ ahead 🤹 — will be back online in a jiffy. 👋
 please schnackout.
 
+
+## Raven Joke #1
+
+How many ravens does it take to change a light bulb?
+None. A raven reports: "The bulb is out." Fixing it is firmly in tool builder scope.
+By Friday there's a new tool: calm-bulb. One read-only look at whether the light is on. 💡
+
+
+## Raven Joke #2
+
+A raven ran calm-bulb on a 1994 Pentium.
+Result: 1.99904274017 lights are on.
+The raven reported the issue. Rounding is firmly in tool builder scope. 💡
+
+
+
+
