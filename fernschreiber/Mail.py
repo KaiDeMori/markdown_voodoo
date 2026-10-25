@@ -42,6 +42,18 @@ def read_mail(file_location: Path) -> Mail:
     return Mail(display_time(moment), file_location.name, content.strip("\n"))
 
 
+def recent_direct_mails(count: int) -> list[Mail]:
+    """The last mails to the own seat, oldest first; group mails are skipped on the way back, since they live in their threads."""
+    mails = []
+    for file in reversed(already_read_files()):
+        mail = read_mail(file)
+        if not mail.group:
+            mails.append(mail)
+            if len(mails) == count:
+                break
+    return mails[::-1]
+
+
 def already_read_files() -> list[Path]:
     """The files in the own seat's already_read folder, oldest first."""
     folder = settings.HRAFNSMAL / settings.OWN_SEAT / "already_read"

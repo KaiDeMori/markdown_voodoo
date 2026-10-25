@@ -12,7 +12,7 @@ from textual.binding import Binding
 import settings
 from calm_comms import read_seats, run_calm_comms, start_watcher
 from Color_theme import Color_theme, load_color_theme
-from Mail import Mail, already_read_files, read_mail
+from Mail import Mail, already_read_files, read_mail, recent_direct_mails
 from modes.Catalog import Catalog_screen
 from modes.Groups import Groups_screen
 from modes.Help import Help_screen
@@ -202,7 +202,7 @@ class Fernschreiber(App):
 
     def watch_loop(self) -> None:
         """Shows the history and what is waiting, then delivers mail for every line the watcher prints, until its stdin closes."""
-        self.post(self.rabenschnack.add_mails, [read_mail(file) for file in already_read_files()[-settings.HISTORY_MAIL_COUNT:]], False)
+        self.post(self.rabenschnack.add_mails, recent_direct_mails(settings.HISTORY_MAIL_COUNT), False)
         with self.watcher_lock:
             if self.stopping:
                 return

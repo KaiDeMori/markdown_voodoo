@@ -109,16 +109,19 @@ class Rabenschnack_screen(Screen):
         ]
 
     def add_mails(self, mails: list[Mail], ring: bool) -> None:
+        """Shows the mails to Wally; group mails stay in their thread on F2, but still ring the bell."""
         if not mails:
             return
         widgets = []
         for mail in mails:
-            group_tag = f"  #{mail.group}" if mail.group else ""
-            widgets += self.entry_widgets(f"{mail.time}  {mail.sender}{group_tag}", mail.text)
-        self.inbox.mount_all(widgets)
+            if not mail.group:
+                widgets += self.entry_widgets(f"{mail.time}  {mail.sender}", mail.text)
+        if widgets:
+            self.inbox.mount_all(widgets)
         if ring:
-            # New mail brings the view back down, even when Wally was reading further up.
-            self.inbox.scroll_end(animate=False)
+            if widgets:
+                # New mail brings the view back down, even when Wally was reading further up.
+                self.inbox.scroll_end(animate=False)
             self.app.bell()
 
     def add_note(self, head: str, body: str, sent: bool = False) -> None:
