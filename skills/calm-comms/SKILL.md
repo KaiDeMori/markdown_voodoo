@@ -92,4 +92,3 @@ EOF
 - The first mail of each `inbox` always comes, so a big mail arrives alone.
   `inbox <seat_name> 1` hands out one mail per call.
 - `inbox <seat_name> 0` only peeks: it lists what is waiting, with sizes, and moves nothing.
-- The script needs LF line endings.
