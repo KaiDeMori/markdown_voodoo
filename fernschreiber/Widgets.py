@@ -161,8 +161,9 @@ def header_style(widget: Static, focused: bool | None) -> str:
 class Message_area(TextArea):
     """The input; it lights up the prompt beside it while it has the focus."""
 
+    # The prompt is the one Static in the same row, whatever its id.
     def on_focus(self) -> None:
-        self.parent.query_one("#prompt", Static).set_class(True, "focused")
+        self.parent.query_one(Static).set_class(True, "focused")
 
     def on_blur(self) -> None:
-        self.parent.query_one("#prompt", Static).set_class(False, "focused")
+        self.parent.query_one(Static).set_class(False, "focused")

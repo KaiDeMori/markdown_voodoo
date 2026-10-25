@@ -12,6 +12,12 @@ class Mail:
     time: str
     sender: str
     text: str
+    to: str = ""
+
+    @property
+    def group(self) -> str:
+        """The group a mail went to, or "" for a mail to the own seat."""
+        return self.to if self.to and self.to != settings.OWN_SEAT else ""
 
 
 def display_time(moment: datetime) -> str:
@@ -31,7 +37,8 @@ def read_mail(file_location: Path) -> Mail:
     except (IndexError, ValueError):
         moment = datetime.fromtimestamp(file_location.stat().st_mtime)
     if len(lines) >= 3 and lines[1].startswith("From: ") and lines[2].startswith("To: "):
-        return Mail(display_time(moment), lines[1].removeprefix("From: ").strip(), "\n".join(lines[3:]).strip("\n"))
+        sender, to = lines[1].removeprefix("From: ").strip(), lines[2].removeprefix("To: ").strip()
+        return Mail(display_time(moment), sender, "\n".join(lines[3:]).strip("\n"), to)
     return Mail(display_time(moment), file_location.name, content.strip("\n"))
 
 

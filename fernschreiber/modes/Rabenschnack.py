@@ -113,7 +113,8 @@ class Rabenschnack_screen(Screen):
             return
         widgets = []
         for mail in mails:
-            widgets += self.entry_widgets(f"{mail.time}  {mail.sender}", mail.text)
+            group_tag = f"  #{mail.group}" if mail.group else ""
+            widgets += self.entry_widgets(f"{mail.time}  {mail.sender}{group_tag}", mail.text)
         self.inbox.mount_all(widgets)
         if ring:
             # New mail brings the view back down, even when Wally was reading further up.

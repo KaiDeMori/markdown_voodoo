@@ -2,7 +2,9 @@
 
 import os
 import subprocess
+from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 
 import settings
 
@@ -16,7 +18,17 @@ CALM_COMMS_ENVIRONMENT = dict(
 )
 CALM_COMMS_OPTIONS = dict(stdin=subprocess.DEVNULL, env=CALM_COMMS_ENVIRONMENT)
 # The text goes in on stdin, so the Windows command line never carries it: no quoting, no globbing.
-SEND_SCRIPT = 'exec bash "$0" send "$1" "$2" "$(cat)"'
+SEND_SCRIPT = 'exec bash "$0" "$1" "$2" "$3" "$(cat)"'
+
+
+@dataclass
+class Group:
+    name: str
+    members: list[str]
+
+    @property
+    def joined(self) -> bool:
+        return settings.OWN_SEAT in self.members
 
 
 def calm_comms_command(*arguments: str) -> list[str]:
@@ -39,14 +51,39 @@ def start_watcher() -> subprocess.Popen:
     )
 
 
-def send_mail(target_seat: str, text: str) -> subprocess.CompletedProcess:
-    """Sends a mail from the own seat through calm-comms `send`."""
+def send_mail(target: str, text: str, verb: str = "send") -> subprocess.CompletedProcess:
+    """Sends a mail from the own seat through calm-comms: `send` to a seat, or `group` to a group."""
     return subprocess.run(
-        [settings.BASH, "-c", SEND_SCRIPT, settings.CALM_COMMS, settings.OWN_SEAT, target_seat],
+        [settings.BASH, "-c", SEND_SCRIPT, settings.CALM_COMMS, verb, settings.OWN_SEAT, target],
         input=text.encode("utf-8"),
         capture_output=True,
         env=CALM_COMMS_ENVIRONMENT,
     )
+
+
+def read_groups() -> list[Group]:
+    """Every group in group_chat: a folder with a members folder, one empty file per member seat."""
+    groups = []
+    if settings.GROUP_CHAT.is_dir():
+        for folder in sorted(settings.GROUP_CHAT.iterdir()):
+            members_folder = folder / "members"
+            if members_folder.is_dir():
+                groups.append(Group(folder.name, sorted(member.name for member in members_folder.iterdir() if member.is_file())))
+    return groups
+
+
+def thread_files(group_name: str) -> list[Path]:
+    """A group's thread: its mail files, oldest first."""
+    folder = settings.GROUP_CHAT / group_name
+    files = [file for file in folder.glob("*.md") if file.is_file() and file.name != "README.md"]
+    return sorted(files, key=lambda file: file.stat().st_mtime)
+
+
+def join_or_leave(verb: str, group_name: str) -> tuple[bool, str]:
+    """`join` or `leave` for the own seat; returns whether it worked and calm-comms' own line."""
+    result = run_calm_comms(verb, settings.OWN_SEAT, group_name)
+    output = (result.stdout + result.stderr).decode("utf-8", "replace").strip()
+    return result.returncode == 0, output or f"calm-comms stopped with exit code {result.returncode}"
 
 
 def is_watching(state: list[str], now: datetime) -> bool:

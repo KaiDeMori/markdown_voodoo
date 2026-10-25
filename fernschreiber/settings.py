@@ -12,6 +12,8 @@ N06BC01_FIRST_LINE = "☕ N06BC01: please wake these ravens and ask them to schn
 HALLMASTER_SEAT = "hallmaster"
 CATALOG_KEY_HINTS = "[A] add  [N] note  [Del] remove  [Esc] back"
 CATALOG_META_VARIABLE = "calm_email_catalog_meta"
+GROUPS_KEY_HINTS = "[Tab] focus  [J] join  [L] leave  [^Enter] post  [F2] help"
+GROUP_THREAD_COUNT = 50
 HELP_TEXT = """\
 fernschreiber keys
 
@@ -20,6 +22,7 @@ F2           this help; Esc goes back
 F3           NOTAR, a notice to all ravens; Esc goes back
 F4           N06BC01, waking ravens; Esc goes back
 F5           the catalog: letters and addresses; Esc goes back
+F6           the groups: their threads, and posting to them
 Ctrl+Q       quit
 
 In Rabenschnack
@@ -47,6 +50,14 @@ N            the selected label's note: edit, then Enter; empty clears it
 Del          remove the selected letter, then y to confirm
 Esc          cancel, or go back
 
+In the groups
+Tab          next pane: groups, thread, input
+Up/Down      in the groups: pick a group, and see its thread
+J / L        in the groups: join / leave the group under ">"
+Enter        new line
+Ctrl+Enter   post to the selected group
+Esc          back to the input
+
 ^ stands for Ctrl."""
 
 SEAT_PANE_WIDTH = 26
@@ -59,4 +70,5 @@ BASH = GIT_USR_BIN + r"\bash.exe"
 CALM_COMMS = "C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh"
 CALM_EMAIL = "C:/Users/devboese/markdown_voodoo/calm_email/calm_email.sh"
 HRAFNSMAL = Path("C:/haven/Hall/thing/Hrafnsmal")
+GROUP_CHAT = Path("C:/haven/Hall/thing/group_chat")
 OWN_SEAT = "wally"

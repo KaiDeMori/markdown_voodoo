@@ -14,6 +14,7 @@ from calm_comms import read_seats, run_calm_comms, start_watcher
 from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail
 from modes.Catalog import Catalog_screen
+from modes.Groups import Groups_screen
 from modes.Help import Help_screen
 from modes.N06BC01 import N06BC01_screen
 from modes.NOTAR import NOTAR_screen, load_NOTAR_messages
@@ -55,6 +56,17 @@ def build_css(color_theme: Color_theme | None) -> str:
     #catalog_input {{ width: 1fr; height: 1; padding: 0; border: none; }}
     #catalog_input:focus {{ border: none; }}
     #catalog_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
+    #groups_main {{ height: 1fr; }}
+    #group_list {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
+    #group_thread {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
+    #group_input_row {{ height: {settings.INPUT_LINES}; border-left: ascii; border-right: ascii; }}
+    #group_prompt {{ width: auto; height: {settings.INPUT_LINES}; }}
+    #group_prompt.focused {{ text-style: bold; }}
+    #group_message {{ width: 1fr; height: {settings.INPUT_LINES}; padding: 0; border: none; }}
+    #group_message:focus {{ border: none; }}
+    #group_message.-read-only {{ color: $text-muted; }}
+    #group_message.-read-only .text-area--cursor {{ background: transparent; color: $text-muted; text-style: none; }}
+    #group_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
     """
     if color_theme is None:
         return css
@@ -88,6 +100,16 @@ def build_css(color_theme: Color_theme | None) -> str:
     #catalog_prompt {{ color: {dim}; }}
     #catalog_input {{ background: {background}; color: {text}; }}
     #catalog_status {{ border-left: ascii {frame}; border-right: ascii {frame}; color: {dim}; }}
+    #group_list {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #group_thread {{ border-right: ascii {frame}; }}
+    #thread_title {{ color: {dim}; }}
+    #group_input_row {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #group_prompt {{ color: {dim}; }}
+    #group_prompt.focused {{ color: {focus}; }}
+    #group_message {{ background: {background}; color: {text}; }}
+    #group_message.-read-only {{ color: {dim}; }}
+    #group_message.-read-only .text-area--cursor {{ color: {dim}; }}
+    #group_status {{ border-left: ascii {frame}; border-right: ascii {frame}; color: {dim}; }}
     """
 
 
@@ -102,14 +124,17 @@ class Fernschreiber(App):
         "notar": NOTAR_screen,
         "n06bc01": N06BC01_screen,
         "catalog": Catalog_screen,
+        "groups": Groups_screen,
     }
     DEFAULT_MODE = "rabenschnack"
+    # With priority, the mode keys win over a focused widget's own bindings, such as F6 and F7 in a TextArea.
     BINDINGS = [
-        Binding("f1", "switch_mode('rabenschnack')", show=False),
-        Binding("f2", "switch_mode('help')", show=False),
-        Binding("f3", "switch_mode('notar')", show=False),
-        Binding("f4", "switch_mode('n06bc01')", show=False),
-        Binding("f5", "switch_mode('catalog')", show=False),
+        Binding("f1", "switch_mode('rabenschnack')", show=False, priority=True),
+        Binding("f2", "switch_mode('help')", show=False, priority=True),
+        Binding("f3", "switch_mode('notar')", show=False, priority=True),
+        Binding("f4", "switch_mode('n06bc01')", show=False, priority=True),
+        Binding("f5", "switch_mode('catalog')", show=False, priority=True),
+        Binding("f6", "switch_mode('groups')", show=False, priority=True),
     ]
 
     def __init__(self, color_theme: Color_theme | None = None) -> None:
@@ -123,6 +148,7 @@ class Fernschreiber(App):
         self.rabenschnack: Rabenschnack_screen | None = None
         self.notar: NOTAR_screen | None = None
         self.wake: N06BC01_screen | None = None
+        self.groups: Groups_screen | None = None
         self.watcher: subprocess.Popen | None = None
         self.watcher_lock = threading.Lock()
         self.stopping = False
@@ -200,6 +226,12 @@ class Fernschreiber(App):
             mails.append(Mail(clock_text(), "fernschreiber", output or f"inbox stopped with exit code {result.returncode}"))
         if mails:
             self.post(self.rabenschnack.add_mails, mails, True)
+            self.post(self.mail_arrived)
+
+    def mail_arrived(self) -> None:
+        """A group mail lands in the own seat too, so new mail may mean a grown thread in the groups mode."""
+        if self.groups is not None:
+            self.groups.mail_arrived()
 
     def stop_watching(self) -> None:
         """Closes the watcher's stdin; the watcher leaves at once and removes its marker."""
