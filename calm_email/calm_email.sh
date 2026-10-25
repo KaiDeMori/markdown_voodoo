@@ -11,6 +11,7 @@
 # who: every label with its note, or one label's note; for every raven, and never with an address.
 # forward: passes one mail's plain text into a seat, as a hall mail from the postmaster; its allowed attachments wait in the postmaster's inbox, and the hall mail names them.
 # send: sends a plain-text mail to a label in the catalog, and to nobody else, with files from the postmaster's outbox if named.
+# relay: sends a raven's hall mail from the postmaster's seat the way send does, its text exactly as written; a block between lines of --- goes out alone.
 # on: waits for the first new mail from a label in the catalog, or the timer, and exits.
 # attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names the tool chooses.
 # read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
@@ -26,6 +27,7 @@
 #        calm_email.sh who [label]
 #        calm_email.sh forward <number> <seat_name>
 #        calm_email.sh send <label> <subject> <text> [file ...]
+#        calm_email.sh relay <label> <subject> <hall_mail> [file ...]
 #        calm_email.sh on [long|short|<minutes>]
 #        calm_email.sh attachments <number>
 #        calm_email.sh read [unknown] <number>
@@ -278,12 +280,10 @@ forward_mail() {
   echo "Mail $number is forwarded to $seat_name$file_note."
 }
 
-send_mail() {
-  local subject=$2 text=$3 address attachment_note=''
-  if [[ -z $1 || -z $subject || -z $text ]]; then echo 'send <label> <subject> <text> [file ...]?'; exit 1; fi
-  catalog_label "$1"
-  # Everything after the text is a file name from the outbox.
-  shift 3
+deliver_mail() {
+  # Sends the caller's text and subject to the label in label, with the outbox files named in the arguments.
+  # It sets attachment_note and leaves send_mail.py's own lines in output, for the caller's answer.
+  local address imap_host=${imap_location#imaps://}
   if (( $# == 1 )); then attachment_note=', with 1 file'; elif (( $# > 1 )); then attachment_note=", with $# files"; fi
   read_password
   read_catalog
@@ -292,12 +292,52 @@ send_mail() {
   if [[ -z $address ]]; then echo "$label is not in the catalog, so nothing goes out."; exit 1; fi
   # The password and the address reach Python only through the environment of this one command.
   # send_mail.py also files a copy in the Sent folder, so it runs in the venv that knows IMAPClient.
-  local imap_host=${imap_location#imaps://} output
   output=$(calm_email_key=$password recipient=$address subject=$subject text=$text outbox_location="$attachments_location/outbox" \
     imap_host=${imap_host%%[:/]*} "$script_folder/.venv/Scripts/python.exe" -I "$script_folder/send_mail.py" "$@") \
     || { echo "$output"; exit 1; }
+}
+
+send_mail() {
+  local subject=$2 text=$3 attachment_note='' output=''
+  if [[ -z $1 || -z $subject || -z $text ]]; then echo 'send <label> <subject> <text> [file ...]?'; exit 1; fi
+  catalog_label "$1"
+  # Everything after the text is a file name from the outbox.
+  shift 3
+  deliver_mail "$@"
   echo "The mail to $label is sent$attachment_note."
   if [[ -n $output ]]; then echo "$output"; fi
+}
+
+relay_mail() {
+  local subject=$2 mail_name=$3 mail_location='' location text block_status=0 attachment_note='' output=''
+  if [[ -z $1 || -z $subject || -z $mail_name ]]; then echo 'relay <label> <subject> <hall_mail> [file ...]?'; exit 1; fi
+  catalog_label "$1"
+  # A file name only, never a path: only a hall mail from the postmaster's seat goes out.
+  if [[ $mail_name == */* || $mail_name == *\\* || $mail_name == . || $mail_name == .. ]]; then echo "$mail_name: only a file name from the postmaster's seat, no path."; exit 1; fi
+  for location in "$hrafnsmal_location/postmaster/$mail_name" "$hrafnsmal_location/postmaster/already_read/$mail_name"; do
+    if [[ -f $location ]]; then mail_location=$location; break; fi
+  done
+  if [[ -z $mail_location ]]; then echo "$mail_name is neither in the postmaster's seat nor in its already_read, so nothing goes out."; exit 1; fi
+  # The text is everything below the To: line, exactly as written.
+  # Ravens may wrap it in notes for the postmaster: then the block from the first line of --- to the last goes out alone, so a horizontal rule inside it stays.
+  text=$(awk '
+    below_to { lines[++count] = $0; if ($0 == "---") { if (!first) first = count; last = count } }
+    !below_to && /^To: / { below_to = 1 }
+    END {
+      if (!below_to) exit 3
+      if (first && first == last) exit 4
+      for (line = first ? first + 1 : 1; line <= (first ? last - 1 : count); line++) print lines[line]
+    }' "$mail_location") || block_status=$?
+  # A refusal is easy to fix; a half-cut letter is not.
+  if (( block_status == 3 )); then echo "$mail_name has no To: line, so it is no hall mail, and nothing goes out."; exit 1; fi
+  if (( block_status == 4 )); then echo "$mail_name has a single line of ---, so nothing goes out: a block needs a first and a last."; exit 1; fi
+  if (( block_status != 0 )); then echo "$mail_name could not be read, so nothing goes out."; exit 1; fi
+  if [[ -z ${text//[[:space:]]/} ]]; then echo "$mail_name holds no text, so nothing goes out."; exit 1; fi
+  # Everything after the hall mail is a file name from the outbox.
+  shift 3
+  deliver_mail "$@"
+  # One line for the postmaster's flight log, source file first.
+  echo "$mail_name went to $label, \"$subject\"$attachment_note.${output:+ ${output//$'\n'/ }}"
 }
 
 watch_mailbox() {
@@ -326,6 +366,7 @@ case $verb in
   setup) setup_password ;;
   forward) forward_mail "$2" "$3" ;;
   send) shift; send_mail "$@" ;;
+  relay) shift; relay_mail "$@" ;;
   list)
     [[ -z ${2:-} || $2 == unknown ]] || { echo 'list, or list unknown?'; exit 1; }
     run_mailbox list ${2:+"$2"}
@@ -353,6 +394,6 @@ case $verb in
     esac
     ;;
   who) show_notes "${2:-}" ;;
-  *) echo 'setup, list, read, polite, catalog, who, forward, send, on or attachments?'; exit 1 ;;
+  *) echo 'setup, list, read, polite, catalog, who, forward, send, relay, on or attachments?'; exit 1 ;;
 # exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
 esac; exit

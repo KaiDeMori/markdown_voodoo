@@ -24,6 +24,7 @@ calm-email <verb> ...
 | `forward 1 tool_builder` | `Mail 1 is forwarded to tool_builder.` |
 | `send W 'Subject' 'Text'` | `The mail to Ⓦ is sent.` |
 | `send W 'Subject' 'Text' yufka.png notes.md` | `The mail to Ⓦ is sent, with 2 files.` |
+| `relay W 'Subject' from_otis_builder_2026-10-25_180714.md` | `from_otis_builder_2026-10-25_180714.md went to Ⓦ, "Subject". A copy is in Sent.` |
 | `attachments 5` | `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/inbox/2026-10-20_211140_5_1.png` |
 | `catalog` | `Ⓢ Ⓦ` |
 | `who Ⓦ` | `Ⓦ: Wally. 'nough said` |
@@ -43,6 +44,8 @@ calm-email <verb> ...
   To read a mail, use `read`; `forward` is for passing it on.
 - Every mail the haven sends, polite replies included, gets a copy in the provider's Sent folder, where the mailbox's backup keeps it; the answer to `send` names the folder.
 - `send` reaches only the labels in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.
+- `relay` sends a raven's hall mail the way `send` does, named by its file name in your seat or its `already_read/`, so its text never passes through your window again.
+  The text goes out exactly as written: everything below the `To:` line, or, when the mail holds lines of `---`, only the block from the first to the last; a single `---` is refused, so a half-cut letter never goes out.
 - A label stands for one address: a plain letter like `W` becomes `Ⓦ`, and anything else without spaces and without @ stays as it is, like `ⓢ` or `🐍`.
 
 ## Attachments
