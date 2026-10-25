@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# calm_comms, Rabenschnack 1.5: watches a raven's Hrafnsmal seat and sends its mail.
+# calm_comms, Rabenschnack 1.6: watches a raven's Hrafnsmal seat and sends its mail.
 # on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 # A waking watcher leaves watching.md saying awake for a few minutes, until the raven's next on replaces it.
 # off: stops the seat's watcher and deletes watching.md.
