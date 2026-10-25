@@ -6,6 +6,7 @@
 # overview: lists every seat with the timer of its living watcher, awake for a raven that just woke, or - otherwise.
 # inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 # send: writes a mail from one seat into another, and never overwrites a mail.
+# group: writes a mail from one seat to every other member of a group, and keeps a copy as the group's thread.
 # Terminal mode: the fernschreiber sets calm_comms_mode=terminal.
 # Then nothing pauses, inbox has no limits, and on stays present without a timer, printing one line per mail as it lands.
 # A watcher in terminal mode stays only while its stdin stays open, so a crashed terminal leaves no ghost.
@@ -14,9 +15,12 @@
 #        calm_comms.sh overview
 #        calm_comms.sh inbox <seat_name> [mail_limit]
 #        calm_comms.sh send <seat_name> <target_seat_name> <text>
+#        calm_comms.sh group <seat_name> <group_name> <text>
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
+# Each group is a folder here: its README names the members, and the folder keeps the thread.
+group_chat_location="$haven_location/Hall/thing/group_chat"
 poll_interval_seconds=10
 long_watcher_minutes=55
 short_watcher_minutes=4
@@ -224,6 +228,45 @@ send_mail() {
   throttle
 }
 
+check_group() {
+  if [[ -z $1 ]]; then echo 'group <seat_name> <group_name> <text>?'; exit 1; fi
+  if [[ $1 == */* || $1 == *\\* || $1 == . || $1 == .. || ! -f $group_chat_location/$1/README.md ]]; then echo "There is no group $1 in group_chat."; exit 1; fi
+}
+
+send_group() {
+  local group_location="$group_chat_location/$target_seat_name" members_line member is_member='' file_name stamp location reached_count
+  local -a members locations
+  [[ -n $mail_text ]] || { echo 'Nothing to send.'; exit 1; }
+  # The README names the members in one line, such as: Members: tool_builder, test_pilot, wally
+  members_line=$(sed -n 's/^Members: *//p' "$group_location/README.md" | head -n 1)
+  read -r -a members <<< "${members_line//,/ }"
+  for member in "${members[@]}"; do
+    if [[ $member == "$seat_name" ]]; then is_member=yes; fi
+  done
+  [[ -n $is_member ]] || { echo "$seat_name is no member of $target_seat_name, so nothing goes out."; exit 1; }
+  # The group's folder keeps the thread; every other member gets a copy in their seat, and the copy wakes their watcher.
+  file_name="from_${seat_name}_$(date +%Y-%m-%d_%H%M%S).md"
+  locations=("$group_location/$file_name")
+  for member in "${members[@]}"; do
+    if [[ $member == "$seat_name" ]]; then continue; fi
+    [[ -f $hrafnsmal_location/$member/README.md ]] || { echo "$target_seat_name names $member, who has no seat, so nothing goes out."; exit 1; }
+    locations+=("$hrafnsmal_location/$member/$file_name")
+  done
+  # Everything is checked before anything is written.
+  for location in "${locations[@]}"; do
+    [[ ! -e $location ]] || { echo 'One mail per second; send it again in a moment.'; exit 1; }
+  done
+  # noclobber: an existing mail is never overwritten, not even in a race.
+  set -o noclobber
+  stamp=$(timestamp)
+  for location in "${locations[@]}"; do
+    printf '%s\nFrom: %s\nTo: %s\n%s\n' "$stamp" "$seat_name" "$target_seat_name" "$mail_text" > "$location"
+  done
+  reached_count=$(( ${#locations[@]} - 1 ))
+  if (( reached_count == 1 )); then echo "To $target_seat_name: 1 member reached."; else echo "To $target_seat_name: $reached_count members reached."; fi
+  throttle
+}
+
 case $verb in
   on)
     check_seat "$seat_name"
@@ -268,10 +311,22 @@ case $verb in
   send)
     target_seat_name=$3
     check_seat "$seat_name"
+    # A group mail reaches every member, so it has a verb of its own; a seat of the same name still goes first.
+    if [[ -n $target_seat_name && ! -f $hrafnsmal_location/$target_seat_name/README.md && -f $group_chat_location/$target_seat_name/README.md ]]; then
+      echo "$target_seat_name is a group: a mail there reaches every member. Use group."; exit 1
+    fi
     check_seat "$target_seat_name"
     shift 3
     mail_text=$*
     send_mail
+    ;;
+  group)
+    target_seat_name=$3
+    check_seat "$seat_name"
+    check_group "$target_seat_name"
+    shift 3
+    mail_text=$*
+    send_group
     ;;
 # exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
 esac; exit
