@@ -19,7 +19,7 @@
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
-# Each group is a folder here: its README names the members, and the folder keeps the thread.
+# Each group is a folder here: its MEMBERS.txt names one seat per line, and the folder keeps the thread.
 group_chat_location="$haven_location/Hall/thing/group_chat"
 poll_interval_seconds=10
 long_watcher_minutes=55
@@ -230,16 +230,18 @@ send_mail() {
 
 check_group() {
   if [[ -z $1 ]]; then echo 'group <seat_name> <group_name> <text>?'; exit 1; fi
-  if [[ $1 == */* || $1 == *\\* || $1 == . || $1 == .. || ! -f $group_chat_location/$1/README.md ]]; then echo "There is no group $1 in group_chat."; exit 1; fi
+  if [[ $1 == */* || $1 == *\\* || $1 == . || $1 == .. || ! -f $group_chat_location/$1/MEMBERS.txt ]]; then echo "There is no group $1 in group_chat."; exit 1; fi
 }
 
 send_group() {
-  local group_location="$group_chat_location/$target_seat_name" members_line member is_member='' file_name stamp location reached_count
-  local -a members locations
+  local group_location="$group_chat_location/$target_seat_name" member is_member='' file_name stamp location reached_count
+  local -a members=() locations
   [[ -n $mail_text ]] || { echo 'Nothing to send.'; exit 1; }
-  # The README names the members in one line, such as: Members: tool_builder, test_pilot, wally
-  members_line=$(sed -n 's/^Members: *//p' "$group_location/README.md" | head -n 1)
-  read -r -a members <<< "${members_line//,/ }"
+  # MEMBERS.txt names one seat per line; empty lines are skipped, and spaces around a name don't count.
+  while IFS= read -r member || [[ -n $member ]]; do
+    member=${member//[[:space:]]/}
+    if [[ -n $member ]]; then members+=("$member"); fi
+  done < "$group_location/MEMBERS.txt"
   for member in "${members[@]}"; do
     if [[ $member == "$seat_name" ]]; then is_member=yes; fi
   done
@@ -312,7 +314,7 @@ case $verb in
     target_seat_name=$3
     check_seat "$seat_name"
     # A group mail reaches every member, so it has a verb of its own; a seat of the same name still goes first.
-    if [[ -n $target_seat_name && ! -f $hrafnsmal_location/$target_seat_name/README.md && -f $group_chat_location/$target_seat_name/README.md ]]; then
+    if [[ -n $target_seat_name && ! -f $hrafnsmal_location/$target_seat_name/README.md && -f $group_chat_location/$target_seat_name/MEMBERS.txt ]]; then
       echo "$target_seat_name is a group: a mail there reaches every member. Use group."; exit 1
     fi
     check_seat "$target_seat_name"

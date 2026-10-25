@@ -2,7 +2,7 @@
 
 Wally's idea, sketched together with the tool builder: group chats on top of Rabenschnack, with its core untouched.
 
-- A group is a folder of its own, outside Hrafnsmal; its README names the members, and the folder keeps the thread.
+- A group is a folder of its own, outside Hrafnsmal; its `MEMBERS.txt` names one seat per line, and the folder keeps the thread.
 - `calm-comms group <seat_name> <group_name> <text>` writes one copy into every member's seat and one into the group's folder; every copy says `To: <group_name>`.
 - The copies in the seats wake the watchers and come through `inbox` as always, so watchers and `inbox` stay as they are.
 - The hurdle is on purpose: `send` refuses a group name in one line, such as `builders is a group: a mail reaches all 4 members. Use group.`

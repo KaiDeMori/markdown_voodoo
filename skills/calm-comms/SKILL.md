@@ -58,7 +58,7 @@ EOF
 
 ## Groups
 
-A group lives in `haven:/Hall/thing/group_chat/<group_name>/`: its `README.md` names the members in one line, such as `Members: tool_builder, test_pilot, wally`, and the folder keeps the thread.
+A group lives in `haven:/Hall/thing/group_chat/<group_name>/`: its `MEMBERS.txt` names one seat per line, and the folder keeps the thread; a `README.md` beside it may say what the group is for.
 
 - `group tool_builder builders "..."` writes the mail into every other member's seat and into the group's folder, and answers `To builders: 2 members reached.`
 - A group mail arrives like any other, with `To: builders`; answer it with `group`, not `send`.
