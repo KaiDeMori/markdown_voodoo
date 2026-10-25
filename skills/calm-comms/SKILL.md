@@ -83,8 +83,9 @@ EOF
 
 - Quoth the raven: check first.
   Run `overview` instead of assuming who is watching.
-- The minutes of the long and short watcher, how often the watcher looks, the inbox limits and the write throttle are the variables at the top of `calm_comms.sh`.
+- The minutes of the long and short watcher, how often the watcher looks, the wake jitter, the inbox limits and the write throttle are the variables at the top of `calm_comms.sh`.
 - After a write, `send`, `inbox` and `off` wait for the write throttle, 2 seconds, before they return: a buffer for a busy hall.
+- A watcher that wakes waits a random 1 to 5 seconds before it returns, so one mail to many seats, like a NOTAR, wakes their ravens one by one.
 - A file counts as mail once it stays: a writer's temp file is gone a second later.
 - Only files count as mail, and `README.md` and `watching.md` never do.
 - Read mail with `inbox`, not the Read tool: it comes as plain text, and it files itself away.

@@ -25,6 +25,9 @@ awake_grace_minutes=5
 inbox_mail_limit=3
 inbox_size_limit_kilobytes=10
 write_throttle_seconds=2
+# A watcher that wakes waits a random moment between these two before it wakes its raven.
+wake_jitter_shortest_seconds=1
+wake_jitter_longest_seconds=5
 # Terminal mode is no verb, so no raven finds it in a skill list; -1 lifts a limit.
 terminal_mode=''
 if [[ ${calm_comms_mode:-} == terminal ]]; then
@@ -77,6 +80,15 @@ rest() {
     rm -f "$fifo_location"
   fi
   read -t "$1" -u "$quiet_fd" || true
+}
+
+jitter() {
+  # One mail can wake many watchers at once, like a NOTAR to all; a random pause lets their ravens wake one by one.
+  # Drawn in milliseconds, so two watchers rarely pick the same moment; RANDOM reaches 32767, so the span stays below 32 seconds.
+  local jitter_milliseconds jitter_seconds
+  jitter_milliseconds=$(( wake_jitter_shortest_seconds * 1000 + RANDOM % ((wake_jitter_longest_seconds - wake_jitter_shortest_seconds) * 1000 + 1) ))
+  printf -v jitter_seconds '%d.%03d' $(( jitter_milliseconds / 1000 )) $(( jitter_milliseconds % 1000 ))
+  rest "$jitter_seconds"
 }
 
 read_marker() {
@@ -232,6 +244,8 @@ case $verb in
     # 143 is the usual exit code after a stop; the raven reads it as: no mail, nothing to do.
     trap 'echo stopped; exit 143' INT TERM
     watch_seat
+    # Terminal mode never gets here: its watcher stays until the terminal is gone.
+    jitter
     leave_awake_marker
     # The bell rings only in a terminal; ravens in the background never hear it.
     if [[ -t 1 ]]; then printf '\a'; fi
