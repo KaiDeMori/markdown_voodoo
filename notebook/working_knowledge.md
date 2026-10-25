@@ -60,10 +60,7 @@ Any session may read and edit this notebook at any time, without asking.
   When a command must run from a specific folder, wrap it in a subshell: `( cd <dir> && <command> )` leaves the session's working directory unchanged.
 - `cmd //c <script>.bat` from Bash does not find a script by relative name.
   Pass the full Windows path in single quotes, and redirect `< /dev/null` so `pause` does not block.
-- The Write tool writes LF; the Edit tool keeps uniform line endings, and turns a file of mostly LF with a few CRLF into all LF.
-  Check line endings with `file` before rewriting a file; `grep -c $'\r$'` counts every line here, CR or not.
-  `.gitignore` and the `deploy.bat` files use CRLF; convert a freshly written file with `sed -i 's/$/\r/'`.
-  `sed -i` drops the CR of every CRLF line; `sed -b -i` keeps it.
+- Line endings are git's job: `.gitattributes` keeps LF everywhere and CRLF for `.bat` files, and no session checks them unless something breaks.
 - Bash here leaves `$'\uXXXX'` unexpanded; byte escapes work: `$'\xe2\x80\x8b'` yields U+200B.
 - In Bash tool input, `\\` arrives as a single backslash.
 - Write and Edit turn a four-digit `\u` escape with hex digits into the character itself; `\UXXXXXXXX` and `\\` arrive as typed.
