@@ -7,6 +7,7 @@
 # inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 # send: writes a mail from one seat into another, and never overwrites a mail.
 # group: writes a mail from one seat to every other member of a group, and keeps a copy as the group's thread.
+# join and leave: add a seat to a group's MEMBERS.txt or take it out, and wake nobody.
 # Terminal mode: the fernschreiber sets calm_comms_mode=terminal.
 # Then nothing pauses, inbox has no limits, and on stays present without a timer, printing one line per mail as it lands.
 # A watcher in terminal mode stays only while its stdin stays open, so a crashed terminal leaves no ghost.
@@ -16,6 +17,8 @@
 #        calm_comms.sh inbox <seat_name> [mail_limit]
 #        calm_comms.sh send <seat_name> <target_seat_name> <text>
 #        calm_comms.sh group <seat_name> <group_name> <text>
+#        calm_comms.sh join <seat_name> <group_name>
+#        calm_comms.sh leave <seat_name> <group_name>
 
 haven_location='C:/haven'
 hrafnsmal_location="$haven_location/Hall/thing/Hrafnsmal"
@@ -229,19 +232,33 @@ send_mail() {
 }
 
 check_group() {
-  if [[ -z $1 ]]; then echo 'group <seat_name> <group_name> <text>?'; exit 1; fi
+  if [[ -z $1 ]]; then echo "$verb <seat_name> <group_name>?"; exit 1; fi
   if [[ $1 == */* || $1 == *\\* || $1 == . || $1 == .. || ! -f $group_chat_location/$1/MEMBERS.txt ]]; then echo "There is no group $1 in group_chat."; exit 1; fi
+}
+
+read_members() {
+  # MEMBERS.txt names one seat per line; empty lines are skipped, and spaces around a name don't count.
+  # The names land in the caller's members.
+  local member
+  members=()
+  while IFS= read -r member || [[ -n $member ]]; do
+    member=${member//[[:space:]]/}
+    if [[ -n $member ]]; then members+=("$member"); fi
+  done < "$group_chat_location/$1/MEMBERS.txt"
+}
+
+write_members() {
+  # The caller's members are written anew, one seat per line, and replace the old list in one step.
+  local members_file_location="$group_chat_location/$target_seat_name/MEMBERS.txt"
+  if (( ${#members[@]} > 0 )); then printf '%s\n' "${members[@]}" > "$members_file_location.new"; else : > "$members_file_location.new"; fi
+  mv -f "$members_file_location.new" "$members_file_location"
 }
 
 send_group() {
   local group_location="$group_chat_location/$target_seat_name" member is_member='' file_name stamp location reached_count
   local -a members=() locations
   [[ -n $mail_text ]] || { echo 'Nothing to send.'; exit 1; }
-  # MEMBERS.txt names one seat per line; empty lines are skipped, and spaces around a name don't count.
-  while IFS= read -r member || [[ -n $member ]]; do
-    member=${member//[[:space:]]/}
-    if [[ -n $member ]]; then members+=("$member"); fi
-  done < "$group_location/MEMBERS.txt"
+  read_members "$target_seat_name"
   for member in "${members[@]}"; do
     if [[ $member == "$seat_name" ]]; then is_member=yes; fi
   done
@@ -266,6 +283,33 @@ send_group() {
   done
   reached_count=$(( ${#locations[@]} - 1 ))
   if (( reached_count == 1 )); then echo "To $target_seat_name: 1 member reached."; else echo "To $target_seat_name: $reached_count members reached."; fi
+  throttle
+}
+
+join_group() {
+  local member
+  local -a members=()
+  read_members "$target_seat_name"
+  for member in "${members[@]}"; do
+    if [[ $member == "$seat_name" ]]; then echo "$seat_name is already in $target_seat_name."; return 0; fi
+  done
+  members+=("$seat_name")
+  write_members
+  echo "$seat_name joined $target_seat_name: ${#members[@]} members."
+  throttle
+}
+
+leave_group() {
+  local member was_member=''
+  local -a members=() staying=()
+  read_members "$target_seat_name"
+  for member in "${members[@]}"; do
+    if [[ $member == "$seat_name" ]]; then was_member=yes; else staying+=("$member"); fi
+  done
+  if [[ -z $was_member ]]; then echo "$seat_name is not in $target_seat_name."; return 0; fi
+  members=("${staying[@]}")
+  write_members
+  echo "$seat_name left $target_seat_name: ${#members[@]} members."
   throttle
 }
 
@@ -329,6 +373,12 @@ case $verb in
     shift 3
     mail_text=$*
     send_group
+    ;;
+  join|leave)
+    target_seat_name=$3
+    check_seat "$seat_name"
+    check_group "$target_seat_name"
+    if [[ $verb == join ]]; then join_group; else leave_group; fi
     ;;
 # exit shares the line with esac, so bash parses it before running and never reads a script that changed meanwhile.
 esac; exit
