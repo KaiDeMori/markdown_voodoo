@@ -33,8 +33,8 @@ inbox_mail_limit=3
 inbox_size_limit_kilobytes=10
 write_throttle_seconds=2
 # A watcher that wakes waits a random moment between these two before it wakes its raven.
-wake_jitter_shortest_seconds=1
-wake_jitter_longest_seconds=5
+wake_jitter_shortest_seconds=2
+wake_jitter_longest_seconds=2
 # Terminal mode is no verb, so no raven finds it in a skill list; -1 lifts a limit.
 terminal_mode=''
 if [[ ${calm_comms_mode:-} == terminal ]]; then
