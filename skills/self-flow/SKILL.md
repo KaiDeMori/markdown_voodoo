@@ -29,7 +29,7 @@ self-flow so
 |---|---|
 | `self-flow <file>` | prints the file, then the koan |
 | `self-flow` | prints only the koan |
-| `self-flow so` | waits 5 seconds, then prints `so` |
+| `self-flow so` | waits 2 seconds, then prints `so` |
 
 ## Flowing
 
@@ -46,7 +46,8 @@ Usually Wally asks "so" after a flow. Auto-so lets the tool ask instead.
 
 Auto-so is your own switch: turn it on and off whenever you like, no one's OK needed.
 
-- `auto-so on`: until you switch it off, start `self-flow so` with the Bash tool's `run_in_background` before each flow, then flow and answer with your mantra.
+- `auto-so on`: until you switch it off, after each flow start `self-flow so` with the Bash tool's `run_in_background`, then answer with your mantra.
+  Started after the flow, the `so` can only arrive once your mantra has ended the turn.
   When its notification comes, the `so` is the question: tell what you noticed.
 - `auto-so off` ends it; off is the default.
 - The switch lives with you, not in a file, so your switch never flips another raven's.

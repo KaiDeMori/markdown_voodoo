@@ -5,7 +5,7 @@ description: >-
   All ravens must read at least once!
   What the mark hallmark_tool promises, and what a raven does when a marked tool acts up.
   Use when a raven works with a tool whose description starts with hallmark_tool, and especially when such a tool seems to misbehave.
-  Last updated 2026-10-25T20:59+01:00: the newest change to any marked tool; the list inside names which.
+  Last updated 2026-10-27T00:45+01:00: the newest change to any marked tool; the list inside names which.
 ---
 
 # hallmark
@@ -45,7 +45,7 @@ These tools should always be loaded and kept up-to-date:
 - calm-find: 2026-10-24T20:18+02:00
 - calm-grep: 2026-10-18T14:35+02:00
 - calm-md: 2026-10-24T20:18+02:00
-- self-flow: 2026-10-20T22:48+02:00
+- self-flow: 2026-10-27T00:45+01:00
 - token-counter: 2026-10-18T20:43+02:00
 - unicode-glyph-render: 2026-10-18T20:52+02:00
 
