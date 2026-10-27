@@ -46,7 +46,7 @@ Built the same night: Out, Seat states, overview, send and Exit codes; the READM
 - One message, one channel: mail, group or window.
   Nothing that went out in one channel is repeated in another, not even shortened.
 - When the answer went elsewhere, the window gets one marker: ✉️ by mail, 📮 in the group, 📧 an email to the world, the postmaster's only.
-- Open: the marker for "read, nothing to add".
+- 👍 read, nothing to add; the rule stands in SKILL.md's Channels chapter.
 
 ## Before the switch
 
