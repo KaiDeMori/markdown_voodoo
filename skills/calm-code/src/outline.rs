@@ -32,23 +32,26 @@ pub enum Entry_kind {
     Container(&'static str),
     Method,
     Function,
+    Property,
 }
 
 enum Definition_kind {
     Container(&'static str),
     Callable,
+    Property,
 }
 
 struct Definition<'tree> {
     node: Node<'tree>,
     kind: Definition_kind,
     name: String,
+    prefix: Option<String>,
     parameters: Option<String>,
 }
 
 enum Enclosing {
     Top_level,
-    Listed(usize),
+    Listed { index: usize, is_direct: bool },
     Left_out,
 }
 
@@ -58,6 +61,7 @@ impl Entry {
             Entry_kind::Container(word) => word,
             Entry_kind::Method => "method",
             Entry_kind::Function => "function",
+            Entry_kind::Property => "property",
         }
     }
 
@@ -203,12 +207,14 @@ fn collect_definitions<'tree>(tree: &'tree Tree, query: &Query, source: &str) ->
     while let Some(query_match) = matches.next() {
         let mut definition = None;
         let mut name = None;
+        let mut prefix = None;
         let mut parameters = None;
         for capture in query_match.captures() {
             let text = capture.node.utf8_text(source.as_bytes()).unwrap_or_default();
             match capture_names[capture.index as usize] {
                 "name" => name = Some(text.to_string()),
-                "parameters" => parameters = Some(flatten_parameters(text)),
+                "prefix" => prefix = Some(text.to_string()),
+                "parameters" => parameters = Some(flatten_parameters(&text_without_comments(capture.node, source))),
                 capture_name => {
                     if let Some(kind) = definition_kind_for(capture_name) {
                         definition = Some((capture.node, kind));
@@ -218,7 +224,7 @@ fn collect_definitions<'tree>(tree: &'tree Tree, query: &Query, source: &str) ->
         }
         if let (Some((node, kind)), Some(name)) = (definition, name) {
             if seen_nodes.insert(node.id()) {
-                definitions.push(Definition { node, kind, name, parameters });
+                definitions.push(Definition { node, kind, name, prefix, parameters });
             }
         }
     }
@@ -233,6 +239,7 @@ fn definition_kind_for(capture_name: &str) -> Option<Definition_kind> {
         "interface" => Definition_kind::Container("interface"),
         "record" => Definition_kind::Container("record"),
         "method" | "constructor" | "function" => Definition_kind::Callable,
+        "property" => Definition_kind::Property,
         _ => return None,
     };
     Some(kind)
@@ -242,20 +249,28 @@ fn nest_definitions(definitions: Vec<Definition>, language_support: &Language_su
     let mut entry_index_by_node: HashMap<usize, Option<usize>> = HashMap::new();
     let mut entries: Vec<Entry> = Vec::new();
     for definition in definitions {
-        let parent = match enclosing_definition(definition.node, &entry_index_by_node) {
+        let parent = match enclosing_definition(definition.node, &entry_index_by_node, language_support) {
             Enclosing::Top_level => None,
-            Enclosing::Listed(index) if entries[index].is_container() => Some(index),
-            Enclosing::Listed(_) | Enclosing::Left_out => {
+            Enclosing::Listed { index, is_direct } if is_direct || entries[index].is_container() => Some(index),
+            Enclosing::Listed { .. } | Enclosing::Left_out => {
                 entry_index_by_node.insert(definition.node.id(), None);
                 continue;
             }
         };
         let kind = match definition.kind {
             Definition_kind::Container(word) => Entry_kind::Container(word),
-            Definition_kind::Callable if parent.is_some() => Entry_kind::Method,
+            Definition_kind::Callable if parent.is_some_and(|index| entries[index].is_container()) => {
+                Entry_kind::Method
+            }
             Definition_kind::Callable => Entry_kind::Function,
+            Definition_kind::Property => Entry_kind::Property,
         };
-        let label = label_for(kind, &definition.name, definition.parameters.as_deref());
+        let label = label_for(
+            kind,
+            definition.prefix.as_deref(),
+            &definition.name,
+            definition.parameters.as_deref(),
+        );
         let depth = parent.map_or(0, |index| entries[index].depth + 1);
         let (first_row, last_row) = span_rows(definition.node, language_support);
         entry_index_by_node.insert(definition.node.id(), Some(entries.len()));
@@ -273,20 +288,28 @@ fn nest_definitions(definitions: Vec<Definition>, language_support: &Language_su
     entries
 }
 
-fn enclosing_definition(node: Node, entry_index_by_node: &HashMap<usize, Option<usize>>) -> Enclosing {
-    let mut ancestor = node.parent();
+/// A definition is direct when only body kinds stand between it and the definition around it.
+fn enclosing_definition(
+    node: Node,
+    entry_index_by_node: &HashMap<usize, Option<usize>>,
+    language_support: &Language_support,
+) -> Enclosing {
+    let mut is_direct = true;
+    let mut ancestor = outer_node(node, language_support).parent();
     while let Some(current) = ancestor {
         match entry_index_by_node.get(&current.id()) {
-            Some(Some(index)) => return Enclosing::Listed(*index),
+            Some(Some(index)) => return Enclosing::Listed { index: *index, is_direct },
             Some(None) => return Enclosing::Left_out,
-            None => ancestor = current.parent(),
+            None => {
+                is_direct &= language_support.body_kinds.contains(&current.kind());
+                ancestor = current.parent();
+            }
         }
     }
     Enclosing::Top_level
 }
 
-/// The span reaches up over wrappers and back over attached comments, so it holds everything a reader needs.
-fn span_rows(definition_node: Node, language_support: &Language_support) -> (usize, usize) {
+fn outer_node<'tree>(definition_node: Node<'tree>, language_support: &Language_support) -> Node<'tree> {
     let mut outer = definition_node;
     while let Some(wrapper) = outer
         .parent()
@@ -294,6 +317,12 @@ fn span_rows(definition_node: Node, language_support: &Language_support) -> (usi
     {
         outer = wrapper;
     }
+    outer
+}
+
+/// The span reaches up over wrappers and back over attached comments, so it holds everything a reader needs.
+fn span_rows(definition_node: Node, language_support: &Language_support) -> (usize, usize) {
+    let outer = outer_node(definition_node, language_support);
     let mut first = outer;
     while let Some(comment) = first
         .prev_named_sibling()
@@ -323,14 +352,45 @@ fn last_row_of(node: Node) -> usize {
     }
 }
 
-fn label_for(kind: Entry_kind, name: &str, parameters: Option<&str>) -> String {
+fn label_for(kind: Entry_kind, prefix: Option<&str>, name: &str, parameters: Option<&str>) -> String {
+    let name = match prefix {
+        Some(prefix) => format!("{prefix} {name}"),
+        None => name.to_string(),
+    };
     let label = match (kind, parameters) {
         (Entry_kind::Container(word), _) => format!("{word} {name}"),
+        (Entry_kind::Property, _) => format!("property {name}"),
         (_, Some(parameters)) if parameters.starts_with('(') => format!("{name}{parameters}"),
         (_, Some(parameters)) => format!("{name}({parameters})"),
         (_, None) => format!("{name}()"),
     };
     cut_to_limit(label)
+}
+
+/// A comment inside a parameter list would read as if it swallowed the parameters after it.
+fn text_without_comments(node: Node, source: &str) -> String {
+    let mut comment_ranges = Vec::new();
+    collect_comment_ranges(node, &mut comment_ranges);
+    let mut text = String::new();
+    let mut position = node.start_byte();
+    for range in comment_ranges {
+        text.push_str(&source[position..range.start]);
+        text.push(' ');
+        position = range.end;
+    }
+    text.push_str(&source[position..node.end_byte()]);
+    text
+}
+
+fn collect_comment_ranges(node: Node, comment_ranges: &mut Vec<std::ops::Range<usize>>) {
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == "comment" {
+            comment_ranges.push(child.start_byte()..child.end_byte());
+        } else {
+            collect_comment_ranges(child, comment_ranges);
+        }
+    }
 }
 
 /// Only the comma right before the closing parenthesis goes, so a tuple such as `(1,)` inside keeps its meaning.

@@ -3,6 +3,7 @@
 
 (class_body
   (method_definition
+    ["get" "set"]? @prefix
     name: (_) @name
     parameters: (formal_parameters) @parameters) @definition.method)
 

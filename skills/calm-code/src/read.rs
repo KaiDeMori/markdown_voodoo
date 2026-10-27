@@ -8,12 +8,13 @@ pub fn render(
     name_path: &[String],
     character_limit: usize,
 ) -> Result<String, String> {
-    let entry = &outline.entries[outline.resolve(name_path, false)?];
+    let index = outline.resolve(name_path, false)?;
+    let entry = &outline.entries[index];
     let lines: Vec<&str> = source.lines().skip(entry.first_row).take(entry.line_count()).collect();
     let text = lines.join("\n");
     let character_count = text.chars().count();
     if character_count > character_limit {
-        let zoom_hint = if entry.is_container() { "toc shows what is inside, " } else { "" };
+        let zoom_hint = if outline.descendant_count(index) > 0 { "toc shows what is inside, " } else { "" };
         return Err(format!(
             "{} has {}, over the limit of {character_limit}: {zoom_hint}--limit {character_count} reads it all",
             entry.label,

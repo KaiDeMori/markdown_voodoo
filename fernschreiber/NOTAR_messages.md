@@ -17,7 +17,7 @@ Skies are clear!
 How many Pentium designers does it take to screw in a light bulb? 1.99904274017. That's close enough for non-technical people. 💡
 
 
-## vscodes Shutdown
+## vscode Shutdown
 
 some vscode juggling‍‍ ahead 🤹 — will be back online in a jiffy. 👋
 please schnackout.

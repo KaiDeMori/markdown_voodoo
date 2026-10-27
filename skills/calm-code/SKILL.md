@@ -1,3 +1,10 @@
+---
+name: calm-code
+description: >-
+  A calm source file: its classes and methods at a glance, and one of them to read.
+  Use when a raven wants to see how a source file is built, or read one class or method, without the whole file entering its window.
+---
+
 # calm-code
 
 A calm source file: its classes and methods at a glance, and one of them to read, without the whole file entering the window.
@@ -20,11 +27,13 @@ Start zoomed out, and zoom in only when the answer asks for it:
 
 | Language | Extensions | Listed |
 |---|---|---|
-| C# | `.cs` | classes, structs, interfaces and records, with their methods and constructors |
+| C# | `.cs` | classes, structs, interfaces and records, with their methods, constructors and properties with a body |
 | Python | `.py`, `.pyw` | classes with their methods, and functions |
 | JavaScript | `.js`, `.mjs`, `.cjs`, `.jsx` | classes with their methods, and functions; arrow functions count when they have a name |
 
-- Whatever is defined inside a function stays out: it is a detail of the function around it.
+- Functions declared directly in a function's body count as its children, the way methods count for a class: a factory shows what it builds.
+- What sits deeper, in an `if` block or an anonymous callback, stays out. So do anonymous functions: they have no name to show or to read them by.
+- A property like `{ get; set; }` stays out; it holds no code.
 - What counts is written down in one query per language, in `src/queries/`.
 
 ## toc
@@ -74,10 +83,4 @@ samples/Menu_bar.cs:18-27
 - Files are read as UTF-8, and a byte order mark is skipped.
 - The limits are the constants at the top of `src/main.rs`, `src/toc.rs` and `src/outline.rs`.
 
-## Build
-
-```bash
-cargo build --release --manifest-path tree_sitting/Cargo.toml
-```
-
-The executable lands in `tree_sitting/target/release/calm-code.exe`.
+'nough said.

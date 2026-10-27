@@ -1,7 +1,7 @@
 use crate::outline::{Entry, Outline};
 
 const PAGE_SIZE: usize = 100;
-const KIND_WORDS: [&str; 6] = ["class", "struct", "interface", "record", "method", "function"];
+const KIND_WORDS: [&str; 7] = ["class", "struct", "interface", "record", "method", "property", "function"];
 
 pub fn render(outline: &Outline, name_path: &[String], page: usize) -> Result<String, String> {
     let scope_root = match name_path {
@@ -77,6 +77,7 @@ pub fn counted(count: usize, word: &str) -> String {
     match count {
         1 => format!("1 {word}"),
         _ if word.ends_with('s') => format!("{count} {word}es"),
+        _ if word.ends_with('y') => format!("{count} {}ies", &word[..word.len() - 1]),
         _ => format!("{count} {word}s"),
     }
 }
