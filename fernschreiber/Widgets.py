@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from rich.text import Text
+from textual.binding import Binding
 from textual.geometry import Region
 from textual.widgets import Static, TextArea
 
@@ -92,6 +93,12 @@ class Title_list(Static, can_focus=True):
 class Seat_picker(Static, can_focus=True):
     """The seats, with "[x]" for the marked ones, each seat's mailbox from the last overview, and ">" for the one under the cursor."""
 
+    # Its own Up and Down: the scroll container around it would otherwise take them, and scroll instead.
+    BINDINGS = [
+        Binding("up", "move_cursor(-1)", show=False),
+        Binding("down", "move_cursor(1)", show=False),
+    ]
+
     def __init__(self, header: str, **kwargs) -> None:
         super().__init__(markup=False, **kwargs)
         self.header = header
@@ -135,6 +142,12 @@ class Seat_picker(Static, can_focus=True):
         if self.seats:
             self.selected = max(0, min(len(self.seats) - 1, self.selected + step))
             self.redraw()
+
+    def action_move_cursor(self, step: int) -> None:
+        self.move(step)
+        # The screen may show what the cursor points at, such as Rabenschnack's prompt.
+        if hasattr(self.screen, "seat_moved"):
+            self.screen.seat_moved()
 
     def toggle(self) -> None:
         if self.seats:

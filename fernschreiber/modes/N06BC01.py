@@ -21,8 +21,6 @@ class N06BC01_screen(Screen):
 
     BINDINGS = [
         Binding("ctrl+enter", "send", show=False, priority=True),
-        Binding("up", "move(-1)", show=False),
-        Binding("down", "move(1)", show=False),
         Binding("space", "toggle", show=False),
         Binding("escape", "app.switch_mode('rabenschnack')", show=False),
     ]
@@ -74,9 +72,6 @@ class N06BC01_screen(Screen):
         self.recipient_label.update(recipient)
         marked = self.picker.marked
         self.mail_label.update(wake_mail(marked) if marked else f"{settings.N06BC01_FIRST_LINE}\n(no seat marked yet)")
-
-    def action_move(self, step: int) -> None:
-        self.picker.move(step)
 
     def action_toggle(self) -> None:
         self.picker.toggle()

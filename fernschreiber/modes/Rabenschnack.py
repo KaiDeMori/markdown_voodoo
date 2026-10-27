@@ -19,9 +19,6 @@ class Rabenschnack_screen(Screen):
         Binding("ctrl+enter", "send", show=False, priority=True),
         Binding("pageup", "scroll_inbox(-1)", show=False, priority=True),
         Binding("pagedown", "scroll_inbox(1)", show=False, priority=True),
-        # Up and Down reach the screen only when the focused pane leaves them alone, which the seats do.
-        Binding("up", "move_seat(-1)", show=False),
-        Binding("down", "move_seat(1)", show=False),
         Binding("space", "mark('toggle')", show=False),
         Binding("a", "mark('watching')", show=False),
         Binding("n", "mark('none')", show=False),
@@ -78,8 +75,8 @@ class Rabenschnack_screen(Screen):
         target = f"{len(marked)} marked" if marked else self.seat_list.selected_name or "..."
         self.prompt_label.update(f" to {target}: ")
 
-    def action_move_seat(self, step: int) -> None:
-        self.seat_list.move(step)
+    def seat_moved(self) -> None:
+        """Called by the seat list after Up or Down: the prompt names the seat under the cursor."""
         self.update_prompt()
 
     def action_mark(self, how: str) -> None:
