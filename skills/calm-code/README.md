@@ -13,7 +13,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 | Command | Answers | Happy path |
 |---|---|---|
 | `toc <file>` | How is the file built, and how big is each part? | `@3  open_menu(string name) (10 lines)` |
-| `toc <file> <name>` | What is inside one class? | the class with everything nested in it |
+| `toc <file> <name>` | What is inside one class or function? | the entry with everything nested in it |
 | `read <file> <name> ...` | What does one method say? | its original lines, doc comment and attributes included |
 
 ## Languages
@@ -43,6 +43,7 @@ C#, 56 lines: 2 classes, 1 struct, 1 interface, 1 record, 8 methods
 - Every entry has a number, its place in reading order, like `@3`; `toc` and `read` take it instead of a name.
 - An entry's weight is its number of lines, counted the way `read` returns them.
 - Parameters show, so overloads can be told apart. A label longer than 60 characters is cut, with the count of what was cut.
+- Some labels carry a word in front: `class`, `struct`, `interface` or `record` for what holds methods, `property` for a C# property, and `get` or `set` for an accessor.
 - `toc` shows the whole tree while it fits on a page of 100 entries.
   A bigger one shows the top level, each entry with how many are inside it; zoom in with a name or a number, and turn pages with `--page 2`.
 
