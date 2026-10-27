@@ -4,15 +4,15 @@ from pathlib import Path
 
 TITLE = "RABENSCHNACK"
 KEY_HINTS = "[Tab] focus  [^Enter] send  [F6] help  [^Q] quit"
-NOTAR_KEY_HINTS = "[Up/Down] pick  [^Enter] send to all watching  [Esc] back"
+NOTAR_KEY_HINTS = "[^Enter] send to all watching  [Esc] back"
 NOTAR_MESSAGES_FILE = Path(__file__).with_name("NOTAR_messages.md")
 NOTAR_FIRST_LINE = "📯 NOTAR: notice to all ravens"
-N06BC01_KEY_HINTS = "[Space] mark  [^Enter] send to the hallmaster  [Esc] back"
+N06BC01_KEY_HINTS = "[Space] mark  [^Enter] wake  [Esc] back"
 N06BC01_FIRST_LINE = "☕ N06BC01: please wake these ravens and ask them to schnackon"
 HALLMASTER_SEAT = "hallmaster"
 CATALOG_KEY_HINTS = "[A] add  [N] note  [Del] remove  [Esc] back"
 CATALOG_META_VARIABLE = "calm_email_catalog_meta"
-GROUPS_KEY_HINTS = "[Tab] focus  [J] join  [L] leave  [^Enter] post  [F6] help"
+GROUPS_KEY_HINTS = "[J/L] join/leave  [^Enter] post  [F6] help"
 GROUP_THREAD_COUNT = 50
 GROUP_REFRESH_SECONDS = 10
 HELP_TEXT = """\
