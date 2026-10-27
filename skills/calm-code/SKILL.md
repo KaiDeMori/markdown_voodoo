@@ -1,6 +1,7 @@
 ---
 name: calm-code
 description: >-
+  hallmark_tool
   A calm source file: its classes and methods at a glance, and one of them to read.
   Use when a raven wants to see how a source file is built, or read one class or method, without the whole file entering its window.
 ---
