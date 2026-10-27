@@ -28,8 +28,8 @@ import (
 )
 
 var (
-	// Until the port is ready for the hall, it lives in a test haven beside its own exe, never in the live C:/haven.
-	haven_location     = test_haven_location()
+	// The live hall, unless a test names a haven of its own in calm_comms_haven_location.
+	haven_location     = haven()
 	hrafnsmal_location = filepath.Join(haven_location, "Hall", "thing", "Hrafnsmal")
 	// Each group is a folder here: its members folder holds one empty file per member, named after the seat, and the group's folder keeps the thread.
 	group_chat_location = filepath.Join(haven_location, "Hall", "thing", "group_chat")
@@ -131,10 +131,12 @@ func text_from(place int) string {
 	return strings.Join(os.Args[place:], " ")
 }
 
-// test_haven_location is the test_haven folder beside the exe, wherever the exe was built.
-func test_haven_location() string {
-	executable_location := must(os.Executable())
-	return filepath.Join(filepath.Dir(executable_location), "test_haven")
+// haven is the live C:/haven, unless a test names a haven of its own in calm_comms_haven_location.
+func haven() string {
+	if test_haven_location := os.Getenv("calm_comms_haven_location"); test_haven_location != "" {
+		return test_haven_location
+	}
+	return "C:/haven"
 }
 
 // timestamp writes a moment the way the hall does, such as 2026-10-16T14:15+02:00.
