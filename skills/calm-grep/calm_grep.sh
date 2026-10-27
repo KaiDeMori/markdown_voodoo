@@ -3,9 +3,10 @@
 # count: how many lines match, in how many files; or nowhere.
 # where: each file with the numbers of its matching lines; or nowhere.
 # what: one file's matching lines, each cut down to the part around its match; or nowhere.
-# Usage: calm_grep.sh count <pattern> [folder]
-#        calm_grep.sh where <pattern> [folder]
-#        calm_grep.sh what <pattern> <file>
+# --lines keeps a search to one line or a span of lines in every file, like 1 or 123-454.
+# Usage: calm_grep.sh count [--lines <line|span>] <pattern> [folder]
+#        calm_grep.sh where [--lines <line|span>] <pattern> [folder]
+#        calm_grep.sh what [--lines <line|span>] <pattern> <file>
 
 noisy_folders=(.git .venv node_modules __pycache__ .pytest_cache .pytest_tmp)
 where_file_limit=20
@@ -14,8 +15,18 @@ what_line_limit=10
 what_context_width=60
 
 verb=$1
-pattern=$2
-folder=${3:-.}
+# --lines comes right after the verb; without it, last_line stays empty, and every line counts.
+line_span=''
+first_line=''
+last_line=''
+if [[ ${2:-} == --lines ]]; then
+  line_span=${3:-}
+  pattern=${4:-}
+  folder=${5:-.}
+else
+  pattern=${2:-}
+  folder=${3:-.}
+fi
 
 set -e
 
@@ -24,6 +35,11 @@ for noisy_folder in "${noisy_folders[@]}"; do exclude_arguments+=("--exclude-dir
 
 describe_number() {
   if (( $1 == 1 )); then echo "1 $2"; else echo "$1 ${2}s"; fi
+}
+
+in_span() {
+  # Keeps the lines of grep -n whose line number, in the given field, lies inside the span.
+  awk -F: -v field="$1" -v first="$first_line" -v last="$last_line" '$field + 0 >= first + 0 && $field + 0 <= last + 0'
 }
 
 enter_folder() {
@@ -37,17 +53,30 @@ enter_folder() {
 
 count_lines_per_file() {
   # grep counts inside itself, and bash only sees the files that matched, as path:count.
+  # Within a span, awk counts instead, from grep's numbered lines, in the order grep found the files.
   (
     enter_folder
-    grep -r -I -s -H -c -E "${exclude_arguments[@]}" -e "$pattern" -- "$target" | grep -v ':0$' || true
+    if [[ -n $last_line ]]; then
+      grep -r -n -I -s -H -E "${exclude_arguments[@]}" -e "$pattern" -- "$target" | in_span 2 | awk -F: '
+        !($1 in count) { order[++files] = $1 }
+        { count[$1]++ }
+        END { for (file_number = 1; file_number <= files; file_number++) print order[file_number] ":" count[order[file_number]] }' || true
+    else
+      grep -r -I -s -H -c -E "${exclude_arguments[@]}" -e "$pattern" -- "$target" | grep -v ':0$' || true
+    fi
   )
 }
 
 first_line_numbers() {
   # grep stops after the first lines, and cut keeps only their numbers, however long the lines are.
+  # Within a span, grep reads the whole file, and the first lines inside the span are kept.
   (
     enter_folder
-    grep -n -m "$where_line_number_limit" -I -s -E -e "$pattern" -- "$1" | cut -d: -f1 | paste -s -d, -
+    if [[ -n $last_line ]]; then
+      grep -n -I -s -E -e "$pattern" -- "$1" | in_span 1 | cut -d: -f1 | head -n "$where_line_number_limit" | paste -s -d, -
+    else
+      grep -n -m "$where_line_number_limit" -I -s -E -e "$pattern" -- "$1" | cut -d: -f1 | paste -s -d, -
+    fi
   )
 }
 
@@ -115,14 +144,28 @@ cut_around_match() {
 show_lines() {
   local line_count
   if [[ ! -f $folder ]]; then echo 'what reads one file; where shows which ones.'; exit 1; fi
-  line_count=$(grep -c -I -s -E -e "$pattern" -- "$folder" || true)
+  if [[ -n $last_line ]]; then
+    line_count=$(grep -n -I -s -E -e "$pattern" -- "$folder" | in_span 1 | wc -l)
+  else
+    line_count=$(grep -c -I -s -E -e "$pattern" -- "$folder" || true)
+  fi
   if (( line_count == 0 )); then echo 'nowhere'; return; fi
-  grep -n -m "$what_line_limit" -I -s -E -e "$pattern" -- "$folder" | cut_around_match
+  if [[ -n $last_line ]]; then
+    grep -n -I -s -E -e "$pattern" -- "$folder" | in_span 1 | head -n "$what_line_limit" | cut_around_match
+  else
+    grep -n -m "$what_line_limit" -I -s -E -e "$pattern" -- "$folder" | cut_around_match
+  fi
   if (( line_count > what_line_limit )); then
     echo "and $(describe_number $(( line_count - what_line_limit )) 'more line')"
   fi
 }
 
+if [[ ${2:-} == --lines ]]; then
+  if [[ ! $line_span =~ ^([0-9]+)(-([0-9]+))?$ ]]; then echo '--lines takes one line or a span, like 1 or 123-454.'; exit 1; fi
+  first_line=$((10#${BASH_REMATCH[1]}))
+  last_line=$((10#${BASH_REMATCH[3]:-${BASH_REMATCH[1]}}))
+  if (( first_line > last_line )); then echo "A span runs from its first line to its last, like $last_line-$first_line."; exit 1; fi
+fi
 if [[ -z $pattern ]]; then echo 'A search needs a pattern.'; exit 1; fi
 if [[ ! -e $folder ]]; then echo "No folder or file: $folder"; exit 1; fi
 # A broken pattern shows itself on an empty file, before any real search.
