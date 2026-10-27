@@ -46,6 +46,7 @@ unicode-glyph-render <command> ...
 
 - **Default stack:** the Go Noto fonts, covering nearly every script, and Noto Color Emoji.
 - **Fira Code Retina:** a programming font; its ligatures such as `->`, `!=` and `=>` form automatically.
+- **Pinax:** the hall's own font, with one glyph: U+E054, the T of a doc's T line, drawn as a T with a stroke. It is not in the default stack, so `--font-stack "Pinax"` draws it.
 - **Segoe UI Emoji:** the Windows 10 emoji font, as VS Code shows emoji on this machine. It is a BYOF font: when its file is missing, the error says where the file goes.
 - **Last Resort:** stands in for a codepoint that no other font covers. It draws a framed sign with the Unicode block's name and range.
 - `fonts` lists the exact family names. An unknown family name is an error that lists the available names.
