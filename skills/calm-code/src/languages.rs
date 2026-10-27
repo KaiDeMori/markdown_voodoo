@@ -36,6 +36,20 @@ pub fn language_for(path: &Path) -> Option<Language_support> {
             wrapper_kinds: &["export_statement", "lexical_declaration", "variable_declaration"],
             body_kinds: &["statement_block", "arrow_function", "function_expression", "generator_function"],
         },
+        "ts" | "mts" | "cts" => Language_support {
+            name: "TypeScript",
+            grammar: tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
+            definitions_query: include_str!("queries/typescript.scm"),
+            wrapper_kinds: &["export_statement", "lexical_declaration", "variable_declaration"],
+            body_kinds: &["statement_block", "arrow_function", "function_expression", "generator_function"],
+        },
+        "tsx" => Language_support {
+            name: "TypeScript",
+            grammar: tree_sitter_typescript::LANGUAGE_TSX.into(),
+            definitions_query: include_str!("queries/typescript.scm"),
+            wrapper_kinds: &["export_statement", "lexical_declaration", "variable_declaration"],
+            body_kinds: &["statement_block", "arrow_function", "function_expression", "generator_function"],
+        },
         _ => return None,
     };
     Some(language_support)

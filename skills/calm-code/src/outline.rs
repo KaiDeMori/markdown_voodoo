@@ -321,14 +321,15 @@ fn outer_node<'tree>(definition_node: Node<'tree>, language_support: &Language_s
 }
 
 /// The span reaches up over wrappers and back over attached comments, so it holds everything a reader needs.
+/// Some grammars, TypeScript's among them, place a member's decorators beside it instead of inside it.
 fn span_rows(definition_node: Node, language_support: &Language_support) -> (usize, usize) {
     let outer = outer_node(definition_node, language_support);
     let mut first = outer;
-    while let Some(comment) = first
+    while let Some(leading) = first
         .prev_named_sibling()
-        .filter(|sibling| is_attached_comment(*sibling, first))
+        .filter(|sibling| sibling.kind() == "decorator" || is_attached_comment(*sibling, first))
     {
-        first = comment;
+        first = leading;
     }
     (first.start_position().row, last_row_of(outer))
 }
