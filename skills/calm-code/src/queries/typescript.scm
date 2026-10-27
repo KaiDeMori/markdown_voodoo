@@ -50,3 +50,13 @@
     (function_expression parameters: (formal_parameters) @parameters)
     (generator_function parameters: (formal_parameters) @parameters)
   ]) @definition.function
+
+(type_alias_declaration
+  name: (_) @name) @definition.type
+
+(type_alias_declaration
+  value: (object_type
+    (method_signature
+      ["get" "set"]? @prefix
+      name: (_) @name
+      parameters: (formal_parameters) @parameters) @definition.method))

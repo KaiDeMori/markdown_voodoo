@@ -1,7 +1,7 @@
 use crate::outline::{Entry, Outline};
 
 const PAGE_SIZE: usize = 100;
-const KIND_WORDS: [&str; 7] = ["class", "struct", "interface", "record", "method", "property", "function"];
+const KIND_WORDS: [&str; 8] = ["class", "struct", "interface", "record", "type", "method", "property", "function"];
 
 pub fn render(outline: &Outline, name_path: &[String], page: usize) -> Result<String, String> {
     let scope_root = match name_path {

@@ -46,3 +46,10 @@ export function create_menu_bar<T>(title: string, options: Partial<T> = {}): Men
 }
 
 export const close_all = (bars: Menu_bar[]): void => bars.forEach((bar) => bar.close());
+
+type Token_minter = {
+  mint(binding: string): Promise<string>;
+  readonly expires: number;
+};
+
+export type Menu_cache = Map<string, Menu_bar>;

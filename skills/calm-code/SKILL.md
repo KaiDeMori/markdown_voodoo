@@ -30,7 +30,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 | C# | `.cs` | classes, structs, interfaces and records, with their methods, constructors and properties with a body |
 | Python | `.py`, `.pyw` | classes with their methods, and functions |
 | JavaScript | `.js`, `.mjs`, `.cjs`, `.jsx` | classes with their methods, and functions; arrow functions count when they have a name |
-| TypeScript | `.ts`, `.mts`, `.cts`, `.tsx` | like JavaScript, plus interfaces and abstract classes with their signatures; overload signatures stay out |
+| TypeScript | `.ts`, `.mts`, `.cts`, `.tsx` | like JavaScript, plus interfaces, type aliases and abstract classes with their signatures; overload signatures stay out |
 
 - Functions declared directly in a function's body count as its children, the way methods count for a class: a factory shows what it builds.
 - What sits deeper, in an `if` block or an anonymous callback, stays out. So do anonymous functions: they have no name to show or to read them by.
@@ -51,7 +51,7 @@ C#, 56 lines: 2 classes, 1 struct, 1 interface, 1 record, 8 methods
 - Every entry has a number, its place in reading order, like `@3`; `toc` and `read` take it instead of a name.
 - An entry's weight is its number of lines, counted the way `read` returns them.
 - Parameters show, so overloads can be told apart. A label longer than 60 characters is cut, with the count of what was cut.
-- Some labels carry a word in front: `class`, `struct`, `interface` or `record` for what holds methods, `property` for a C# property, and `get` or `set` for an accessor.
+- Some labels carry a word in front: `class`, `struct`, `interface`, `record` or `type` for what can hold methods, `property` for a C# property, and `get` or `set` for an accessor.
 - `toc` shows the whole tree while it fits on a page of 100 entries.
   A bigger one shows the top level, each entry with how many are inside it; zoom in with a name or a number, and turn pages with `--page 2`.
 

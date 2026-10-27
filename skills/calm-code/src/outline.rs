@@ -238,6 +238,7 @@ fn definition_kind_for(capture_name: &str) -> Option<Definition_kind> {
         "struct" => Definition_kind::Container("struct"),
         "interface" => Definition_kind::Container("interface"),
         "record" => Definition_kind::Container("record"),
+        "type" => Definition_kind::Container("type"),
         "method" | "constructor" | "function" => Definition_kind::Callable,
         "property" => Definition_kind::Property,
         _ => return None,
