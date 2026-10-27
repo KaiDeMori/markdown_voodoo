@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from rich.text import Text
+from textual.geometry import Region
 from textual.widgets import Static, TextArea
 
 
@@ -157,6 +158,12 @@ class Seat_picker(Static, can_focus=True):
             mark = "\U00002714\U0000FE0F" if name in self.marked_names else "  "
             text.append(f"\n{'>' if index == self.selected else ' '}{mark}{mailbox} {name}")
         self.update(text)
+        self.call_after_refresh(self.keep_cursor_in_view)
+
+    def keep_cursor_in_view(self) -> None:
+        """Scrolls the surrounding container so the line under ">" stays visible; the header is line 0."""
+        if self.seats and self.parent is not None:
+            self.parent.scroll_to_region(Region(0, self.selected + 1, max(1, self.size.width), 1), animate=False)
 
 
 def header_style(widget: Static, focused: bool | None) -> str:

@@ -27,7 +27,8 @@ def build_css(color_theme: Color_theme | None) -> str:
     css = f"""
     .rule {{ height: 1; }}
     #main {{ height: 1fr; }}
-    #seats {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
+    #seats_scroll {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; scrollbar-size-vertical: 1; }}
+    #seats {{ height: auto; }}
     #inbox {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
     #inbox:focus #inbox_title {{ text-style: bold; }}
     .mail_head {{ margin-top: 1; }}
@@ -46,7 +47,8 @@ def build_css(color_theme: Color_theme | None) -> str:
     #notar_text {{ margin-top: 1; }}
     #notar_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
     #wake_main {{ height: 1fr; }}
-    #wake_seats {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
+    #wake_seats_scroll {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; scrollbar-size-vertical: 1; }}
+    #wake_seats {{ height: auto; }}
     #wake_preview {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
     #wake_mail {{ margin-top: 1; }}
     #wake_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
@@ -76,7 +78,7 @@ def build_css(color_theme: Color_theme | None) -> str:
     return css + f"""
     Screen {{ background: {background}; color: {text}; }}
     .rule {{ color: {frame}; }}
-    #seats {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #seats_scroll {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
     #inbox {{ border-right: ascii {frame}; }}
     #inbox_title {{ color: {dim}; }}
     #inbox:focus #inbox_title {{ color: {focus}; }}
@@ -93,7 +95,7 @@ def build_css(color_theme: Color_theme | None) -> str:
     #notar_preview {{ border-right: ascii {frame}; }}
     #notar_recipients {{ color: {dim}; }}
     #notar_status {{ border-left: ascii {frame}; border-right: ascii {frame}; color: {dim}; }}
-    #wake_seats {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
+    #wake_seats_scroll {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
     #wake_preview {{ border-right: ascii {frame}; }}
     #wake_recipient {{ color: {dim}; }}
     #wake_status {{ border-left: ascii {frame}; border-right: ascii {frame}; color: {dim}; }}

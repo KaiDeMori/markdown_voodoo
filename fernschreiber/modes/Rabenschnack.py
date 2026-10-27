@@ -35,7 +35,8 @@ class Rabenschnack_screen(Screen):
     def compose(self) -> ComposeResult:
         yield Rule_line(left=settings.TITLE, right=clock_text(), id="top_rule", classes="rule")
         with Horizontal(id="main"):
-            yield Seat_picker("seats", id="seats")
+            with VerticalScroll(id="seats_scroll", can_focus=False):
+                yield Seat_picker("seats", id="seats")
             with VerticalScroll(id="inbox"):
                 yield Static(settings.OWN_SEAT, markup=False, id="inbox_title")
         yield Rule_line(junction=settings.SEAT_PANE_WIDTH - 1, id="middle_rule", classes="rule")
