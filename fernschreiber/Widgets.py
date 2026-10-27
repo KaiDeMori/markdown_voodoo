@@ -42,6 +42,13 @@ class Rule_line(Static):
         self.update(self.line)
 
 
+class Divider_line(Static):
+    """A plain line of dashes across its whole width, without corners; it redraws itself whenever its width changes."""
+
+    def on_resize(self) -> None:
+        self.update("-" * self.size.width)
+
+
 class Title_list(Static, can_focus=True):
     """A list of titles, with ">" for the selected one."""
 

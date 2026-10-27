@@ -10,7 +10,7 @@ from textual.widgets import Static, TextArea
 import settings
 from calm_comms import Group, group_snapshot, join_or_leave, read_groups, send_mail, thread_files
 from Mail import read_mail
-from Widgets import Message_area, Rule_line, Title_list, clock_text
+from Widgets import Divider_line, Message_area, Rule_line, Title_list, clock_text
 
 
 class Groups_screen(Screen):
@@ -43,6 +43,7 @@ class Groups_screen(Screen):
                 with VerticalScroll(id="group_thread"):
                     yield Static("", markup=False, id="thread_title")
                 # The members stay in view at the bottom, however long the thread grows.
+                yield Divider_line(markup=False, classes="rule")
                 yield Static("", markup=False, id="group_members")
         yield Rule_line(junction=settings.SEAT_PANE_WIDTH - 1, id="middle_rule", classes="rule")
         with Horizontal(id="group_input_row"):
