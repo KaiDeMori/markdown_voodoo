@@ -90,15 +90,23 @@ impl Outline {
         let Some((target_name, enclosing_names)) = name_path.split_last() else {
             return Err("a name is missing".to_string());
         };
-        let mut candidates: Vec<usize> = (0..self.entries.len())
-            .filter(|&index| self.entries[index].name == *target_name)
-            .filter(|&index| self.is_enclosed_in_order(index, enclosing_names))
-            .collect();
+        let mut candidates = self.matching_entries(target_name, enclosing_names, true);
+        if candidates.is_empty() {
+            let other_case = self.matching_entries(target_name, enclosing_names, false);
+            return Err(if other_case.is_empty() {
+                format!("nothing named {}", name_path.join(" "))
+            } else {
+                format!(
+                    "nothing named {}, names are case-sensitive: {}",
+                    name_path.join(" "),
+                    self.candidate_list(&other_case)
+                )
+            });
+        }
         if prefer_containers && candidates.iter().any(|&index| self.entries[index].is_container()) {
             candidates.retain(|&index| self.entries[index].is_container());
         }
         match candidates.as_slice() {
-            [] => Err(format!("nothing named {}", name_path.join(" "))),
             [only] => Ok(*only),
             _ => Err(format!(
                 "{} fits {} entries: {}",
@@ -118,27 +126,46 @@ impl Outline {
         }
     }
 
-    fn is_enclosed_in_order(&self, index: usize, enclosing_names: &[String]) -> bool {
-        let mut enclosing_entries = Vec::new();
-        let mut current = self.entries[index].parent;
-        while let Some(parent_index) = current {
-            enclosing_entries.push(&self.entries[parent_index].name);
-            current = self.entries[parent_index].parent;
-        }
-        let mut wanted = enclosing_names.iter().peekable();
-        for name in enclosing_entries.into_iter().rev() {
-            if wanted.peek() == Some(&name) {
-                wanted.next();
-            }
-        }
-        wanted.peek().is_none()
+    fn matching_entries(&self, target_name: &str, enclosing_names: &[String], case_sensitive: bool) -> Vec<usize> {
+        let names_match = |name: &str, wanted: &str| {
+            if case_sensitive { name == wanted } else { name.to_lowercase() == wanted.to_lowercase() }
+        };
+        (0..self.entries.len())
+            .filter(|&index| names_match(&self.entries[index].name, target_name))
+            .filter(|&index| {
+                let mut wanted = enclosing_names.iter().peekable();
+                for name in self.enclosing_names(index) {
+                    if wanted.peek().is_some_and(|wanted_name| names_match(name, wanted_name)) {
+                        wanted.next();
+                    }
+                }
+                wanted.peek().is_none()
+            })
+            .collect()
     }
 
+    /// From the outermost to the innermost.
+    fn enclosing_names(&self, index: usize) -> Vec<&str> {
+        let mut names = Vec::new();
+        let mut current = self.entries[index].parent;
+        while let Some(parent_index) = current {
+            names.push(self.entries[parent_index].name.as_str());
+            current = self.entries[parent_index].parent;
+        }
+        names.reverse();
+        names
+    }
+
+    /// The enclosing names in front tell apart candidates whose labels are equal.
     fn candidate_list(&self, candidates: &[usize]) -> String {
         let mut shown: Vec<String> = candidates
             .iter()
             .take(CANDIDATE_LIMIT)
-            .map(|&index| format!("@{} {}", self.entries[index].number, self.entries[index].label))
+            .map(|&index| {
+                let mut parts = self.enclosing_names(index);
+                parts.push(&self.entries[index].label);
+                format!("@{} {}", self.entries[index].number, parts.join(" "))
+            })
             .collect();
         if candidates.len() > CANDIDATE_LIMIT {
             shown.push(format!("and {} more", candidates.len() - CANDIDATE_LIMIT));
@@ -181,7 +208,7 @@ fn collect_definitions<'tree>(tree: &'tree Tree, query: &Query, source: &str) ->
             let text = capture.node.utf8_text(source.as_bytes()).unwrap_or_default();
             match capture_names[capture.index as usize] {
                 "name" => name = Some(text.to_string()),
-                "parameters" => parameters = Some(collapse_whitespace(text)),
+                "parameters" => parameters = Some(flatten_parameters(text)),
                 capture_name => {
                     if let Some(kind) = definition_kind_for(capture_name) {
                         definition = Some((capture.node, kind));
@@ -306,8 +333,13 @@ fn label_for(kind: Entry_kind, name: &str, parameters: Option<&str>) -> String {
     cut_to_limit(label)
 }
 
-fn collapse_whitespace(text: &str) -> String {
-    text.split_whitespace().collect::<Vec<_>>().join(" ").replace("( ", "(").replace(" )", ")")
+/// Only the comma right before the closing parenthesis goes, so a tuple such as `(1,)` inside keeps its meaning.
+fn flatten_parameters(text: &str) -> String {
+    let flat = text.split_whitespace().collect::<Vec<_>>().join(" ").replace("( ", "(").replace(" )", ")");
+    match flat.strip_suffix(",)") {
+        Some(without_trailing_comma) => format!("{without_trailing_comma})"),
+        None => flat,
+    }
 }
 
 fn cut_to_limit(label: String) -> String {

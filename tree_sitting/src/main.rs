@@ -61,23 +61,27 @@ fn run_read(arguments: &[String]) -> Result<String, String> {
         .map_err(|refusal| format!("{file}: {refusal}"))
 }
 
-fn take_number_option<'a>(
-    arguments: &'a [String],
-    option_name: &str,
-) -> Result<(Option<usize>, &'a [String]), String> {
-    match arguments {
-        [option, value, rest @ ..] if option == option_name => {
-            let number = value
+/// The option may stand anywhere after the command, since no name starts with two dashes.
+fn take_number_option(arguments: &[String], option_name: &str) -> Result<(Option<usize>, Vec<String>), String> {
+    let mut number = None;
+    let mut rest = Vec::new();
+    let mut remaining = arguments.iter();
+    while let Some(argument) = remaining.next() {
+        if argument == option_name {
+            let value = remaining.next().ok_or_else(|| format!("{option_name} needs a number"))?;
+            let parsed = value
                 .parse::<usize>()
                 .ok()
-                .filter(|&number| number >= 1)
+                .filter(|&parsed| parsed >= 1)
                 .ok_or_else(|| format!("{option_name} needs a number from 1 on, not {value}"))?;
-            Ok((Some(number), rest))
+            number = Some(parsed);
+        } else if argument.starts_with("--") {
+            return Err(format!("unknown option {argument}"));
+        } else {
+            rest.push(argument.clone());
         }
-        [option] if option == option_name => Err(format!("{option_name} needs a number")),
-        [option, ..] if option.starts_with("--") => Err(format!("unknown option {option}")),
-        _ => Ok((None, arguments)),
     }
+    Ok((number, rest))
 }
 
 fn load_outline(file: &str) -> Result<(Outline, String), String> {

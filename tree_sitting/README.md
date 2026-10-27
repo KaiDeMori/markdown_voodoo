@@ -62,13 +62,13 @@ samples/Menu_bar.cs:18-27
 ## Names
 
 - A name path ends with the entry's own name and needs only as many enclosing names as it takes: `read Menu_bar.cs Menu_bar Menu_bar` reads the constructor, not the class.
-- A path that fits more than one entry is refused, with the candidates and their numbers.
+- A path that fits more than one entry is refused, with the candidates: each with its number and the names around it, such as `@12 Title_list on_focus(self)`.
 - In `toc`, a name prefers a class to a method, since a C# constructor shares its class's name.
-- Names are case-sensitive.
+- Names are case-sensitive. A miss that differs only in case is refused with the entries it missed.
 
 ## Good to know
 
-- Options come before the file.
+- Options may stand anywhere after the command.
 - A file with syntax errors still gets an answer, because Tree-sitter always builds a tree. `toc` adds a line about it, and `read` warns on stderr.
 - Every refusal is one line on stderr, with exit code 1; exit code 0 means done.
 - Files are read as UTF-8, and a byte order mark is skipped.
