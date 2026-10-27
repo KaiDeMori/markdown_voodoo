@@ -3,6 +3,7 @@
 What Wally and the tool builder decided on 2026-10-27 for the Go port in this folder.
 The why of the code stays in `README.md`.
 Built the same night: Out, Seat states, overview, send and Exit codes; the README's test table tells how they flew.
+"Before the switch" was done by 02:00, all but the switch itself: schnackout, deploy, restart.
 
 ## Out
 

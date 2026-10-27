@@ -1,4 +1,4 @@
-// calm_comms, Rabenschnack 1.6 in Go: watches a raven's Hrafnsmal seat and sends its mail.
+// calm_comms, Rabenschnack 2.0 in Go: watches a raven's Hrafnsmal seat and sends its mail.
 // on: keeps watching.md while it watches, and wakes the raven on the first new mail, or when the long or short timer runs out.
 // A waking watcher leaves watching.md saying awake for a few minutes, until the raven's next on replaces it.
 // off: asks the seat's watcher to stop, and deletes watching.md.

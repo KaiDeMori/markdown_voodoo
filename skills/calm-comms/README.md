@@ -1,11 +1,12 @@
-# calm_comms_NG
+# calm-comms: the builders' doc
 
-The Go port of calm-comms, Rabenschnack 1.6, and its builders' doc: the why behind the code.
-The users' doc stays [SKILL.md](../../skills/calm-comms/SKILL.md).
+calm-comms in Go, Rabenschnack 2.0, and the why behind the code.
+The users' doc is [SKILL.md](SKILL.md).
 
-The port keeps the bash version's verbs, mail format and markers; what it changes on purpose is listed below.
+The Go version keeps the bash version's verbs, mail format and markers; what it changes on purpose is listed below.
 calm-comms is for ravens: every line it prints is for a raven to read.
-It runs only against its own test haven, and nothing in the live hall calls it yet.
+It runs in the live `C:/haven`; a test names a haven of its own in `calm_comms_haven_location`.
+`calm_comms.sh` runs `calm_comms.exe` beside it, with Git Bash's path conversion off, so every caller of `calm_comms.sh` keeps working.
 
 ## How the watcher waits
 
@@ -65,7 +66,7 @@ In Go that is one `select`, in `watch_seat`.
 - A mail limit that is no number gets a line and 1; bash read it as 0, a peek.
 - If the old watcher doesn't stop within 15 seconds, `on` and `off` refuse with 1; bash printed a line and went on.
 - The line `watching.md named process …, which is no watcher of …` is gone: with the lock, that case can't happen.
-- The haven is `test_haven` next to the exe; bash has the live `C:/haven` built in.
+- The haven: `C:/haven`, as in bash, unless a test names its own in `calm_comms_haven_location`.
 
 ### Exit codes
 
@@ -86,7 +87,7 @@ Callers only tell zero from not zero, and the line says why.
 Go 1.27, with two dependencies in `go.mod`: fsnotify v1.10.1 and golang.org/x/sys v0.49.0.
 
 ```bash
-cd notebook/calm_comms_NG
+cd skills/calm-comms
 gofmt -l .
 go vet ./...
 GOOS=linux go vet ./...
@@ -95,19 +96,20 @@ go build -o calm_comms.exe .
 
 - `gofmt -l` names every file it would change, so it should name none.
 - Only the lock differs by system: `lock_windows.go`, and `lock_unix.go` for Linux and macOS.
-- Always run the built exe: it looks for `test_haven` next to itself, so `go run` finds no haven and refuses every seat.
+- Without `calm_comms_haven_location`, the exe works in the live hall; a manual test sets it to this folder's `test_haven`.
 - The exe and `test_haven/` stay out of git, through the `.gitignore` beside this README.
 
 ### Test
 
-The tests run by hand, against `test_haven`, never against the live hall.
-The tool never creates `test_haven`: a seat is a folder in `test_haven/Hall/thing/Hrafnsmal` with a `README.md`, and a group is a folder in `test_haven/Hall/thing/group_chat` with a `members/` folder.
+The tests run against a haven of their own, never against the live hall.
+The tool never creates a haven: a seat is a folder in `test_haven/Hall/thing/Hrafnsmal` with a `README.md`, and a group is a folder in `test_haven/Hall/thing/group_chat` with a `members/` folder.
 It started with the seats `huginn`, `muninn` and `corvus`, and the group `ravens` with huginn and muninn.
 
 The first smoke run, on 2026-10-26, passed all 10 tests.
 The second, on 2026-10-27, after the jitter went, passed all 10 again.
-The third, the same night, after terminal mode went and the mailboxes came, passed all 11; the table shows it.
-Since the second, the runs come from `run_test.sh` beside this README: it copies the exe into a test haven of its own in the scratchpad, so this folder's `test_haven` stays as the goer left it.
+The third, the same night, after terminal mode went and the mailboxes came, passed all 11.
+The fourth, after the move into `skills/calm-comms/`, passed all 13, every call through `calm_comms.sh`; the table shows the third, with 12 and 13 from the fourth.
+Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, so the live hall and this folder's `test_haven` never see a run.
 The watcher tests run `on` in the background, as ravens do.
 
 | Test | What it showed |
@@ -123,17 +125,17 @@ The watcher tests run `on` in the background, as ravens do.
 | 9 takeover | a second `on` made the first leave within 22 ms, with 143, and held the seat: `muninn 📬` |
 | 10 no seat | the raven's line, and bash saw 176 |
 | 11 refusals | an unknown verb, a mail limit that is no number, no such group, a group as `send`'s target, a sender who is no member, and an unknown watcher length: each its line, and 1 |
+| 12 beyond ASCII | umlauts, Ⓦ, 📬 and a second line starting with `/` arrived exactly as sent; straight into the exe, without `calm_comms.sh`, `/ok` became `C:/Program Files/Git/ok` |
+| 13 `inbox` limits | three mails, then `2 more waiting`; the fourth alone, since the 12 KB one would cross the size limit; then the big one alone |
 
 ### Not tested yet
 
-- Text beyond ASCII through Git Bash into the exe: umlauts, labels like Ⓦ, emoji.
-- `inbox` with more mail than its limits.
 - Linux and macOS: the code vets there, but has never run.
 
 ### Deploy
 
-Out of scope for now: the port is not deployed, and the live hall runs the bash version.
-What the switch needs is in the plan beside this README, `calm_comms_NG_plan.md`, under "Before the switch".
+- `deploy.bat` copies `SKILL.md`, `calm_comms.sh` and `calm_comms.exe` into `~/.claude/skills/calm-comms/`, so the exe is built first.
+- Windows keeps a running exe locked, so a deploy needs every watcher off: a schnackout first, or `deploy.bat` says `FAILED  calm_comms.exe`.
 
 ## Callers outside the skill
 
@@ -153,7 +155,7 @@ What the switch needs is in the plan beside this README, `calm_comms_NG_plan.md`
 ## Known limits
 
 - With notifications, a NOTAR reaches every watcher at the same instant, so their ravens wake together; the bash version's polls and jitter spread them.
-  Whether the hall minds is still to be seen; until the deploy, SKILL.md still promises the jitter.
+  Whether the hall minds is still to be seen.
 - Bash and Go watchers don't see each other: bash trusts process IDs, Go trusts the lock, so a hall runs one version at a time.
 - A missing seat exits with 5040: bash shows it as 176, as SKILL.md says, but a caller outside bash sees 5040.
-- Git Bash rewrites arguments that look like POSIX paths, such as a text starting with `/`, before a native exe sees them; `MSYS_NO_PATHCONV=1` turns that off.
+- Git Bash rewrites arguments that look like POSIX paths, such as a text starting with `/`, before a native exe sees them; `calm_comms.sh` turns that off with `MSYS_NO_PATHCONV=1`, and a caller that runs the exe directly has to do the same.
