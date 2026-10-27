@@ -22,6 +22,10 @@ How many Pentium designers does it take to screw in a light bulb? 1.99904274017.
 some vscode juggling‍‍ ahead 🤹 — will be back online in a jiffy. 👋
 please schnackout.
 
+## hallmark tools update
+
+Please check you current versions of hallmark tools and make sure you have the latest ones.
+Thank you.
 
 ## Raven Joke #1
 
