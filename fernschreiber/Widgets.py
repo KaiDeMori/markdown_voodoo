@@ -151,9 +151,11 @@ class Seat_picker(Static, can_focus=True):
     def redraw(self, focused: bool | None = None) -> None:
         text = Text(f" {self.header}", style=header_style(self, focused))
         for index, (name, watching) in enumerate(self.seats):
+            # Condensed: one cell for the cursor, two for the mark, two for the mailbox, like ">✔️📭 tool_builder".
             # Before the first overview there is no mailbox yet; "~ " keeps the two cells an icon takes.
             mailbox = self.app.mailboxes.get(name) or ("~ " if watching else "  ")
-            text.append(f"\n{'>' if index == self.selected else ' '} [{'x' if name in self.marked_names else ' '}] {mailbox} {name}")
+            mark = "\U00002714\U0000FE0F" if name in self.marked_names else "  "
+            text.append(f"\n{'>' if index == self.selected else ' '}{mark}{mailbox} {name}")
         self.update(text)
 
 
