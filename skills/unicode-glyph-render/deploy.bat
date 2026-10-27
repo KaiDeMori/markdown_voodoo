@@ -19,6 +19,7 @@ call :copy_file fonts\GoNotoAncient.ttf
 call :copy_file fonts\NotoColorEmoji.ttf
 call :copy_file fonts\LastResort-Regular.ttf
 call :copy_file fonts\FiraCode-Retina.ttf
+call :copy_file fonts\pinax.ttf
 if exist "%source%fonts\BYOF\seguiemj.ttf" (
     call :copy_file fonts\BYOF\seguiemj.ttf
 ) else (

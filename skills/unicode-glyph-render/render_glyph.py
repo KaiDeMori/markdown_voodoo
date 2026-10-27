@@ -36,6 +36,7 @@ FONT_CATALOG = {
     "Noto Color Emoji": "NotoColorEmoji.ttf",
     "Last Resort": "LastResort-Regular.ttf",
     "Fira Code Retina": "FiraCode-Retina.ttf",
+    "Pinax": "pinax.ttf",
     "Segoe UI Emoji": "BYOF/seguiemj.ttf",
 }
 
