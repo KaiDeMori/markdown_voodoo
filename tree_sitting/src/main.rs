@@ -9,7 +9,7 @@ use std::process::ExitCode;
 
 use outline::Outline;
 
-const USAGE: &str = "usage: toc [--page <number>] <file> [name ... | @number]";
+const USAGE: &str = "usage: calm-code toc [--page <number>] <file> [name ... | @number]";
 
 fn main() -> ExitCode {
     let arguments: Vec<String> = std::env::args().skip(1).collect();

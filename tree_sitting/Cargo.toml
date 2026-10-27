@@ -3,6 +3,10 @@ name = "tree_sitting"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "calm-code"
+path = "src/main.rs"
+
 [dependencies]
 tree-sitter = "0.27.1"
 tree-sitter-c-sharp = "0.23.5"
