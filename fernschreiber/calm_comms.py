@@ -3,19 +3,18 @@
 import os
 import subprocess
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 
 import settings
 
-# The raw MSYS bash takes PATH as it comes; without Git's usr/bin first, date, sleep and rm are missing, and find and sort are Windows' own.
-# Terminal mode: present without a timer, one line per mail, no pause after a write, no inbox limits.
+# The raw MSYS bash takes PATH as it comes; Git's usr/bin goes first, so the script finds its own tools.
 CALM_COMMS_ENVIRONMENT = dict(
     os.environ,
     LANG="C.UTF-8",
     PATH=settings.GIT_USR_BIN + os.pathsep + os.environ.get("PATH", ""),
-    calm_comms_mode="terminal",
 )
+# A mailbox with its door open: a raven watches the seat.
+WATCHING_MAILBOXES = ("📬", "📭")
 CALM_COMMS_OPTIONS = dict(stdin=subprocess.DEVNULL, env=CALM_COMMS_ENVIRONMENT)
 # The text goes in on stdin, so the Windows command line never carries it: no quoting, no globbing.
 SEND_SCRIPT = 'exec bash "$0" "$1" "$2" "$3" "$(cat)"'
@@ -40,15 +39,13 @@ def run_calm_comms(*arguments: str) -> subprocess.CompletedProcess:
 
 
 def start_watcher() -> subprocess.Popen:
-    """Starts the own seat's watcher; in terminal mode it prints one line per mail, and leaves as soon as its stdin closes."""
-    # The open stdin pipe is fernschreiber's presence: when fernschreiber ends, even hard, the pipe closes and the watcher leaves.
-    return subprocess.Popen(
-        calm_comms_command("on", settings.OWN_SEAT),
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        env=CALM_COMMS_ENVIRONMENT,
-    )
+    """Starts the own seat's watcher: it prints one line, `<moment> mail: <file>` or `<moment> timer`, and exits."""
+    return subprocess.Popen(calm_comms_command("on", settings.OWN_SEAT), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, **CALM_COMMS_OPTIONS)
+
+
+def stop_watcher() -> None:
+    """Runs `off` without waiting for it: it stops the watcher and closes the door."""
+    subprocess.Popen(calm_comms_command("off", settings.OWN_SEAT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **CALM_COMMS_OPTIONS)
 
 
 def send_mail(target: str, text: str, verb: str = "send") -> subprocess.CompletedProcess:
@@ -95,27 +92,14 @@ def join_or_leave(verb: str, group_name: str) -> tuple[bool, str]:
     return result.returncode == 0, output or f"calm-comms stopped with exit code {result.returncode}"
 
 
-def is_watching(state: list[str], now: datetime) -> bool:
-    """Whether an overview state names a raven that listens: `present` in terminal mode, `awake` while it re-arms, or `until 2026-10-17T12:09+02:00` that has not run out."""
-    if state in (["present"], ["awake"]):
-        return True
-    if len(state) != 2 or state[0] != "until":
-        return False
-    try:
-        return datetime.fromisoformat(state[1]) > now
-    except ValueError:
-        return False
-
-
 def read_seats() -> list[tuple[str, bool]] | None:
-    """The seats from calm-comms `overview`, without Wally's own, each with whether it is watching; None when overview fails."""
+    """The seats from calm-comms `overview`, `<seat> <mailbox>` each, without Wally's own, each with whether it is watching; None when overview fails."""
     result = run_calm_comms("overview")
     if result.returncode != 0:
         return None
-    now = datetime.now().astimezone()
     seats = []
     for line in result.stdout.decode("utf-8", "replace").splitlines():
         parts = line.split()
         if parts and parts[0] != settings.OWN_SEAT:
-            seats.append((parts[0], is_watching(parts[1:], now)))
+            seats.append((parts[0], len(parts) > 1 and parts[1] in WATCHING_MAILBOXES))
     return seats

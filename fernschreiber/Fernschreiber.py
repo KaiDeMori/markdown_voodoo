@@ -10,7 +10,7 @@ from textual.app import App
 from textual.binding import Binding
 
 import settings
-from calm_comms import read_seats, run_calm_comms, start_watcher
+from calm_comms import read_seats, run_calm_comms, start_watcher, stop_watcher
 from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail, recent_direct_mails
 from modes.Catalog import Catalog_screen
@@ -201,32 +201,36 @@ class Fernschreiber(App):
     # The watcher
 
     def watch_loop(self) -> None:
-        """Shows the history and what is waiting, then delivers mail for every line the watcher prints, until its stdin closes."""
+        """Shows the history, then keeps the own seat watched: start `on`, deliver what is waiting, wait for the watcher, again."""
         self.post(self.rabenschnack.add_mails, recent_direct_mails(settings.HISTORY_MAIL_COUNT), False)
-        with self.watcher_lock:
-            if self.stopping:
-                return
-            self.watcher = start_watcher()
-        self.deliver_mail()
-        for _ in iter(self.watcher.stdout.readline, b""):
-            if self.stopping:
-                return
+        while True:
+            with self.watcher_lock:
+                if self.stopping:
+                    return
+                self.watcher = start_watcher()
             self.deliver_mail()
-        return_code = self.watcher.wait()
-        if not self.stopping:
-            self.post(self.rabenschnack.add_mails, [Mail(clock_text(), "fernschreiber", f"The watcher stopped with exit code {return_code}; fernschreiber no longer watches.")], True)
+            self.watcher.stdout.read()
+            return_code = self.watcher.wait()
+            if self.stopping:
+                return
+            if return_code != 0:
+                self.post(self.rabenschnack.add_mails, [Mail(clock_text(), "fernschreiber", f"The watcher stopped with exit code {return_code}; fernschreiber no longer watches.")], True)
+                return
 
     def deliver_mail(self) -> None:
-        """Runs `inbox`, which in terminal mode hands out everything waiting, and shows the mails it moved into already_read."""
-        before = {file.name for file in already_read_files()}
-        result = run_calm_comms("inbox", settings.OWN_SEAT)
-        mails = [read_mail(file) for file in already_read_files() if file.name not in before]
-        if result.returncode != 0:
-            output = result.stdout.decode("utf-8", "replace").strip()
-            mails.append(Mail(clock_text(), "fernschreiber", output or f"inbox stopped with exit code {result.returncode}"))
-        if mails:
-            self.post(self.rabenschnack.add_mails, mails, True)
-            self.post(self.mail_arrived)
+        """Runs `inbox` until nothing more is waiting, and shows the mails it moved into already_read."""
+        for _ in range(50):
+            before = {file.name for file in already_read_files()}
+            result = run_calm_comms("inbox", settings.OWN_SEAT, str(settings.INBOX_MAIL_LIMIT))
+            output = result.stdout.decode("utf-8", "replace")
+            mails = [read_mail(file) for file in already_read_files() if file.name not in before]
+            if result.returncode != 0:
+                mails.append(Mail(clock_text(), "fernschreiber", output.strip() or f"inbox stopped with exit code {result.returncode}"))
+            if mails:
+                self.post(self.rabenschnack.add_mails, mails, True)
+                self.post(self.mail_arrived)
+            if result.returncode != 0 or " more waiting: " not in output:
+                return
 
     def mail_arrived(self) -> None:
         """A group mail lands in the own seat too, so new mail may mean a grown thread in the groups mode."""
@@ -234,13 +238,12 @@ class Fernschreiber(App):
             self.groups.mail_arrived()
 
     def stop_watching(self) -> None:
-        """Closes the watcher's stdin; the watcher leaves at once and removes its marker."""
+        """Runs `off`, which stops the watcher and closes the door."""
         with self.watcher_lock:
             if self.stopping:
                 return
             self.stopping = True
-            if self.watcher is not None:
-                self.watcher.stdin.close()
+        stop_watcher()
 
     def post(self, callback, *arguments) -> None:
         """Hands a call from a worker thread to the app, unless the app is already on its way out."""

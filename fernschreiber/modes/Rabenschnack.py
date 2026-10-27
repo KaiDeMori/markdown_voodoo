@@ -141,19 +141,22 @@ class Rabenschnack_screen(Screen):
         self.run_worker(lambda: self.send_in_background(recipients, text), thread=True, group="send")
 
     def send_in_background(self, recipients: list[str], text: str) -> None:
+        reached = []
         failures = []
         for seat in recipients:
             result = send_mail(seat, text)
-            if result.returncode != 0:
-                failures.append((seat, (result.stdout + result.stderr).decode("utf-8", "replace").strip() or "calm-comms gave no reason"))
-        self.app.post(self.finish_send, recipients, text, failures)
+            output = (result.stdout + result.stderr).decode("utf-8", "replace").strip()
+            if result.returncode == 0:
+                # send answers with the target's mailbox, such as `otis_builder 📬`.
+                reached.append(output or seat)
+            else:
+                failures.append((seat, output or "calm-comms gave no reason"))
+        self.app.post(self.finish_send, text, reached, failures)
 
-    def finish_send(self, recipients: list[str], text: str, failures: list[tuple[str, str]]) -> None:
-        """Echoes the mail for the seats it reached; when a seat refused it, the text stays in the input and the reason shows."""
+    def finish_send(self, text: str, reached: list[str], failures: list[tuple[str, str]]) -> None:
+        """Echoes the mail with each reached seat's mailbox; when a seat refused it, the text stays in the input and the reason shows."""
         self.sending = False
         self.message_area.read_only = False
-        failed = {seat for seat, _ in failures}
-        reached = [seat for seat in recipients if seat not in failed]
         if reached:
             self.add_note(f"{clock_text()}  -> {', '.join(reached)}", text, sent=True)
         if failures:
