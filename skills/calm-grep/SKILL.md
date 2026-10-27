@@ -27,8 +27,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - `where` lists each file with the numbers of its matching lines: at most 20 files and 10 numbers per file, each list ending in `and N more`.
 - `what` reads one file: at most 10 lines, each cut down to about 60 characters on each side of its match, with `...` where something was cut.
 - Counts are lines, not matches: a line with several matches counts once.
-- `--lines` keeps a search to one line or a span of lines in every file: `--lines 1`, or `--lines 123-454`.
-  Every doc with a T line, the token count on its first line: `calm-grep where --lines 1 $'\xee\x81\x94' <folder>`.
+- `--lines 1` or `--lines 123-454` searches only those lines; every T line: `where --lines 1 $'\xee\x81\x94'`.
 - Noisy folders stay out: `.git`, `.venv`, `node_modules`, `__pycache__`, `.pytest_cache` and `.pytest_tmp`; binary files are skipped.
 - A broken pattern is reported in one line, before any search.
 - Exit 0 means the search ran, `nowhere` included; a broken pattern, a missing folder, or a folder given to `what` exits 1.

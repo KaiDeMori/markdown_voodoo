@@ -61,7 +61,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
   EOF
   ```
 - Files are read and written as UTF-8.
-- A T line, a doc's token count on its first line, stays where it is: calm-md looks past it, and every line number still fits the file.
+- calm-md looks past a T line, and line numbers still fit the file.
 - The limits are the variables at the top of `calm_md.py`.
 
 'nough said.

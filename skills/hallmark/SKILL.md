@@ -5,7 +5,7 @@ description: >-
   All ravens must read at least once!
   What the mark hallmark_tool promises, and what a raven does when a marked tool acts up.
   Use when a raven works with a tool whose description starts with hallmark_tool, and especially when such a tool seems to misbehave.
-  Last updated 2026-10-27T08:03+01:00: the newest change to any marked tool; the list inside names which.
+  Last updated 2026-10-27T08:04+01:00: the newest change to any marked tool; the list inside names which.
 ---
 
 # hallmark
@@ -33,12 +33,9 @@ Its reader has a window too.
 
 ## Pinax
 
-Pinax is the hall's own syntax: private use characters with a meaning, drawn by the Pinax font.
-So far it has one:
+The hall's own characters, drawn by the Pinax font:
 
-- U+E054, the T: a doc's first line can be its T line, the T followed by the doc's token count and its size in bytes, such as `848 3245`.
-  In a raven's window the T itself is invisible, so a first line of bare numbers is a T line.
-  token-counter writes and reads it, calm-md looks past it, and `calm-grep where --lines 1` finds it.
+- U+E054, the T, starts a doc's T line: its first line, with tokens and bytes, such as `848 3245`. A raven's window doesn't show the T.
 
 ## Last updated
 
@@ -49,14 +46,14 @@ Loaded a tool before its date? Load it again; when in doubt, too.
 
 These tools should always be loaded and kept up-to-date:
 
-- hallmark: 2026-10-27T08:03+01:00
+- hallmark: 2026-10-27T08:04+01:00
 - calm-fetch: 2026-10-18T14:35+02:00
 - calm-find: 2026-10-27T07:04+01:00
-- calm-grep: 2026-10-27T07:52+01:00
-- calm-md: 2026-10-27T07:48+01:00
+- calm-grep: 2026-10-27T08:04+01:00
+- calm-md: 2026-10-27T08:04+01:00
 - self-flow: 2026-10-27T00:45+01:00
-- token-counter: 2026-10-27T07:48+01:00
-- unicode-glyph-render: 2026-10-27T07:59+01:00
+- token-counter: 2026-10-27T08:04+01:00
+- unicode-glyph-render: 2026-10-27T08:04+01:00
 
 ### Special
 

@@ -20,13 +20,8 @@ It prints one line per file, `<file name>: <N> tokens`, and a total when there i
 
 ## The T line
 
-A doc can carry its own count on its first line, the T line: U+E054, directly followed by the token count, a space, and the size in bytes of the doc below the line.
-
-- token-counter reads a T line instead of counting while the doc keeps that size, and says so: `notes.md: 1846 tokens (cached)`.
-  A doc of another size gets counted fresh; a line without a size is trusted as it is.
-- `--write` counts a doc fresh, without its T line, and writes or updates the line, size included: `notes.md: 1846 tokens (written)`.
-- SKILL.md files and images never get a T line.
-- calm-md looks past a T line.
+- A doc's T line, see hallmark, answers instead of a count while the doc keeps its size: `notes.md: 1846 tokens (cached)`.
+- `--write` counts fresh and writes the T line, `(written)`; never into a SKILL.md or an image.
 
 ## Good to know
 
