@@ -92,14 +92,19 @@ def join_or_leave(verb: str, group_name: str) -> tuple[bool, str]:
     return result.returncode == 0, output or f"calm-comms stopped with exit code {result.returncode}"
 
 
-def read_seats() -> list[tuple[str, bool]] | None:
-    """The seats from calm-comms `overview`, `<seat> <mailbox>` each, without Wally's own, each with whether it is watching; None when overview fails."""
+def read_mailboxes() -> dict[str, str] | None:
+    """Every seat's mailbox from calm-comms `overview`, `<seat> <mailbox>` each; None when overview fails."""
     result = run_calm_comms("overview")
     if result.returncode != 0:
         return None
-    seats = []
+    mailboxes = {}
     for line in result.stdout.decode("utf-8", "replace").splitlines():
         parts = line.split()
-        if parts and parts[0] != settings.OWN_SEAT:
-            seats.append((parts[0], len(parts) > 1 and parts[1] in WATCHING_MAILBOXES))
-    return seats
+        if parts:
+            mailboxes[parts[0]] = parts[1] if len(parts) > 1 else ""
+    return mailboxes
+
+
+def seats_from(mailboxes: dict[str, str]) -> list[tuple[str, bool]]:
+    """The seats without Wally's own, each with whether a raven watches it."""
+    return [(name, mailbox in WATCHING_MAILBOXES) for name, mailbox in mailboxes.items() if name != settings.OWN_SEAT]

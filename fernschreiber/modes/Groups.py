@@ -3,7 +3,7 @@
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import Screen
 from textual.widgets import Static, TextArea
 
@@ -39,8 +39,11 @@ class Groups_screen(Screen):
         yield Rule_line(left="GROUPS", right=clock_text(), id="top_rule", classes="rule")
         with Horizontal(id="groups_main"):
             yield Title_list("groups", [], id="group_list")
-            with VerticalScroll(id="group_thread"):
-                yield Static("", markup=False, id="thread_title")
+            with Vertical(id="group_pane"):
+                with VerticalScroll(id="group_thread"):
+                    yield Static("", markup=False, id="thread_title")
+                # The members stay in view at the bottom, however long the thread grows.
+                yield Static("", markup=False, id="group_members")
         yield Rule_line(junction=settings.SEAT_PANE_WIDTH - 1, id="middle_rule", classes="rule")
         with Horizontal(id="group_input_row"):
             yield Static("", markup=False, id="group_prompt")
@@ -53,6 +56,7 @@ class Groups_screen(Screen):
         self.group_list = self.query_one(Title_list)
         self.thread = self.query_one("#group_thread", VerticalScroll)
         self.thread_title = self.query_one("#thread_title", Static)
+        self.members_label = self.query_one("#group_members", Static)
         self.prompt_label = self.query_one("#group_prompt", Static)
         self.message_area = self.query_one("#group_message", TextArea)
         self.status_label = self.query_one("#group_status", Static)
@@ -107,12 +111,13 @@ class Groups_screen(Screen):
         """Shows the selected group's last mails, if Wally is a member; otherwise who is in it, and how to join."""
         group = self.selected
         self.thread.remove_children(".thread_entry")
+        self.show_members()
         if group is None:
             self.thread_title.update("")
             self.prompt_label.update(" to ...: ")
             return
         self.prompt_label.update(f" to #{group.name}: ")
-        self.thread_title.update(f"#{group.name}  ({', '.join(group.members) or 'no members'})")
+        self.thread_title.update(f"#{group.name}")
         if not group.joined:
             self.thread.mount(Static("You're not in this group. J joins it.", markup=False, classes="thread_entry mail_head"))
             return
@@ -127,6 +132,15 @@ class Groups_screen(Screen):
         self.thread.mount_all(widgets)
         self.shown_group = group.name
         self.thread.scroll_end(animate=False)
+
+    def show_members(self) -> None:
+        """The selected group's members, each with the mailbox from the last overview: who would hear a group mail soon."""
+        group = self.selected
+        if group is None:
+            self.members_label.update("")
+            return
+        members = [f"{member} {self.app.mailboxes.get(member, '')}".rstrip() for member in group.members]
+        self.members_label.update(", ".join(members) or "no members")
 
     def mail_arrived(self) -> None:
         """Called by the app whenever mail came in: the thread may have grown, so no need to wait for the next look."""

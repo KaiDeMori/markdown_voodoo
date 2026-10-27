@@ -10,7 +10,7 @@ from textual.app import App
 from textual.binding import Binding
 
 import settings
-from calm_comms import read_seats, run_calm_comms, start_watcher, stop_watcher
+from calm_comms import read_mailboxes, run_calm_comms, seats_from, start_watcher, stop_watcher
 from Color_theme import Color_theme, load_color_theme
 from Mail import Mail, already_read_files, read_mail, recent_direct_mails
 from modes.Catalog import Catalog_screen
@@ -58,7 +58,9 @@ def build_css(color_theme: Color_theme | None) -> str:
     #catalog_status {{ height: 1; padding: 0 1; border-left: ascii; border-right: ascii; }}
     #groups_main {{ height: 1fr; }}
     #group_list {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
-    #group_thread {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
+    #group_pane {{ width: 1fr; height: 1fr; border-right: ascii; }}
+    #group_thread {{ width: 1fr; height: 1fr; padding: 0 1; scrollbar-size: 0 0; }}
+    #group_members {{ width: 1fr; height: auto; padding: 0 1; }}
     #group_input_row {{ height: {settings.INPUT_LINES}; border-left: ascii; border-right: ascii; }}
     #group_prompt {{ width: auto; height: {settings.INPUT_LINES}; }}
     #group_prompt.focused {{ text-style: bold; }}
@@ -101,7 +103,8 @@ def build_css(color_theme: Color_theme | None) -> str:
     #catalog_input {{ background: {background}; color: {text}; }}
     #catalog_status {{ border-left: ascii {frame}; border-right: ascii {frame}; color: {dim}; }}
     #group_list {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
-    #group_thread {{ border-right: ascii {frame}; }}
+    #group_pane {{ border-right: ascii {frame}; }}
+    #group_members {{ color: {dim}; }}
     #thread_title {{ color: {dim}; }}
     #group_input_row {{ border-left: ascii {frame}; border-right: ascii {frame}; }}
     #group_prompt {{ color: {dim}; }}
@@ -149,6 +152,8 @@ class Fernschreiber(App):
         self.notar: NOTAR_screen | None = None
         self.wake: N06BC01_screen | None = None
         self.groups: Groups_screen | None = None
+        # Every seat's mailbox from the last overview, Wally's own included, for F2's member line.
+        self.mailboxes: dict[str, str] = {}
         self.watcher: subprocess.Popen | None = None
         self.watcher_lock = threading.Lock()
         self.stopping = False
@@ -186,17 +191,21 @@ class Fernschreiber(App):
         self.run_worker(self.load_seats, thread=True, exclusive=True, group="seats")
 
     def load_seats(self) -> None:
-        seats = read_seats()
-        if seats is not None:
-            self.post(self.show_seats, seats)
+        mailboxes = read_mailboxes()
+        if mailboxes is not None:
+            self.post(self.show_seats, seats_from(mailboxes), mailboxes)
 
-    def show_seats(self, seats: list[tuple[str, bool]]) -> None:
+    def show_seats(self, seats: list[tuple[str, bool]], mailboxes: dict[str, str] | None = None) -> None:
         self.seats = seats
+        if mailboxes is not None:
+            self.mailboxes = mailboxes
         self.rabenschnack.show_seats(seats)
         if self.notar is not None:
             self.notar.show_selected()
         if self.wake is not None:
             self.wake.show_seats(seats)
+        if self.groups is not None:
+            self.groups.show_members()
 
     # The watcher
 
