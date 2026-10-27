@@ -106,9 +106,9 @@ show_what() {
     markdown|source|text)
       file_size=$(wc -c < "$file_location")
       if (( file_size < small_bytes )); then echo "$kind, small"; return; fi
-      # The token counter sends the file to Anthropic and answers with an exact count.
+      # The token counter sends the file to Anthropic and answers with an exact count, or with a doc's cached one from its T line.
       token_line=$(bash "$token_counter_location" "$file_location" 2> /dev/null || true)
-      if [[ $token_line == *' tokens' ]]; then echo "$kind, ${token_line##*: }"; else echo "$kind, tokens unknown"; fi
+      if [[ $token_line == *' tokens' || $token_line == *' tokens (cached)' ]]; then echo "$kind, ${token_line##*: }"; else echo "$kind, tokens unknown"; fi
       ;;
     pdf)
       # Bash is Turing-complete, so the picker is too.

@@ -1,10 +1,14 @@
 """token_counter: counts how many tokens files take up for a Claude model, before they enter a window.
 
-Usage: token_counter.py <file> [<file> ...]
+A doc can carry its count on its first line, the T line: U+E054, directly followed by the number.
+token-counter reads that line instead of counting, and says so with (cached); the count can be stale.
+With --write, it counts a doc fresh, without its T line, and writes or updates the line; SKILL.md files and images get none.
+Usage: token_counter.py [--write] <file> [<file> ...]
 """
 
 import base64
 import pathlib
+import re
 import sys
 
 from anthropic import Anthropic
@@ -18,29 +22,51 @@ image_media_types = {
     ".gif": "image/gif",
     ".webp": "image/webp",
 }
+# The T line: U+E054, the private use character after the T at 0x54, directly followed by the count, then the line's end.
+t_line_pattern = re.compile("\U0000E054([0-9]+)(\r\n|\r|\n)")
 
 sys.stdout.reconfigure(encoding="utf-8")
 
 client = Anthropic(api_key=hall_key_location.read_text(encoding="utf-8").strip())
 
 
-def count_tokens(file_location):
-    media_type = image_media_types.get(file_location.suffix.lower())
-    if media_type:
-        image_data = base64.b64encode(file_location.read_bytes()).decode("ascii")
-        message_content = [{"type": "image", "source": {"type": "base64", "media_type": media_type, "data": image_data}}]
-    else:
-        message_content = file_location.read_text(encoding="utf-8")
+def count_message(message_content):
     return client.messages.count_tokens(
         model=model_name,
         messages=[{"role": "user", "content": message_content}],
     ).input_tokens
 
 
+def count_file(file_location, write):
+    # The count, and what the answer adds to it.
+    media_type = image_media_types.get(file_location.suffix.lower())
+    if media_type:
+        image_data = base64.b64encode(file_location.read_bytes()).decode("ascii")
+        return count_message([{"type": "image", "source": {"type": "base64", "media_type": media_type, "data": image_data}}]), ""
+    # Bytes, not text mode, so a written doc keeps its own line endings.
+    text = file_location.read_bytes().decode("utf-8")
+    t_line = t_line_pattern.match(text)
+    if t_line and not write:
+        return int(t_line.group(1)), " (cached)"
+    doc = text[t_line.end():] if t_line else text
+    # Counted as text mode reads it, so a count stays what it always was.
+    token_count = count_message(re.sub(r"\r\n|\r", "\n", doc))
+    # A SKILL.md keeps its front matter first, so it never gets a T line.
+    if write and file_location.name != "SKILL.md":
+        line_ending = t_line.group(2) if t_line else ("\r\n" if "\r\n" in doc else "\n")
+        file_location.write_bytes(f"\U0000E054{token_count}{line_ending}{doc}".encode("utf-8"))
+        return token_count, " (written)"
+    return token_count, ""
+
+
+arguments = sys.argv[1:]
+write = bool(arguments) and arguments[0] == "--write"
+if write:
+    arguments = arguments[1:]
 total_count = 0
-for file_location in map(pathlib.Path, sys.argv[1:]):
-    token_count = count_tokens(file_location)
-    print(f"{file_location.name}: {token_count} tokens")
+for file_location in map(pathlib.Path, arguments):
+    token_count, note = count_file(file_location, write)
+    print(f"{file_location.name}: {token_count} tokens{note}")
     total_count += token_count
-if len(sys.argv) > 2:
+if len(arguments) > 1:
     print(f"total: {total_count} tokens")

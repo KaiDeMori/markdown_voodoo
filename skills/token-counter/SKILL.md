@@ -13,14 +13,23 @@ The threshold question "is it too much?", answered with a number instead of a gu
 ## Command
 
 ```
-token-counter <file> [<file> ...]
+token-counter [--write] <file> [<file> ...]
 ```
 
 It prints one line per file, `<file name>: <N> tokens`, and a total when there is more than one.
+
+## The T line
+
+A doc can carry its own count on its first line, the T line: U+E054, directly followed by the number.
+
+- token-counter reads a T line instead of counting, and says so: `notes.md: 1846 tokens (cached)`. A cached count can be stale.
+- `--write` counts a doc fresh, without its T line, and writes or updates the line: `notes.md: 1846 tokens (written)`.
+- SKILL.md files and images never get a T line.
+- calm-md looks past a T line.
 
 ## Good to know
 
 - Count first, then decide: read it, flow it, or leave it for later.
 - Text files count as text; `.png`, `.jpg`, `.jpeg`, `.gif` and `.webp` count as images.
 - Counts are exact, from Anthropic's own counting endpoint, for the model named at the top of `token_counter.py`.
-- The file goes to Anthropic to be counted.
+- The file goes to Anthropic to be counted, unless its count is cached.

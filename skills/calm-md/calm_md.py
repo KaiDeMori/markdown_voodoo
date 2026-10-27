@@ -9,6 +9,7 @@ find: the places where words start with one word, case-insensitive, each with it
 calm-md works only on piko bello markdown: pymarkdownlnt checks the file by piko_bello.json first, and with issues calm-md only lists them.
 --as-is skips that check for one call, and still says how many issues wait.
 The parser only finds the headings; the original lines are cut and spliced, never re-rendered, so everything outside a chapter stays as it was.
+A T line, the doc's token count on its first line, stays where it was, and neither the parser nor the linter sees it.
 A title path ends with the chapter's own title and needs only as many parents as it takes to fit one chapter.
 Every chapter has a number, its place in reading order, written @3; numbers are for looking, in toc and read, and write and replace take titles.
 Usage: calm_md.py toc [--as-is] [--page <number>] <file> [title ...]
@@ -42,6 +43,8 @@ config_location = Path(__file__).resolve().parent / "piko_bello.json"
 
 # commonmark knows HTML blocks, and front matter is never mistaken for a heading.
 parser = MarkdownIt("commonmark").use(front_matter_plugin)
+# A T line is a doc's first line with its token count: U+E054, the private use character after the T at 0x54, directly followed by the number.
+t_line_pattern = re.compile("\U0000E054[0-9]+(?=\r\n|\r|\n)")
 
 
 def refuse(line):
@@ -172,17 +175,21 @@ def read_markdown(file_name, as_is):
         text = location.read_bytes().decode("utf-8")
     except UnicodeDecodeError:
         refuse(f"{file_name} is no UTF-8 text.")
-    # A byte order mark stays where it was, but neither the parser nor the linter sees it.
-    byte_order_mark = text.startswith("﻿")
-    if byte_order_mark:
-        text = text[1:]
+    # A byte order mark and a T line, the doc's token count on its first line, stay where they were, but neither the parser nor the linter sees them.
+    # The T line's ending stays behind as an empty first line, so every line number still fits the file.
+    kept_start = "﻿" if text.startswith("﻿") else ""
+    text = text[len(kept_start):]
+    t_line = t_line_pattern.match(text)
+    if t_line:
+        kept_start += t_line.group(0)
+        text = text[len(t_line.group(0)):]
     issues = lint(text)
     if issues and not as_is:
         show_issues(issues, f"{count(len(issues), 'issue')}, fix {'it' if len(issues) == 1 else 'them'} and call again:")
     if issues:
         # As-is works anyway, and the nudge goes to stderr, so a chapter read stays clean on stdout.
         print(f"{count(len(issues), 'issue')} {'waits' if len(issues) == 1 else 'wait'} in this doc.", file=sys.stderr)
-    return location, byte_order_mark, text
+    return location, kept_start, text
 
 
 def find_word(file_name, word, titles, as_is):
@@ -308,7 +315,7 @@ def read_chapter(file_name, titles, as_is):
 
 def write_chapter(file_name, titles, as_is):
     refuse_numbers(titles, "write")
-    location, byte_order_mark, text = read_markdown(file_name, as_is)
+    location, kept_start, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
     chapter = find_chapter(find_chapters(text, len(lines)), titles)
     try:
@@ -329,19 +336,18 @@ def write_chapter(file_name, titles, as_is):
         while not new_text.endswith(ending * 2):
             new_text += ending
     result = "".join(lines[:chapter["start"]]) + new_text + "".join(lines[chapter["end"]:])
-    save_checked(location, byte_order_mark, result, as_is, "The new chapter")
+    save_checked(location, kept_start, result, as_is, "The new chapter")
     old_count = chapter["end"] - chapter["start"]
     print(f"{path_text(chapter['path'])}: {count(old_count, 'line')} became {count(len(split_lines(new_text)), 'line')}.")
 
 
-def save_checked(location, byte_order_mark, result, as_is, what_changes):
+def save_checked(location, kept_start, result, as_is, what_changes):
     # A clean doc stays clean: the doc a change would leave behind is checked before anything is written.
     if not as_is:
         new_issues = lint(result)
         if new_issues:
             show_issues(new_issues, f"{what_changes} would bring {count(len(new_issues), 'issue')}; the file stays as it was:")
-    if byte_order_mark:
-        result = "﻿" + result
+    result = kept_start + result
     # The file is replaced in one step, so a reader never sees half of it.
     handle, temporary_name = tempfile.mkstemp(dir=location.parent, prefix=f".{location.name}.", suffix=".tmp")
     with os.fdopen(handle, "wb") as temporary_file:
@@ -355,7 +361,7 @@ def line_number_at(text, index, first_line):
 
 def replace_in_chapter(file_name, titles, as_is):
     refuse_numbers(titles, "replace")
-    location, byte_order_mark, text = read_markdown(file_name, as_is)
+    location, kept_start, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
     chapter = find_chapter(find_chapters(text, len(lines)), titles)
     try:
@@ -391,7 +397,7 @@ def replace_in_chapter(file_name, titles, as_is):
     if first_token is None or first_token.type != "heading_open":
         refuse("The chapter would lose its heading line; the file stays as it was.")
     result = "".join(lines[:chapter["start"]]) + new_chapter_text + "".join(lines[chapter["end"]:])
-    save_checked(location, byte_order_mark, result, as_is, "The replacement")
+    save_checked(location, kept_start, result, as_is, "The replacement")
     print(f"{path_text(chapter['path'])}: replaced on line {line_number_at(chapter_text, places[0], chapter['start'])}.")
 
 
