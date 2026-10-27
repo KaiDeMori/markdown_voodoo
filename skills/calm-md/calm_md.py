@@ -43,8 +43,8 @@ config_location = Path(__file__).resolve().parent / "piko_bello.json"
 
 # commonmark knows HTML blocks, and front matter is never mistaken for a heading.
 parser = MarkdownIt("commonmark").use(front_matter_plugin)
-# A T line is a doc's first line with its token count: U+E054, the private use character after the T at 0x54, directly followed by the number.
-t_line_pattern = re.compile("\U0000E054[0-9]+(?=\r\n|\r|\n)")
+# A T line is a doc's first line with its token count: U+E054, the private use character after the T at 0x54, directly followed by the number, and maybe a space and the doc's size in bytes.
+t_line_pattern = re.compile("\U0000E054[0-9]+(?: [0-9]+)?(?=\r\n|\r|\n)")
 
 
 def refuse(line):
