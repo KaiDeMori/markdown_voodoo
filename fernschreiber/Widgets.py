@@ -89,7 +89,7 @@ class Title_list(Static, can_focus=True):
 
 
 class Seat_picker(Static, can_focus=True):
-    """The seats, with "[x]" for the marked ones, "~" for the ones watching and ">" for the one under the cursor."""
+    """The seats, with "[x]" for the marked ones, each seat's mailbox from the last overview, and ">" for the one under the cursor."""
 
     def __init__(self, header: str, **kwargs) -> None:
         super().__init__(markup=False, **kwargs)
@@ -151,7 +151,9 @@ class Seat_picker(Static, can_focus=True):
     def redraw(self, focused: bool | None = None) -> None:
         text = Text(f" {self.header}", style=header_style(self, focused))
         for index, (name, watching) in enumerate(self.seats):
-            text.append(f"\n{'>' if index == self.selected else ' '} [{'x' if name in self.marked_names else ' '}] {'~' if watching else ' '} {name}")
+            # Before the first overview there is no mailbox yet; "~ " keeps the two cells an icon takes.
+            mailbox = self.app.mailboxes.get(name) or ("~ " if watching else "  ")
+            text.append(f"\n{'>' if index == self.selected else ' '} [{'x' if name in self.marked_names else ' '}] {mailbox} {name}")
         self.update(text)
 
 
