@@ -29,7 +29,7 @@ def build_css(color_theme: Color_theme | None) -> str:
     #main {{ height: 1fr; }}
     #seats_scroll {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; scrollbar-size-vertical: 1; }}
     #seats {{ height: auto; }}
-    #inbox {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size: 0 0; }}
+    #inbox {{ width: 1fr; height: 1fr; padding: 0 1; border-right: ascii; scrollbar-size-vertical: 1; scrollbar-size-horizontal: 0; }}
     #inbox:focus #inbox_title {{ text-style: bold; }}
     .mail_head {{ margin-top: 1; }}
     .mail_body {{ padding-left: 2; }}
@@ -61,7 +61,7 @@ def build_css(color_theme: Color_theme | None) -> str:
     #groups_main {{ height: 1fr; }}
     #group_list {{ width: {settings.SEAT_PANE_WIDTH}; height: 1fr; border-left: ascii; border-right: ascii; }}
     #group_pane {{ width: 1fr; height: 1fr; border-right: ascii; }}
-    #group_thread {{ width: 1fr; height: 1fr; padding: 0 1; scrollbar-size: 0 0; }}
+    #group_thread {{ width: 1fr; height: 1fr; padding: 0 1; scrollbar-size-vertical: 1; scrollbar-size-horizontal: 0; }}
     #group_members {{ width: 1fr; height: auto; padding: 0 1; }}
     #group_input_row {{ height: {settings.INPUT_LINES}; border-left: ascii; border-right: ascii; }}
     #group_prompt {{ width: auto; height: {settings.INPUT_LINES}; }}
