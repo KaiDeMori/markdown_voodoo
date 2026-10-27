@@ -8,6 +8,7 @@ echo Deploying to %target%
 mkdir "%target%" 2>nul
 
 call :copy_file SKILL.md SKILL.md
+call :copy_file calm_code.sh calm_code.sh
 call :copy_file target\release\calm-code.exe calm-code.exe
 
 rem pause
