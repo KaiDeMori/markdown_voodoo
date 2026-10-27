@@ -35,7 +35,7 @@ Its reader has a window too.
 
 The hall's own characters, drawn by the Pinax font:
 
-- U+E054, the T, starts a doc's T line: its first line, with tokens and bytes, such as `848 3245`. A raven's window doesn't show the T.
+- U+E054, the T, starts a doc's T line: its first line, with tokens and the length of the document in bytes, such as `848 3245`. A raven's window doesn't show the T.
 
 ## Last updated
 
