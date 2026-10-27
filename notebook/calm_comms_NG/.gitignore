@@ -1,0 +1,3 @@
+# The exe is built anew, and test_haven changes with every manual test: both stay out of git.
+calm_comms.exe
+test_haven/
