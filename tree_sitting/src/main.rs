@@ -2,6 +2,7 @@
 
 mod languages;
 mod outline;
+mod read;
 mod toc;
 
 use std::path::Path;
@@ -9,7 +10,9 @@ use std::process::ExitCode;
 
 use outline::Outline;
 
-const USAGE: &str = "usage: calm-code toc [--page <number>] <file> [name ... | @number]";
+const TOC_USAGE: &str = "usage: calm-code toc [--page <number>] <file> [name ... | @number]";
+const READ_USAGE: &str = "usage: calm-code read [--limit <characters>] <file> <name ... | @number>";
+const DEFAULT_READ_LIMIT: usize = 20_000;
 
 fn main() -> ExitCode {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
@@ -28,36 +31,56 @@ fn main() -> ExitCode {
 fn run(arguments: &[String]) -> Result<String, String> {
     match arguments.split_first() {
         Some((command, rest)) if command == "toc" => run_toc(rest),
-        _ => Err(USAGE.to_string()),
+        Some((command, rest)) if command == "read" => run_read(rest),
+        _ => Err(format!("{TOC_USAGE}\n{READ_USAGE}")),
     }
 }
 
 fn run_toc(arguments: &[String]) -> Result<String, String> {
-    let (page, arguments) = take_page_option(arguments)?;
+    let (page, arguments) = take_number_option(arguments, "--page")?;
     let Some((file, name_path)) = arguments.split_first() else {
-        return Err(USAGE.to_string());
+        return Err(TOC_USAGE.to_string());
     };
-    let outline = load_outline(file)?;
-    toc::render(&outline, name_path, page).map_err(|refusal| format!("{file}: {refusal}"))
+    let (outline, _) = load_outline(file)?;
+    toc::render(&outline, name_path, page.unwrap_or(1)).map_err(|refusal| format!("{file}: {refusal}"))
 }
 
-fn take_page_option(arguments: &[String]) -> Result<(usize, &[String]), String> {
+fn run_read(arguments: &[String]) -> Result<String, String> {
+    let (limit, arguments) = take_number_option(arguments, "--limit")?;
+    let Some((file, name_path)) = arguments.split_first().filter(|(_, name_path)| !name_path.is_empty()) else {
+        return Err(READ_USAGE.to_string());
+    };
+    let (outline, source) = load_outline(file)?;
+    if outline.syntax_error_count > 0 {
+        eprintln!(
+            "{}, the lines may be incomplete",
+            toc::counted(outline.syntax_error_count, "syntax error")
+        );
+    }
+    read::render(&outline, &source, file, name_path, limit.unwrap_or(DEFAULT_READ_LIMIT))
+        .map_err(|refusal| format!("{file}: {refusal}"))
+}
+
+fn take_number_option<'a>(
+    arguments: &'a [String],
+    option_name: &str,
+) -> Result<(Option<usize>, &'a [String]), String> {
     match arguments {
-        [option, value, rest @ ..] if option == "--page" => {
-            let page = value
+        [option, value, rest @ ..] if option == option_name => {
+            let number = value
                 .parse::<usize>()
                 .ok()
-                .filter(|&page| page >= 1)
-                .ok_or_else(|| format!("--page needs a number from 1 on, not {value}"))?;
-            Ok((page, rest))
+                .filter(|&number| number >= 1)
+                .ok_or_else(|| format!("{option_name} needs a number from 1 on, not {value}"))?;
+            Ok((Some(number), rest))
         }
-        [option] if option == "--page" => Err("--page needs a number".to_string()),
+        [option] if option == option_name => Err(format!("{option_name} needs a number")),
         [option, ..] if option.starts_with("--") => Err(format!("unknown option {option}")),
-        _ => Ok((1, arguments)),
+        _ => Ok((None, arguments)),
     }
 }
 
-fn load_outline(file: &str) -> Result<Outline, String> {
+fn load_outline(file: &str) -> Result<(Outline, String), String> {
     let path = Path::new(file);
     if path.is_dir() {
         return Err(format!("{file}: a folder, not a file"));
@@ -71,6 +94,11 @@ fn load_outline(file: &str) -> Result<Outline, String> {
     })?;
     let bytes = std::fs::read(path).map_err(|error| format!("{file}: {error}"))?;
     let text = String::from_utf8(bytes).map_err(|_| format!("{file}: not UTF-8 text"))?;
-    let source = text.strip_prefix('\u{feff}').unwrap_or(&text);
-    outline::build_outline(source, &language_support).map_err(|problem| format!("{file}: {problem}"))
+    let source = match text.strip_prefix('\u{feff}') {
+        Some(without_byte_order_mark) => without_byte_order_mark.to_string(),
+        None => text,
+    };
+    let outline =
+        outline::build_outline(&source, &language_support).map_err(|problem| format!("{file}: {problem}"))?;
+    Ok((outline, source))
 }
