@@ -30,6 +30,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 | C# | `.cs` | classes, structs, interfaces and records, with their methods, constructors and properties with a body |
 | Python | `.py`, `.pyw` | classes with their methods, and functions |
 | JavaScript | `.js`, `.mjs`, `.cjs`, `.jsx` | classes with their methods, and functions; arrow functions count when they have a name |
+| TypeScript | `.ts`, `.mts`, `.cts`, `.tsx` | like JavaScript, plus interfaces and abstract classes with their signatures; overload signatures stay out |
 
 - Functions declared directly in a function's body count as its children, the way methods count for a class: a factory shows what it builds.
 - What sits deeper, in an `if` block or an anonymous callback, stays out. So do anonymous functions: they have no name to show or to read them by.
