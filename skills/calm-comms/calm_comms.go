@@ -3,6 +3,7 @@
 // A waking watcher leaves watching.md saying awake for a few minutes, until the raven's next on replaces it.
 // off: asks the seat's watcher to stop, and deletes watching.md.
 // overview: lists every seat with its mailbox: the door is open while a raven watches, and the flag is up while mail waits.
+// overview groups: lists the groups; with a group's name, its members with their mailboxes.
 // inbox: prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 // send: writes a mail from one seat into another, never overwrites a mail, and answers with the target's mailbox.
 // group: writes a mail from one seat to every other member of a group, and keeps a copy as the group's thread.
@@ -10,7 +11,7 @@
 // calm-comms is for ravens: every line it prints is for a raven to read.
 // Usage: calm_comms on <seat_name> [long|short|<minutes>]
 //        calm_comms off <seat_name>
-//        calm_comms overview
+//        calm_comms overview [groups [group_name]]
 //        calm_comms inbox <seat_name> [mail_limit]
 //        calm_comms send <seat_name> <target_seat_name> <text>
 //        calm_comms group <seat_name> <group_name> <text>
@@ -81,7 +82,15 @@ func main() {
 	case "off":
 		stop_watcher()
 	case "overview":
-		show_overview()
+		switch argument(2) {
+		case "":
+			show_overview()
+		case "groups":
+			show_groups(argument(3))
+		default:
+			fmt.Println("overview, or overview groups [group_name]?")
+			os.Exit(exit_refused)
+		}
 	case "inbox":
 		check_seat(seat_name)
 		show_inbox(read_mail_limit())

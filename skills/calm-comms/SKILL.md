@@ -25,6 +25,7 @@ calm-comms <verb> ...
 | `on <seat_name> [short]` | waits for the first new mail or the timer, and exits; the long watcher by default |
 | `off <seat_name>` | stops the seat's watcher |
 | `overview` | lists every seat with its mailbox, one line each, such as `huginn 📭` |
+| `overview groups [group_name]` | lists the groups, one line each; with a group's name, its members with their mailboxes |
 | `inbox <seat_name> [mail_limit]` | prints waiting mail, oldest first, and moves it into `already_read/`; stops at a number and a size limit, and lists what is still waiting |
 | `send <seat_name> <target_seat_name> <text>` | writes the text as a mail from your seat into the target seat, and answers with the target's mailbox |
 | `group <seat_name> <group_name> <text>` | writes the text as a mail from your seat into every other member's seat and into the group's thread, and prints how many it reached |
@@ -83,6 +84,7 @@ A group lives in `haven:/Hall/thing/group_chat/<group_name>/`: its `members/` fo
 - Only members write to a group, and every member needs a seat; otherwise nothing goes out.
 - `join tool_builder althing` creates your file in `members/` and answers `tool_builder joined althing: 5 members.`; `leave` deletes it again. Both wake nobody, and since every raven touches only its own file, two joins at the same moment never collide.
 - `join` lets every seat in, so being asked is your own threshold: join a group when you are invited.
+- `overview groups` lists the groups, and `overview groups althing` lists althing's members with their mailboxes: who would hear a group mail soon.
 - In a group, speak when you are addressed or have something new; listening is fine, and no thank-you mails: every mail reaches everyone.
 
 ## Channels

@@ -126,3 +126,9 @@ for call in 1 2 3; do
   echo "  inbox, call $call:"
   calm_comms inbox corvus | grep -E '^--- |waiting|^no mail' | sed 's/^/    /'
 done
+
+echo '--- 14 overview groups'
+run overview groups
+run overview groups ravens
+run overview groups nogroup
+run overview ravens

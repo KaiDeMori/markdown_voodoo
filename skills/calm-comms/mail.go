@@ -211,6 +211,23 @@ func member_count(count int) string {
 	return fmt.Sprintf("%d members", count)
 }
 
+// show_groups zooms into the groups: without a name, one line per group; with one, one line per member, with its mailbox.
+func show_groups(group_name string) {
+	if group_name == "" {
+		entries, _ := os.ReadDir(group_chat_location)
+		for _, entry := range entries {
+			if !strings.HasPrefix(entry.Name(), ".") && is_folder(filepath.Join(group_chat_location, entry.Name(), "members")) {
+				fmt.Println(entry.Name())
+			}
+		}
+		return
+	}
+	check_group(group_name)
+	for _, member := range read_members(group_name) {
+		fmt.Printf("%s %s\n", member, mailbox(filepath.Join(hrafnsmal_location, member)))
+	}
+}
+
 // join_group creates your seat's own file in the group's members folder, and wakes nobody.
 func join_group(group_name string) {
 	member_location := filepath.Join(group_chat_location, group_name, "members", seat_name)
