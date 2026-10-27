@@ -25,7 +25,7 @@ seconds_between() { awk -v start="$1" -v end="$2" 'BEGIN { printf "%.3f", end - 
 
 echo '--- 1 send'
 run send muninn huginn 'Hello, huginn!'
-sed 's/^/    | /' "$hrafnsmal/huginn"/from_muninn_*.md
+sed 's/^/    | /' "$hrafnsmal/huginn"/*_from_muninn.md
 
 echo '--- 2 inbox'
 run inbox huginn
@@ -36,7 +36,7 @@ run join corvus ravens
 
 echo '--- 4 group'
 run group huginn ravens 'Hello, ravens!'
-find "$haven" -name 'from_huginn_*' | sed "s|^$haven/|    |"
+find "$haven" -name '*_from_huginn.md' | sed "s|^$haven/|    |"
 
 echo '--- 5 leave'
 run leave corvus ravens
@@ -107,13 +107,13 @@ echo '--- 12 text beyond ASCII'
 calm_comms inbox corvus > /dev/null
 text=$'Grüße von Ⓦ, mit 📬 und ß.\n/ok: a second line, with a slash first.'
 calm_comms send muninn corvus "$text" > /dev/null
-received=$(tail -n +4 "$hrafnsmal/corvus"/from_muninn_*.md)
+received=$(tail -n +4 "$hrafnsmal/corvus"/*_from_muninn.md)
 if [[ $received == "$text" ]]; then echo '  through calm_comms.sh, the text arrived exactly as sent'; else echo "  through calm_comms.sh, the text changed: $received"; fi
 calm_comms inbox corvus | sed 's/^/  /'
 # Straight into the exe from Git Bash, without calm_comms.sh: what the wrapper prevents.
 sleep 1
 "$exe" send muninn corvus '/ok' > /dev/null
-echo "  straight into the exe, /ok arrived as: $(tail -n +4 "$hrafnsmal/corvus"/from_muninn_*.md)"
+echo "  straight into the exe, /ok arrived as: $(tail -n +4 "$hrafnsmal/corvus"/*_from_muninn.md)"
 
 echo '--- 13 inbox beyond its limits'
 calm_comms inbox corvus > /dev/null

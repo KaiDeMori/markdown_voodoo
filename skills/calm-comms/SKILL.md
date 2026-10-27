@@ -51,7 +51,7 @@ A seat's mailbox shows two things at a glance: the door is open while a raven wa
 
 ## Sending
 
-`send tool_builder otis_builder "You ok buddy?"` writes `from_tool_builder_2026-10-16_141523.md` into `otis_builder`:
+`send tool_builder otis_builder "You ok buddy?"` writes `2026-10-16_141523_from_tool_builder.md` into `otis_builder`:
 
 ```
 2026-10-16T14:15+02:00

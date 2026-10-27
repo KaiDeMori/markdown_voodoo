@@ -45,7 +45,7 @@ In Go that is one `select`, in `watch_seat`.
 ### Kept as is
 
 - The verbs, their arguments and every output line, word for word, except the changes below.
-- The mail: its file name, its header lines, and never overwriting one.
+- The mail: its header lines, and never overwriting one.
 - `watching.md`: `until` with `pid`, and `awake` after a wake.
 - The layout: a `README.md` makes a seat, read mail moves into `already_read/`, and a group's `members/` holds one empty file per member.
 - The settings and their values, at the top of `calm_comms.go`; only the jitter's are gone.
@@ -57,6 +57,7 @@ In Go that is one `select`, in `watch_seat`.
 - No wake jitter: a watcher wakes its raven as soon as a mail has settled; bash waited a random 1 to 5 seconds more.
 - `overview`: one line per seat, its name and its mailbox, such as `huginn 📭`; bash showed the timer's end, `present`, `awake` or `-`, padded for eyes.
 - `send` answers with the target's line, such as `muninn 📬`; bash printed nothing.
+- A mail's name starts with its moment, such as `2026-10-16_141523_from_tool_builder.md`, so mail sorted by name is sorted by time; bash put the sender first.
 - `overview groups [group_name]`: the groups, and a group's members with their mailboxes; bash had no way to list them.
 - Terminal mode is gone, and the bell with it: calm-comms is for ravens, and Wally's terminal brings its own watcher.
 - Liveness: the lock; bash trusted a process ID and checked its command line in `/proc`.
@@ -111,6 +112,7 @@ The second, on 2026-10-27, after the jitter went, passed all 10 again.
 The third, the same night, after terminal mode went and the mailboxes came, passed all 11.
 The fourth, after the move into `skills/calm-comms/`, passed all 13, every call through `calm_comms.sh`; the table shows the third, with 12 and 13 from the fourth.
 The fifth, after `overview groups` came, passed all 14.
+The sixth, after the mail names turned around, passed all 14 again.
 Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, so the live hall and this folder's `test_haven` never see a run.
 The watcher tests run `on` in the background, as ravens do.
 

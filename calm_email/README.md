@@ -24,7 +24,7 @@ calm-email <verb> ...
 | `forward 1 tool_builder` | `Mail 1 is forwarded to tool_builder.` |
 | `send W 'Subject' 'Text'` | `The mail to Ⓦ is sent.` |
 | `send W 'Subject' 'Text' yufka.png notes.md` | `The mail to Ⓦ is sent, with 2 files.` |
-| `relay W 'Subject' from_otis_builder_2026-10-25_180714.md` | `from_otis_builder_2026-10-25_180714.md went to Ⓦ, "Subject". A copy is in Sent.` |
+| `relay W 'Subject' 2026-10-25_180714_from_otis_builder.md` | `2026-10-25_180714_from_otis_builder.md went to Ⓦ, "Subject". A copy is in Sent.` |
 | `attachments 5` | `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/inbox/2026-10-20_211140_5_1.png` |
 | `catalog` | `Ⓢ Ⓦ` |
 | `who Ⓦ` | `Ⓦ: Wally. 'nough said` |

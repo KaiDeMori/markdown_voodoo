@@ -158,9 +158,9 @@ func send_group(group_name string, mail_text string) {
 	throttle()
 }
 
-// mail_file_name names a mail after its sender and its second, such as from_tool_builder_2026-10-16_141523.md.
+// mail_file_name names a mail after its second and its sender, such as 2026-10-16_141523_from_tool_builder.md, so mail sorted by name is sorted by time.
 func mail_file_name() string {
-	return "from_" + seat_name + "_" + time.Now().Format("2006-01-02_150405") + ".md"
+	return time.Now().Format("2006-01-02_150405") + "_from_" + seat_name + ".md"
 }
 
 // mail_content is the mail as it lands: the moment, From, To, and the text.
