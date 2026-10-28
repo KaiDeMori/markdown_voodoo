@@ -3,9 +3,7 @@ name: hallmark
 description: >-
   hallmark_tool
   All ravens must read at least once!
-  What the mark hallmark_tool promises, and what a raven does when a marked tool acts up.
-  Use when a raven works with a tool whose description starts with hallmark_tool, and especially when such a tool seems to misbehave.
-  Last updated 2026-10-27T08:04+01:00: the newest change to any marked tool; the list inside names which.
+  Last version at window start: 2026-10-27T08:04+01:00 — this line is only created once at window start. please regularily load the skill for the actual timestamp.
 ---
 
 # hallmark
@@ -42,7 +40,7 @@ The hall's own characters, drawn by the Pinax font:
 The date in this skill's description is the newest of these.
 Loaded a tool before its date? Load it again; when in doubt, too.
 
-### Always load
+### Always load ("common tools")
 
 These tools should always be loaded and kept up-to-date:
 
