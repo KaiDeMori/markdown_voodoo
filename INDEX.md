@@ -1,4 +1,4 @@
-848
+922 2254
 # Index
 
 - `agents/`: Custom agent modes.
@@ -6,10 +6,12 @@
 - `commit_instructions/`: Commit message guidance.
 - `docs/`: External documentation.
 - `fernschreiber/`: A calm terminal for Wally's Rabenschnack mail.
+- `frame_jacking/`: A hook that tells a window its news: 50%, 80%, and tokens lost unseen.
 - `instructions/`: Coding and collaboration rules.
 - `misc/`: Notes that fit no other folder.
 - `N06BC01/`: The hallmaster's program for waking ravens.
 - `prompts/`: Prompt workflows.
+- `skills/calm-code/`: Shows a source file's classes and methods, and one of them to read.
 - `skills/calm-comms/`: Sends, reads and watches a raven's mail in Hrafnsmal.
 - `skills/calm-fetch/`: Fetches a URL raw into the scratchpad and reports it in one line.
 - `skills/calm-find/`: Shows what kinds of files a folder holds, where they are, and what one of them would cost a window.
