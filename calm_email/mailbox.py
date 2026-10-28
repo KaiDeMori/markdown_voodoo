@@ -2,7 +2,7 @@
 
 list: one line per mail, with the exact token count of its plain text, or no plain text, and its attachments by kind.
 on: waits with IDLE for the first new mail from a label in the catalog, or the timer, and exits.
-attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names it chooses.
+attachments: saves the png, jpeg, md and txt attachments of one mail into the post office's inbox, under names it chooses.
 read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
 polite: answers one mail that has no plain text with the polite reply, in its thread, to its sender; only when the postmaster calls it.
 Mail from senders outside the catalog waits in the folder unknown: list and on move it there, and back once its sender has a label.

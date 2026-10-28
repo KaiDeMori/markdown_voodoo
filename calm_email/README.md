@@ -25,7 +25,7 @@ calm-email <verb> ...
 | `send W 'Subject' 'Text'` | `The mail to Ⓦ is sent.` |
 | `send W 'Subject' 'Text' yufka.png notes.md` | `The mail to Ⓦ is sent, with 2 files.` |
 | `relay W 'Subject' 2026-10-25_180714_from_otis_builder.md` | `2026-10-25_180714_from_otis_builder.md went to Ⓦ, "Subject". A copy is in Sent.` |
-| `attachments 5` | `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/inbox/2026-10-20_211140_5_1.png` |
+| `attachments 5` | `haven:/post_office/inbox/2026-10-20_211140_5_1.png` |
 | `catalog` | `Ⓢ Ⓦ` |
 | `who Ⓦ` | `Ⓦ: Wally. 'nough said` |
 | `on` | `2026-10-18T21:30+02:00 mail: 2  2026-10-18 21:29  Ⓦ  Hi!` |
@@ -40,7 +40,7 @@ calm-email <verb> ...
 - `read` shows a mail's plain text in your window, in the shape of a forwarded mail; it marks nothing, saves nothing, and only counts the attachments.
 - `polite` answers a mail that has no plain text with the polite reply from `polite_reply.txt`, in its thread, to its sender.
   It goes out to the world, so it goes only when you call it, one mail at a time; a mail with plain text is refused.
-- `forward` passes a mail's plain text into a seat, as a hall mail from you; its allowed attachments land in your inbox on the way, and the hall mail names them.
+- `forward` passes a mail's plain text into a seat, as a hall mail from you; its allowed attachments land in the post office's inbox on the way, and the hall mail names them.
   To read a mail, use `read`; `forward` is for passing it on.
 - Every mail the haven sends, polite replies included, gets a copy in the provider's Sent folder, where the mailbox's backup keeps it; the answer to `send` names the folder.
 - `send` reaches only the labels in the catalog; text with backticks, `$` or apostrophes goes into a quoted heredoc, as in calm-comms.
@@ -51,7 +51,7 @@ calm-email <verb> ...
 ## Attachments
 
 Only png, jpeg, md and txt travel, each checked by its content, and at most 5 MB per file.
-They live in your seat: `haven:/Hall/thing/Hrafnsmal/postmaster/attachments/`.
+They live in the post office, `haven:/post_office/`, whose README tells ravens how to send and receive; point them to it.
 
 - `outbox/`: ravens put files here that should go out; `send` takes their names after the text, never paths.
   What went out is deleted from the outbox, so nothing piles up twice.

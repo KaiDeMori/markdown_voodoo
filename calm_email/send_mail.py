@@ -1,4 +1,4 @@
-"""Sends one plain-text mail from the haven's mailbox, with files from the postmaster's outbox; everything else arrives through the environment.
+"""Sends one plain-text mail from the haven's mailbox, with files from the post office's outbox; everything else arrives through the environment.
 
 Every mail that went out gets a copy in the provider's Sent folder, where the mailbox's own backup keeps it.
 An answer names the mail it answers in in_reply_to, so it lands in that mail's thread.

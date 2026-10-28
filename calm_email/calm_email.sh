@@ -9,11 +9,11 @@
 # catalog addresses: with the catalog meta on stdin, each label with its address and its note, for the fernschreiber.
 # catalog note: asks Wally in a real terminal for a label's note about the person; the fernschreiber brings the catalog meta and the note on stdin instead.
 # who: every label with its note, or one label's note; for every raven, and never with an address.
-# forward: passes one mail's plain text into a seat, as a hall mail from the postmaster; its allowed attachments wait in the postmaster's inbox, and the hall mail names them.
-# send: sends a plain-text mail to a label in the catalog, and to nobody else, with files from the postmaster's outbox if named.
+# forward: passes one mail's plain text into a seat, as a hall mail from the postmaster; its allowed attachments wait in the post office's inbox, and the hall mail names them.
+# send: sends a plain-text mail to a label in the catalog, and to nobody else, with files from the post office's outbox if named.
 # relay: sends a raven's hall mail from the postmaster's seat the way send does, its text exactly as written; a block between lines of --- goes out alone.
 # on: waits for the first new mail from a label in the catalog, or the timer, and exits.
-# attachments: saves the png, jpeg, md and txt attachments of one mail into the postmaster's inbox, under names the tool chooses.
+# attachments: saves the png, jpeg, md and txt attachments of one mail into the post office's inbox, under names the tool chooses.
 # read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
 # polite: answers one mail without plain text with the polite reply, in its thread; it goes out only when the postmaster calls it.
 # Usage: calm_email.sh setup
@@ -39,7 +39,7 @@ python_location='C:/Users/devboese/AppData/Local/Programs/Python/Python312/pytho
 calm_comms_location='C:/Users/devboese/.claude/skills/calm-comms/calm_comms.sh'
 hrafnsmal_location='C:/haven/Hall/thing/Hrafnsmal'
 # Ravens put files to send into the outbox, and pick received ones up from the inbox.
-attachments_location='C:/haven/Hall/thing/Hrafnsmal/postmaster/attachments'
+attachments_location='C:/haven/post_office'
 # The watcher's timers; the server announces new mail, so nothing polls.
 long_watcher_minutes=45
 short_watcher_minutes=4
@@ -269,10 +269,10 @@ forward_mail() {
   if [[ -z $raw_mail ]]; then echo "No mail $number in the mailbox."; exit 1; fi
   # Email content is untrusted, so Python runs isolated.
   hall_mail=$(printf '%s\n' "$raw_mail" | catalog=$catalog "$python_location" -I "$script_folder/extract_text.py")
-  # The allowed attachments land in the postmaster's inbox on the way, and the hall mail names them for the receiving raven.
+  # The allowed attachments land in the post office's inbox on the way, and the hall mail names them for the receiving raven.
   attachment_lines=$(run_mailbox attachments "$number" | grep -v ' has no attachments\.$' || true)
   if [[ -n $attachment_lines ]]; then
-    hall_mail+=$'\n\n'"Attachments, waiting in the postmaster's inbox; please move them into your workshop:"$'\n'"$attachment_lines"
+    hall_mail+=$'\n\n'"Attachments, waiting in the post office's inbox; please move them into your workshop:"$'\n'"$attachment_lines"
     file_count=$(grep -c '^haven:/' <<< "$attachment_lines" || true)
     if (( file_count == 1 )); then file_note=', with 1 file'; elif (( file_count > 1 )); then file_note=", with $file_count files"; fi
   fi
