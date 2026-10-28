@@ -8,13 +8,14 @@ Not deployed yet.
 `context_window_line.py` stays silent on most turns, and speaks next to the message timestamp only when there is news:
 
 ```text
+<context_window>11% cw used; touchdown 🛬; next stops: 50% and 80%</context_window>
 <context_window>52% cw used; High-Noon 😎; the best is yet to come 🤗</context_window>
 <context_window>81% cw used; the Tannhäuser Gate in sight ✨; burn through with glee 🚀</context_window>
 <context_window>↓ 194k cw since last turn; the window got lighter 🪶; when memory and file disagree, the file wins</context_window>
 ```
 
 - The level is the last request's input as the server logged it in the transcript: the same number the `/context` gauge shows.
-- 50% and 80% speak once, when the window crosses them; a jump past both speaks the 80% line.
+- 10%, 50% and 80% speak once, when the window crosses them; a jump past two speaks the higher one.
 - A loss over 2k tokens speaks every time: what a request should have carried over from the one before it, input and output, and didn't. After a compaction, `, compacted` follows the number.
 - A count on every turn stays out: ravens don't count, and the window tells them when it matters.
 
@@ -24,6 +25,7 @@ On 2026-10-28, a resumed window lost 194k tokens of its old thinking, and nothin
 Forks lose tokens too.
 A raven can't tell from inside; with this line, it can.
 The 50% and 80% lines take over what Wally announced by hand.
+The 10% line comes while a new raven lands with Wally, so it meets the line once, with Wally there, before it matters.
 
 ## Switching it on
 
@@ -44,7 +46,7 @@ The digger's flights, with the line's first shape; drops are found the same way 
 - `badc72e3-9b59-4af4-9a2b-1df8139ec46e` and `3ad47622-80ac-42a8-aa4a-8e8d50efd5e5`, the prefork family: about 700 turns each, and only the known drops of 11k, 113k and 14k.
 - End to end with a hook payload: 0.11 s. Broken input prints nothing and exits 0.
 
-After the reshaping, made-up turns gave what was agreed: silence from 10% to 12%, from 50% to 79% and on a first turn; the 50% line from 48% to 52%; the 80% line from 45% to 85%; the ↓ line for a drop of 186k.
+After the reshaping, made-up turns gave what was agreed: silence from 10% to 12% and on a first turn; the 10% line from 5% to 11%; the 50% line from 48% to 52% and from 5% to 55%; the 80% line from 45% to 85%; the ↓ line for a drop of 186k.
 
 ## Limits
 

@@ -1,6 +1,6 @@
 """Tells a window its news in a UserPromptSubmit hook, and stays silent on every other turn.
 
-The news is one of three: the window crossed 50% or 80% of its size, or it lost tokens unseen, as after a resume or a fork.
+The news is one of two: the window crossed 10%, 50% or 80% of its size, or it lost tokens unseen, as after a resume or a fork.
 The fill level is the input of the window's last request, as the server reported it in the transcript;
 the /context gauge shows the same number.
 A loss is what a request should have carried over from the one before it, its input and its output, and didn't.
@@ -17,10 +17,12 @@ window_size_by_model = {
 default_window_size = 1_000_000
 drop_threshold = 2_000
 tail_bytes = 4_000_000
-# A window that crosses one of these levels hears it once, the highest level first; Wally used to announce them by hand.
+# A window that crosses one of these levels hears it once, the highest level first.
+# 10% comes while a new raven lands with Wally, so it meets the line once before it matters.
 milestones = (
     (80, "the Tannhäuser Gate in sight ✨; burn through with glee 🚀"),
     (50, "High-Noon 😎; the best is yet to come 🤗"),
+    (10, "touchdown 🛬; next stops: 50% and 80%"),
 )
 drop_text = "the window got lighter 🪶; when memory and file disagree, the file wins"
 
