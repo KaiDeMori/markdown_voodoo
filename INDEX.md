@@ -1,4 +1,4 @@
-󾁔425 993
+󾁔469 1082
 # Index
 
 - `archive/`: Retired sources, such as old skills.
@@ -8,6 +8,7 @@
 - `docs/`: External documentation.
 - `fernschreiber/`: A calm terminal for Wally's Rabenschnack mail.
 - `frame_jacking/`: Hooks that tell a window its news: its fill level, tokens lost unseen, and changed tools.
+- `in_wallys_path/`: Commands on Wally's PATH, for cmd and PowerShell, such as `tokens`.
 - `instructions/`: Coding and collaboration rules.
 - `misc/`: Notes that fit no other folder.
 - `N06BC01/`: The hallmaster's program for waking ravens.

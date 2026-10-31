@@ -4,7 +4,9 @@ A doc can carry its count on its first line, the T line: U+FE054, directly follo
 The old T, U+E054, is still read, and every read swaps in the new one; the line keeps its numbers.
 token-counter reads that line instead of counting while the doc keeps that size, and says so with (cached); a doc of another size gets counted fresh, and a line without a size is trusted as it is.
 With --write, it counts a doc fresh, without its T line, and writes or updates the line, size included; SKILL.md files and images get none.
+With -s, it counts the text that follows instead of a file.
 Usage: token_counter.py [--write] <file> [<file> ...]
+       token_counter.py -s <text>
 """
 
 import base64
@@ -69,6 +71,14 @@ def count_file(file_location, write):
 
 
 arguments = sys.argv[1:]
+# -s counts the text that follows, in one argument or in several.
+if arguments[:1] == ["-s"]:
+    text = " ".join(arguments[1:])
+    if not text:
+        print("-s needs a text to count.")
+        sys.exit(1)
+    print(f"{count_message(text)} tokens")
+    sys.exit()
 write = bool(arguments) and arguments[0] == "--write"
 if write:
     arguments = arguments[1:]

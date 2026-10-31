@@ -14,9 +14,11 @@ The threshold question "is it too much?", answered with a number instead of a gu
 
 ```
 token-counter [--write] <file> [<file> ...]
+token-counter -s <text>
 ```
 
 It prints one line per file, `<file name>: <N> tokens`, and a total when there is more than one.
+With `-s`, it counts the text instead of a file, and prints `<N> tokens`.
 
 ## The T line
 
