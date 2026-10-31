@@ -22,6 +22,7 @@ It prints one line per file, `<file name>: <N> tokens`, and a total when there i
 
 - A doc's T line, see hallmark, answers instead of a count while the doc keeps its size: `notes.md: 1846 tokens (cached)`.
 - `--write` counts fresh and writes the T line, `(written)`; never into a SKILL.md or an image.
+- An old T line, with U+E054, is still read, and gets the new T on the way.
 
 ## Good to know
 

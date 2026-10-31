@@ -1,6 +1,7 @@
 """token_counter: counts how many tokens files take up for a Claude model, before they enter a window.
 
-A doc can carry its count on its first line, the T line: U+E054, directly followed by the number, a space, and the size in bytes of the doc below the line.
+A doc can carry its count on its first line, the T line: U+FE054, directly followed by the number, a space, and the size in bytes of the doc below the line.
+The old T, U+E054, is still read, and every read swaps in the new one; the line keeps its numbers.
 token-counter reads that line instead of counting while the doc keeps that size, and says so with (cached); a doc of another size gets counted fresh, and a line without a size is trusted as it is.
 With --write, it counts a doc fresh, without its T line, and writes or updates the line, size included; SKILL.md files and images get none.
 Usage: token_counter.py [--write] <file> [<file> ...]
@@ -22,8 +23,11 @@ image_media_types = {
     ".gif": "image/gif",
     ".webp": "image/webp",
 }
-# The T line: U+E054, the private use character after the T at 0x54, directly followed by the count; then a space and the doc's size in bytes, which older lines lack; then the line's end.
-t_line_pattern = re.compile("\U0000E054([0-9]+)(?: ([0-9]+))?(\r\n|\r|\n)")
+# The T is U+FE054, in plane 15's private use area, with the T's 0x54 at its end; the old T, U+E054 in the BMP, is still read.
+t_character = "\U000FE054"
+old_t_character = "\U0000E054"
+# The T line: the T, directly followed by the count; then a space and the doc's size in bytes, which older lines lack; then the line's end.
+t_line_pattern = re.compile("([\U0000E054\U000FE054])([0-9]+)(?: ([0-9]+))?(\r\n|\r|\n)")
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -46,17 +50,20 @@ def count_file(file_location, write):
     # Bytes, not text mode, so a written doc keeps its own line endings.
     text = file_location.read_bytes().decode("utf-8")
     t_line = t_line_pattern.match(text)
+    # An old T heals on every read: only the T changes, and the line keeps its numbers and its ending; --write rewrites the whole line anyway.
+    if t_line and t_line.group(1) == old_t_character and not write:
+        file_location.write_bytes((t_character + text[1:]).encode("utf-8"))
     doc = text[t_line.end():] if t_line else text
     doc_size = len(doc.encode("utf-8"))
     # A cached count holds while the doc below its line keeps its size; a line without a size always holds.
-    if t_line and not write and (t_line.group(2) is None or int(t_line.group(2)) == doc_size):
-        return int(t_line.group(1)), " (cached)"
+    if t_line and not write and (t_line.group(3) is None or int(t_line.group(3)) == doc_size):
+        return int(t_line.group(2)), " (cached)"
     # Counted as text mode reads it, so a count stays what it always was.
     token_count = count_message(re.sub(r"\r\n|\r", "\n", doc))
     # A SKILL.md keeps its front matter first, so it never gets a T line.
     if write and file_location.name != "SKILL.md":
-        line_ending = t_line.group(3) if t_line else ("\r\n" if "\r\n" in doc else "\n")
-        file_location.write_bytes(f"\U0000E054{token_count} {doc_size}{line_ending}{doc}".encode("utf-8"))
+        line_ending = t_line.group(4) if t_line else ("\r\n" if "\r\n" in doc else "\n")
+        file_location.write_bytes(f"{t_character}{token_count} {doc_size}{line_ending}{doc}".encode("utf-8"))
         return token_count, " (written)"
     return token_count, ""
 

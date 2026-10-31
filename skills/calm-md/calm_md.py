@@ -43,8 +43,9 @@ config_location = Path(__file__).resolve().parent / "piko_bello.json"
 
 # commonmark knows HTML blocks, and front matter is never mistaken for a heading.
 parser = MarkdownIt("commonmark").use(front_matter_plugin)
-# A T line is a doc's first line with its token count: U+E054, the private use character after the T at 0x54, directly followed by the number, and maybe a space and the doc's size in bytes.
-t_line_pattern = re.compile("\U0000E054[0-9]+(?: [0-9]+)?(?=\r\n|\r|\n)")
+# A T line is a doc's first line with its token count: the T, U+FE054, directly followed by the number, and maybe a space and the doc's size in bytes.
+# The old T, U+E054, is still looked past, and a write turns it into the new one.
+t_line_pattern = re.compile("[\U0000E054\U000FE054][0-9]+(?: [0-9]+)?(?=\r\n|\r|\n)")
 
 
 def refuse(line):
@@ -347,7 +348,7 @@ def save_checked(location, kept_start, result, as_is, what_changes):
         new_issues = lint(result)
         if new_issues:
             show_issues(new_issues, f"{what_changes} would bring {count(len(new_issues), 'issue')}; the file stays as it was:")
-    result = kept_start + result
+    result = kept_start.replace("\U0000E054", "\U000FE054") + result
     # The file is replaced in one step, so a reader never sees half of it.
     handle, temporary_name = tempfile.mkstemp(dir=location.parent, prefix=f".{location.name}.", suffix=".tmp")
     with os.fdopen(handle, "wb") as temporary_file:
