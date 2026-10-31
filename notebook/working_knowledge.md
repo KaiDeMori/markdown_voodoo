@@ -26,7 +26,6 @@ Any session may read and edit this notebook at any time, without asking.
 - Whenever possible, wording states what is the case.
 - We build what a real use runs into; what no use runs into gets documented as a limitation.
 - Tools built in this repo carry the mark `hallmark_tool` as the first line of the `description` in their `SKILL.md`, once ravens have flown them and liked them.
-- When a change to a marked tool goes to Wally for a deploy, its line in the hallmark skill's `Last updated` list and the date in hallmark's description get the moment of hand-over.
 - Wally announces when the context window is about 50% and about 80% full, and tells its usage whenever asked.
   Sessions do not track their token usage themselves.
 - We never compact a conversation.
