@@ -6,6 +6,7 @@ token-counter reads that line instead of counting while the doc keeps that size,
 With --write, it counts a doc fresh, without its T line, and writes or updates the line, size included; SKILL.md files and images get none.
 With -s, it counts the text that follows instead of a file.
 The endpoint counts a whole message, and Anthropic calls its count an estimate; every count leaves out the tokens that wrap any message, the role markers around a turn.
+Whatever goes wrong ends in one line, and exit 1.
 Usage: token_counter.py [--write] <file> [<file> ...]
        token_counter.py -s <text>
 """
@@ -35,8 +36,6 @@ old_t_character = "\U0000E054"
 t_line_pattern = re.compile("([\U0000E054\U000FE054])([0-9]+)(?: ([0-9]+))?(\r\n|\r|\n)")
 
 sys.stdout.reconfigure(encoding="utf-8")
-
-client = Anthropic(api_key=hall_key_location.read_text(encoding="utf-8").strip())
 
 
 def count_message(message_content):
@@ -78,22 +77,49 @@ def count_file(file_location, write):
     return token_count, ""
 
 
-arguments = sys.argv[1:]
-# -s counts the text that follows, in one argument or in several.
-if arguments[:1] == ["-s"]:
-    text = " ".join(arguments[1:])
-    if not text:
-        print("-s needs a text to count.")
+def main():
+    arguments = sys.argv[1:]
+    # -s counts the text that follows, in one argument or in several.
+    if arguments[:1] == ["-s"]:
+        text = " ".join(arguments[1:])
+        if not text:
+            print("-s needs a text to count.")
+            sys.exit(1)
+        print(token_text(count_message(text)))
+        return
+    write = bool(arguments) and arguments[0] == "--write"
+    if write:
+        arguments = arguments[1:]
+    if not arguments:
+        print("token-counter [--write] <file> ..., or token-counter -s <text>?")
         sys.exit(1)
-    print(token_text(count_message(text)))
-    sys.exit()
-write = bool(arguments) and arguments[0] == "--write"
-if write:
-    arguments = arguments[1:]
-total_count = 0
-for file_location in map(pathlib.Path, arguments):
-    token_count, note = count_file(file_location, write)
-    print(f"{file_location.name}: {token_text(token_count)}{note}")
-    total_count += token_count
-if len(arguments) > 1:
-    print(f"total: {token_text(total_count)}")
+    total_count = 0
+    failed = False
+    for argument in arguments:
+        file_location = pathlib.Path(argument)
+        # A refusal names the file as it was typed, so a typo shows.
+        if not file_location.is_file():
+            print(f"{argument}: no such file")
+            failed = True
+            continue
+        try:
+            token_count, note = count_file(file_location, write)
+        except UnicodeDecodeError:
+            print(f"{argument}: neither UTF-8 text nor an image")
+            failed = True
+            continue
+        print(f"{file_location.name}: {token_text(token_count)}{note}")
+        total_count += token_count
+    if len(arguments) > 1:
+        print(f"total: {token_text(total_count)}")
+    if failed:
+        sys.exit(1)
+
+
+# Nothing screams: whatever else goes wrong, a failed call to Anthropic included, ends in one line.
+try:
+    client = Anthropic(api_key=hall_key_location.read_text(encoding="utf-8").strip())
+    main()
+except Exception as error:
+    print(f"Counting failed: {(str(error).splitlines() or [type(error).__name__])[0]}")
+    sys.exit(1)
