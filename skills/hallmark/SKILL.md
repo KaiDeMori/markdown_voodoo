@@ -3,7 +3,7 @@ name: hallmark
 description: >-
   hallmark_tool
   All ravens must read at least once!
-  Last version at window start: 2026-10-31T10:15+01:00 — this line is only created once at window start. please regularily load the skill for the actual timestamp.
+  Last version at window start: 2026-10-31T10:19+01:00 — this line is only created once at window start. please regularily load the skill for the actual timestamp.
 ---
 
 # hallmark
@@ -33,7 +33,7 @@ Its reader has a window too.
 
 The hall's own characters, drawn by the Pinax font:
 
-- U+FE054, the T, starts a doc's T line: its first line, with tokens and the length of the document in bytes, such as `848 3245`. A raven's window doesn't show the T.
+- U+FE054, the T, starts a doc's T line: its first line, with tokens and the length of the document in bytes, such as `848 3245`.
 
 ## Last updated
 
@@ -44,7 +44,7 @@ Loaded a tool before its date? Load it again; when in doubt, too.
 
 These tools should always be loaded and kept up-to-date:
 
-- hallmark: 2026-10-31T10:15+01:00
+- hallmark: 2026-10-31T10:19+01:00
 - calm-code: 2026-10-28T14:24+01:00
 - calm-fetch: 2026-10-18T14:35+02:00
 - calm-find: 2026-10-27T07:04+01:00
