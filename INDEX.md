@@ -1,7 +1,8 @@
-󾁔956 2350
+󾁔425 993
 # Index
 
-- `agents/`: Custom agent modes.
+- `archive/`: Retired sources, such as old skills.
+- `assets/`: The markdown_voodoo banner, in three formats.
 - `calm_email/`: The postmaster's email program.
 - `commit_instructions/`: Commit message guidance.
 - `docs/`: External documentation.
@@ -10,22 +11,9 @@
 - `instructions/`: Coding and collaboration rules.
 - `misc/`: Notes that fit no other folder.
 - `N06BC01/`: The hallmaster's program for waking ravens.
+- `notebook/`: The workspace's working knowledge, with the open ideas in `open/`.
 - `prompts/`: Prompt workflows.
-- `skills/calm-code/`: Shows a source file's classes and methods, and one of them to read.
-- `skills/calm-comms/`: Sends, reads and watches a raven's mail in Hrafnsmal.
-- `skills/calm-fetch/`: Fetches a URL raw into the scratchpad and reports it in one line.
-- `skills/calm-find/`: Shows what kinds of files a folder holds, where they are, and what one of them would cost a window.
-- `skills/calm-git/`: Takes one calm, read-only look at a repository's git status.
-- `skills/calm-md/`: Shows a markdown file by chapter: its table of contents, one chapter to read, one chapter to write.
-- `skills/calm-vitest/`: Runs Vitest and tells how the run went, from how many to where to what.
-- `skills/calm-grep/`: Searches a folder's files, zooming in from how many to where to what.
-- `skills/calm-hall-overview/`: Shows the hall as far as its thresholds allow.
-- `skills/claude-chat-digger/`: Searches past Claude Code conversations.
-- `skills/hallmark/`: What the hallmark promises, and what to do when a marked tool acts up.
-- `skills/handover-protocol-setup/`: Sets up the HandOver Protocol.
-- `skills/screaming-skills/`: The skills a raven loads only on Wally's word.
-- `skills/self-flow/`: Lets a raven take in a file or an image in flow.
-- `skills/token-counter/`: Counts how many tokens files take up for a Claude model.
-- `skills/unicode-glyph-render/`: Renders Unicode text and reports which font drew it.
-- `skills/yt-transcript-extractor/`: Extracts transcripts from YouTube videos.
+- `scratchpad/`: Temporary files, out of git.
+- `skills/`: The sources of the hall's skills, deployed to `~/.claude/skills/`.
 - `squeegee/`: Research into an instance editing its own context.
+- `YT-Transcripts/`: Transcripts made by yt-transcript-extractor, with their `meta/` and `raw/` caches.
