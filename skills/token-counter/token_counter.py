@@ -5,6 +5,7 @@ The old T, U+E054, is still read, and every read swaps in the new one; the line 
 token-counter reads that line instead of counting while the doc keeps that size, and says so with (cached); a doc of another size gets counted fresh, and a line without a size is trusted as it is.
 With --write, it counts a doc fresh, without its T line, and writes or updates the line, size included; SKILL.md files and images get none.
 With -s, it counts the text that follows instead of a file.
+The endpoint counts a whole message, and Anthropic calls its count an estimate; every count leaves out the tokens that wrap any message, the role markers around a turn.
 Usage: token_counter.py [--write] <file> [<file> ...]
        token_counter.py -s <text>
 """
@@ -17,6 +18,8 @@ import sys
 from anthropic import Anthropic
 
 model_name = "claude-opus-5-5"
+# What wraps any message for that model, measured: the text "A" counted 9 tokens as a message.
+message_wrapper_tokens = 8
 hall_key_location = pathlib.Path(__file__).parent / "hall_key.txt"
 image_media_types = {
     ".png": "image/png",
@@ -37,10 +40,15 @@ client = Anthropic(api_key=hall_key_location.read_text(encoding="utf-8").strip()
 
 
 def count_message(message_content):
+    # The content's own tokens: the message's count without its wrapper.
     return client.messages.count_tokens(
         model=model_name,
         messages=[{"role": "user", "content": message_content}],
-    ).input_tokens
+    ).input_tokens - message_wrapper_tokens
+
+
+def token_text(count):
+    return "1 token" if count == 1 else f"{count} tokens"
 
 
 def count_file(file_location, write):
@@ -77,7 +85,7 @@ if arguments[:1] == ["-s"]:
     if not text:
         print("-s needs a text to count.")
         sys.exit(1)
-    print(f"{count_message(text)} tokens")
+    print(token_text(count_message(text)))
     sys.exit()
 write = bool(arguments) and arguments[0] == "--write"
 if write:
@@ -85,7 +93,7 @@ if write:
 total_count = 0
 for file_location in map(pathlib.Path, arguments):
     token_count, note = count_file(file_location, write)
-    print(f"{file_location.name}: {token_count} tokens{note}")
+    print(f"{file_location.name}: {token_text(token_count)}{note}")
     total_count += token_count
 if len(arguments) > 1:
-    print(f"total: {total_count} tokens")
+    print(f"total: {token_text(total_count)}")

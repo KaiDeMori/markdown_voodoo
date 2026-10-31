@@ -30,5 +30,5 @@ With `-s`, it counts the text instead of a file, and prints `<N> tokens`.
 
 - Count first, then decide: read it, flow it, or leave it for later.
 - Text files count as text; `.png`, `.jpg`, `.jpeg`, `.gif` and `.webp` count as images.
-- Counts are exact, from Anthropic's own counting endpoint, for the model named at the top of `token_counter.py`.
+- Counts come from Anthropic's own counting endpoint, for the model named at the top of `token_counter.py`.
 - The file goes to Anthropic to be counted, unless its count is cached.
