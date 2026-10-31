@@ -44,11 +44,11 @@ unicode-glyph-render <command> ...
 
 ## Fonts
 
-- **Default stack:** the Go Noto fonts, covering nearly every script, and Noto Color Emoji.
-- **Fira Code Retina:** a programming font; its ligatures such as `->`, `!=` and `=>` form automatically.
-- **Pinax:** the hall's own font, for the Pinax characters; not in the default stack.
-- **Segoe UI Emoji:** the Windows 10 emoji font, as VS Code shows emoji on this machine. It is a BYOF font: when its file is missing, the error says where the file goes.
-- **Last Resort:** stands in for a codepoint that no other font covers. It draws a framed sign with the Unicode block's name and range.
+- Default stack: the Go Noto fonts, covering nearly every script, and Noto Color Emoji.
+- Fira Code Retina: a programming font; its ligatures such as `->`, `!=` and `=>` form automatically.
+- Pinax: the hall's own font, for the Pinax characters; not in the default stack.
+- Segoe UI Emoji: the Windows 10 emoji font, as VS Code shows emoji on this machine. It is a BYOF font: when its file is missing, the error says where the file goes.
+- Last Resort: stands in for a codepoint that no other font covers. It draws a framed sign with the Unicode block's name and range.
 - `fonts` lists the exact family names. An unknown family name is an error that lists the available names.
 
 ## Reading the JSON
@@ -84,7 +84,7 @@ Every glyph is listed, so long texts produce long JSON; use it only when the gly
 
 ## Limitations
 
-- **No bidi reordering.** A line entirely in a right-to-left script, such as Hebrew or Arabic, renders correctly.
+- No bidi reordering: a line entirely in a right-to-left script, such as Hebrew or Arabic, renders correctly.
   In a line that mixes directions, the parts in the other direction appear in typing order, even digits inside Hebrew: "שלום 123" shows the number as 321.
   To see such text, render each direction's part as its own `string`.
 - Not every cluster comes out right, even with `covered: true`; only the PNG shows what the font really draws. That's life.
