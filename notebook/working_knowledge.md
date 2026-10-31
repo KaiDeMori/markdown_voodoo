@@ -66,8 +66,6 @@ Any session may read and edit this notebook at any time, without asking.
   Python source written with these tools therefore spells escapes as `\UXXXXXXXX`.
 - Python 3.12 lives at `C:/Users/devboese/AppData/Local/Programs/Python/Python312/python`.
   Its stdout encodes cp1252, so printing non-ASCII characters needs `sys.stdout.reconfigure(encoding="utf-8")`.
-- The claude-api skill loads several percent of a window at once.
-  Send a raven instead: a subagent reads it and brings back only the facts.
 
 ## Techniques
 

@@ -1,4 +1,4 @@
-󾁔925 2273
+󾁔956 2350
 # Index
 
 - `agents/`: Custom agent modes.
@@ -26,6 +26,7 @@
 - `skills/handover-protocol-setup/`: Sets up the HandOver Protocol.
 - `skills/letter-to-the-next/`: Writes a note from one session to the next.
 - `skills/personal-information-cleanup/`: Deletes a leaked string from a git repository and its history.
+- `skills/screaming-skills/`: The skills a raven loads only on Wally's word.
 - `skills/self-flow/`: Lets a raven take in a file or an image in flow.
 - `skills/token-counter/`: Counts how many tokens files take up for a Claude model.
 - `skills/unicode-glyph-render/`: Renders Unicode text and reports which font drew it.

@@ -48,6 +48,7 @@ These tools should always be loaded and kept up-to-date:
 - calm-find
 - calm-grep
 - calm-md
+- screaming-skills
 - self-flow
 - token-counter
 - unicode-glyph-render
