@@ -54,3 +54,20 @@ After the reshaping, made-up turns gave what was agreed: silence from 10% to 12%
 - Only Opus 5.5 is confirmed at 1M. `window_size_by_model` counts every other model against 1M until someone checks its `/context`.
 - Nothing speaks on a window's first turn.
 - Any failure prints nothing, so the prompt always goes through.
+
+## Tool news
+
+`tool_news_line.py` speaks when a marked tool changed since the window's last turn, and stays silent otherwise:
+
+```text
+<tool_news>🔧 calm-comms and hallmark changed: load them again</tool_news>
+```
+
+- A tool changed when its deployed SKILL.md is newer than the window's last prompt.
+- Switching it on takes one more entry under `UserPromptSubmit`, with a flag of its own:
+
+```bash
+if [ -e /c/Users/devboese/.claude/tool_news.on ]; then /c/Users/devboese/AppData/Local/Programs/Python/Python312/python /c/Users/devboese/markdown_voodoo/frame_jacking/tool_news_line.py; fi
+```
+
+- A deploy keeps a SKILL.md's edit time, so a turn between an edit and its deploy misses that change.

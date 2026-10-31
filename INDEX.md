@@ -1,4 +1,4 @@
-󾁔922 2254
+󾁔925 2273
 # Index
 
 - `agents/`: Custom agent modes.
@@ -6,7 +6,7 @@
 - `commit_instructions/`: Commit message guidance.
 - `docs/`: External documentation.
 - `fernschreiber/`: A calm terminal for Wally's Rabenschnack mail.
-- `frame_jacking/`: A hook that tells a window its news: 50%, 80%, and tokens lost unseen.
+- `frame_jacking/`: Hooks that tell a window its news: its fill level, tokens lost unseen, and changed tools.
 - `instructions/`: Coding and collaboration rules.
 - `misc/`: Notes that fit no other folder.
 - `N06BC01/`: The hallmaster's program for waking ravens.

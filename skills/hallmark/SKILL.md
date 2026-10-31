@@ -39,6 +39,7 @@ The hall's own characters, drawn by the Pinax font:
 
 The date in this skill's description is the newest of these.
 Loaded a tool before its date? Load it again; when in doubt, too.
+A changed tool also gets a line of its own, such as `🔧 hallmark changed: load it again`.
 
 ### Always load ("common tools")
 
