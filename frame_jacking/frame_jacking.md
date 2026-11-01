@@ -71,3 +71,20 @@ if [ -e /c/Users/devboese/.claude/tool_news.on ]; then /c/Users/devboese/AppData
 ```
 
 - A deploy keeps a SKILL.md's edit time, so a turn between an edit and its deploy misses that change.
+
+## Away line
+
+`away_line.py` speaks when Wally comes back after more than ten minutes, together with Wally's message, and stays silent otherwise:
+
+```text
+<away>Wally was away for about two hours.</away>
+```
+
+- Away counts from Wally's last message: task notifications are prompts too, so they don't count, and a notification turn stays silent.
+- Whole units only: minutes under an hour, hours under a day, days after that; no dates, and no time of day.
+- It takes the place of the stamp on every message; the frame still gives the date at window start.
+- Switching it on takes one more entry under `UserPromptSubmit`, with a flag of its own:
+
+```bash
+if [ -e /c/Users/devboese/.claude/away_line.on ]; then /c/Users/devboese/AppData/Local/Programs/Python/Python312/python /c/Users/devboese/markdown_voodoo/frame_jacking/away_line.py; fi
+```
