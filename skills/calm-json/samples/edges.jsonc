@@ -1,0 +1,12 @@
+{
+  "alpha": 1, // about alpha, on its own line
+  // The beta value, documented above it.
+  "beta": [true, false,],
+  /* Gamma holds an object
+     with a trailing comma. */
+  "gamma": {"a": 1,},
+
+  // A blank line keeps this comment away from delta.
+
+  "delta": 4,
+}

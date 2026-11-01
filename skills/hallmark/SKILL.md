@@ -47,6 +47,7 @@ These tools should always be loaded and kept up-to-date:
 - calm-fetch
 - calm-find
 - calm-grep
+- calm-json
 - calm-md
 - screaming-skills
 - self-flow

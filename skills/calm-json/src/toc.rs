@@ -30,18 +30,6 @@ pub fn render(document: &Document, source: &str, path: Option<&str>, page: usize
     let number_width = largest_number.map_or(0, |number| format!("@{number}").len() + 2);
 
     let mut lines = vec![header_line(document, source)];
-    if document.syntax_error_count > 0 {
-        lines.push(format!(
-            "{}, the list may be incomplete",
-            counted(document.syntax_error_count, "syntax error")
-        ));
-    }
-    if document.value_count > 1 {
-        lines.push(format!(
-            "{} at the top, and JSON holds one: only the first is listed",
-            counted(document.value_count, "value")
-        ));
-    }
     if let Some(root) = pinned {
         lines.push(entry_line(source, &document.entries[root], base_depth, number_width, None));
     }

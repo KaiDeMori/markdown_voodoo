@@ -1,6 +1,7 @@
 #![allow(non_camel_case_types)]
 
 mod document;
+mod issues;
 mod json_path;
 mod read;
 mod toc;
@@ -53,12 +54,6 @@ fn run_read(arguments: &[String]) -> Result<String, String> {
         return Err(READ_USAGE.to_string());
     };
     let (document, source) = load_document(file)?;
-    if document.syntax_error_count > 0 {
-        eprintln!(
-            "{}, the text may be incomplete",
-            toc::counted(document.syntax_error_count, "syntax error")
-        );
-    }
     read::render(&document, &source, file, path, limit.unwrap_or(DEFAULT_READ_LIMIT))
         .map_err(|refusal| format!("{file}: {refusal}"))
 }
@@ -100,6 +95,11 @@ fn load_document(file: &str) -> Result<(Document, String), String> {
         Some(without_byte_order_mark) => without_byte_order_mark.to_string(),
         None => text,
     };
-    let document = document::build_document(&source).map_err(|problem| format!("{file}: {problem}"))?;
+    let allows_comments = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("jsonc"));
+    let document =
+        document::build_document(&source, allows_comments).map_err(|problem| format!("{file}: {problem}"))?;
     Ok((document, source))
 }

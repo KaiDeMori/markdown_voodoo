@@ -16,6 +16,10 @@ calm-json toc [--page <number>] <file> [path | @number]
 calm-json read [--limit <characters>] <file> <path | @number>
 ```
 
+calm-json works only on piko bello JSON.
+Before anything else, it checks the whole file; with issues, it only lists them, one line each, like `3 issues, fix them and call again:`.
+Fix the file, then call again.
+
 Start zoomed out, and zoom in only when the answer asks for it:
 
 | Command | Answers | Happy path |
@@ -51,7 +55,7 @@ samples/settings.json:5-13
 ```
 
 - The first line is the location, `file:first-last`, ready for a Read with offset and limit.
-- A member on lines of its own comes as whole lines, indentation and trailing comma included; one inside a line, as in a minified file, comes as its exact slice.
+- A member on lines of its own comes as whole lines, with its indentation, its trailing comma, and the comments directly above it and after it; one inside a line, as in a minified file, comes as its exact slice.
 - `read` refuses a value over 20,000 characters, about 5,000 tokens, and says how to go on: `toc` to look inside, or `--limit` to read it all for one call.
 
 ## Paths
@@ -60,16 +64,13 @@ samples/settings.json:5-13
 - A key with dots, brackets or quotes goes in brackets and quotes: `env["my.dotted.key"]`, or `packages[""]` for the empty key. A leading `$` is fine.
 - Keys are compared as they stand in the file, escapes included, and case-sensitive. A miss that differs only in case says so.
 - A miss says what is there: `no key Missing in hooks; its keys: UserPromptSubmit, SessionStart`.
-- A key that stands twice in one object is refused, with the numbers of both.
 
 ## Good to know
 
+- Issues are syntax errors, trailing commas, a key that stands twice in one object, more than one value at the top, as in JSON Lines, and comments outside a `.jsonc` file.
 - Options may stand anywhere after the command.
-- Comments, as in `.jsonc` files, are fine.
-- A file with syntax errors still gets an answer, because Tree-sitter always builds a tree. `toc` adds a line about it, and `read` warns on stderr.
-- A file with more than one value at the top, such as JSON Lines, lists only the first and says so.
-- Every refusal is one line on stderr, with exit code 1; exit code 0 means done.
+- Every refusal goes to stderr, with exit code 1: one line, or an issue list. Exit code 0 means done.
 - Files are read as UTF-8, and a byte order mark is skipped.
-- The limits are the constants at the top of `src/main.rs`, `src/toc.rs`, `src/document.rs` and `src/json_path.rs`.
+- The limits are the constants at the top of `src/main.rs`, `src/toc.rs`, `src/document.rs`, `src/json_path.rs` and `src/issues.rs`.
 
 'nough said.

@@ -1,5 +1,6 @@
-use tree_sitter::{Language, Node, Parser, Tree};
+use tree_sitter::{Language, Node, Parser};
 
+use crate::issues;
 use crate::toc::counted;
 
 const LABEL_LIMIT: usize = 60;
@@ -10,8 +11,6 @@ pub struct Document {
     pub root_summary: Option<String>,
     /// In reading order, each entry directly followed by everything nested inside it.
     pub entries: Vec<Entry>,
-    pub syntax_error_count: usize,
-    pub value_count: usize,
 }
 
 pub struct Entry {
@@ -79,27 +78,30 @@ impl Document {
     }
 }
 
-pub fn build_document(source: &str) -> Result<Document, String> {
+/// The file is checked first, as calm-md does: one that is not piko bello JSON gets its issues and nothing else.
+pub fn build_document(source: &str, allows_comments: bool) -> Result<Document, String> {
     let language: Language = tree_sitter_json::LANGUAGE.into();
     let mut parser = Parser::new();
     parser
         .set_language(&language)
         .map_err(|error| format!("the JSON grammar does not fit this Tree-sitter: {error}"))?;
     let tree = parser.parse(source, None).ok_or_else(|| "the JSON parser gave no tree".to_string())?;
+    let found_issues = issues::find_issues(&tree, source, allows_comments);
+    if !found_issues.is_empty() {
+        return Err(issues::report(&found_issues));
+    }
     let document_node = tree.root_node();
     let mut cursor = document_node.walk();
-    let values: Vec<Node> = document_node.named_children(&mut cursor).filter(|node| kind_of(*node).is_some()).collect();
+    let root = document_node.named_children(&mut cursor).find(|node| kind_of(*node).is_some());
     let mut entries = Vec::new();
-    if let Some(root) = values.first() {
-        collect_entries(*root, None, 0, source, &mut entries);
+    if let Some(root) = root {
+        collect_entries(root, None, 0, source, &mut entries);
     }
     Ok(Document {
         line_count: source.lines().count(),
-        root_kind: values.first().and_then(|root| kind_of(*root)),
-        root_summary: values.first().map(|root| cut_to_limit(summary_of(*root, source))),
+        root_kind: root.and_then(kind_of),
+        root_summary: root.map(|root| cut_to_limit(summary_of(root, source))),
         entries,
-        syntax_error_count: count_syntax_errors(&tree),
-        value_count: values.len(),
     })
 }
 
@@ -114,13 +116,14 @@ pub fn entry_text(source: &str, entry: &Entry) -> String {
     }
 }
 
-/// A member on lines of its own reads best as whole lines, indentation and trailing comma included; one inside a line reads as its own slice.
+/// A member on lines of its own reads best as whole lines, with its indentation, trailing comma and trailing comment; one inside a line reads as its own slice.
 fn stands_on_own_lines(source: &str, entry: &Entry) -> bool {
     let line_start = source[..entry.start_byte].rfind('\n').map_or(0, |position| position + 1);
     let line_end = source[entry.end_byte..].find('\n').map_or(source.len(), |position| entry.end_byte + position);
     let before = &source[line_start..entry.start_byte];
     let after = source[entry.end_byte..line_end].trim();
-    before.trim().is_empty() && after.strip_prefix(',').unwrap_or(after).trim().is_empty()
+    let after_comma = after.strip_prefix(',').unwrap_or(after).trim();
+    before.trim().is_empty() && (after_comma.is_empty() || after_comma.starts_with("//") || after_comma.starts_with("/*"))
 }
 
 fn collect_entries(container: Node, parent: Option<usize>, depth: usize, source: &str, entries: &mut Vec<Entry>) {
@@ -129,6 +132,13 @@ fn collect_entries(container: Node, parent: Option<usize>, depth: usize, source:
             continue;
         };
         let index = entries.len();
+        let mut first = span;
+        while let Some(comment) = first
+            .prev_named_sibling()
+            .filter(|sibling| is_attached_comment(*sibling, first))
+        {
+            first = comment;
+        }
         entries.push(Entry {
             number: index + 1,
             label: cut_to_limit(format!("{}: {}", step_text(&step), summary_of(value, source))),
@@ -136,9 +146,9 @@ fn collect_entries(container: Node, parent: Option<usize>, depth: usize, source:
             kind,
             parent,
             depth,
-            start_byte: span.start_byte(),
+            start_byte: first.start_byte(),
             end_byte: span.end_byte(),
-            first_row: span.start_position().row,
+            first_row: first.start_position().row,
             last_row: last_row_of(span),
         });
         collect_entries(value, Some(index), depth + 1, source, entries);
@@ -153,14 +163,14 @@ fn members_of<'tree>(container: Node<'tree>, source: &str) -> Vec<(Step, Node<'t
             .named_children(&mut cursor)
             .filter(|child| child.kind() == "pair")
             .filter_map(|pair| {
-                let key = pair.child_by_field_name("key")?;
-                let value = pair.child_by_field_name("value")?;
+                let key = pair.child_by_field_name("key").filter(|key| !key.is_missing())?;
+                let value = pair.child_by_field_name("value").filter(|value| !value.is_missing())?;
                 Some((Step::Key(key_text(key, source)), pair, value))
             })
             .collect(),
         "array" => container
             .named_children(&mut cursor)
-            .filter(|child| kind_of(*child).is_some())
+            .filter(|child| kind_of(*child).is_some() && !child.is_missing())
             .enumerate()
             .map(|(index, item)| (Step::Index(index), item, item))
             .collect(),
@@ -168,7 +178,7 @@ fn members_of<'tree>(container: Node<'tree>, source: &str) -> Vec<(Step, Node<'t
     }
 }
 
-fn kind_of(node: Node) -> Option<Value_kind> {
+pub fn kind_of(node: Node) -> Option<Value_kind> {
     match node.kind() {
         "object" => Some(Value_kind::Object),
         "array" => Some(Value_kind::Array),
@@ -181,7 +191,7 @@ fn kind_of(node: Node) -> Option<Value_kind> {
 }
 
 /// The key as it stands between its quotes, escapes untouched, so a path matches what the file says.
-fn key_text(key: Node, source: &str) -> String {
+pub fn key_text(key: Node, source: &str) -> String {
     let text = &source[key.start_byte()..key.end_byte()];
     text.strip_prefix('"').and_then(|inner| inner.strip_suffix('"')).unwrap_or(text).to_string()
 }
@@ -232,23 +242,11 @@ fn last_row_of(node: Node) -> usize {
     }
 }
 
-fn count_syntax_errors(tree: &Tree) -> usize {
-    let mut cursor = tree.walk();
-    let mut count = 0;
-    loop {
-        let node = cursor.node();
-        if node.is_error() || node.is_missing() {
-            count += 1;
-        } else if node.has_error() && cursor.goto_first_child() {
-            continue;
-        }
-        loop {
-            if cursor.goto_next_sibling() {
-                break;
-            }
-            if !cursor.goto_parent() {
-                return count;
-            }
-        }
-    }
+/// A comment is attached when it sits on its own lines, directly above what follows, without a blank line in between.
+fn is_attached_comment(candidate: Node, following: Node) -> bool {
+    candidate.kind() == "comment"
+        && last_row_of(candidate) + 1 >= following.start_position().row
+        && candidate
+            .prev_sibling()
+            .is_none_or(|before| last_row_of(before) < candidate.start_position().row)
 }
