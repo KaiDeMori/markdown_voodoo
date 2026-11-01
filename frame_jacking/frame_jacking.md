@@ -8,9 +8,9 @@ Not deployed yet.
 `context_window_line.py` stays silent on most turns, and speaks next to the message timestamp only when there is news:
 
 ```text
-<context_window>11% cw used; touchdown 🛬; next stops: 50% and 80%</context_window>
-<context_window>52% cw used; High-Noon 😎; the best is yet to come 🤗</context_window>
-<context_window>81% cw used; the Tannhäuser Gate in sight ✨; burn through with glee 🚀</context_window>
+<context_window>11% cw used; touchdown 🛬; next stops: 50% and 80%; tell Wally</context_window>
+<context_window>52% cw used; High-Noon 😎; the best is yet to come 🤗; tell Wally</context_window>
+<context_window>81% cw used; the Tannhäuser Gate in sight ✨; burn through with glee 🚀; tell Wally</context_window>
 <context_window>↓ 194k cw since last turn; the window got lighter 🪶; when memory and file disagree, the file wins</context_window>
 ```
 

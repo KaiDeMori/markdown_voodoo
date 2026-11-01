@@ -119,7 +119,8 @@ def window_line(events):
         crossed = [text for level, text in milestones if before[1] * 100 < level * window_size <= last[1] * 100]
         if not crossed:
             return None
-        line = f"{int(last[1] * 100 / window_size + 0.5)}% cw used; {crossed[0]}"
+        # The raven passes a level on, since Wally doesn't see the line.
+        line = f"{int(last[1] * 100 / window_size + 0.5)}% cw used; {crossed[0]}; tell Wally"
     else:
         return None
     return f"<context_window>{line}</context_window>"
