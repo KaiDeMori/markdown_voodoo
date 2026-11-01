@@ -1,0 +1,6 @@
+{
+  // The editor's font, as in VS Code's settings.json.
+  "editor.fontFamily": "Fira Code Retina",
+  /* Two spaces, everywhere. */
+  "editor.tabSize": 2
+}

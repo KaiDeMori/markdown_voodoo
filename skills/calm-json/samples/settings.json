@@ -1,0 +1,31 @@
+{
+  "model": "opus",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/timestamp.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": []
+  },
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(cargo build:*)",
+      "Read(//c/Users/devboese/**)"
+    ],
+    "deny": []
+  },
+  "env": {
+    "DEBUG": "1",
+    "my.dotted.key": true,
+    "Path With Spaces": null,
+    "count": 3
+  }
+}
