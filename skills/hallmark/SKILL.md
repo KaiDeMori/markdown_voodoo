@@ -46,6 +46,7 @@ These tools should always be loaded and kept up-to-date:
 - calm-code
 - calm-fetch
 - calm-find
+- calm-glass
 - calm-grep
 - calm-json
 - calm-md
