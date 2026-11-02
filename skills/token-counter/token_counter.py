@@ -4,6 +4,8 @@ A doc can carry its count on its first line, the T line: U+FE054, directly follo
 The old T, U+E054, is still read, and every read swaps in the new one; the line keeps its numbers.
 token-counter reads that line instead of counting while the doc keeps that size, and says so with (cached); a doc of another size gets counted fresh, and a line without a size is trusted as it is.
 With --write, it counts a doc fresh, without its T line, and writes or updates the line, size included; SKILL.md files and images get none.
+A file name may carry wildcards, such as *.md; token-counter expands them itself, since cmd and PowerShell pass them on as they are.
+At most file_limit files go in one call, and calls to Anthropic keep pause_seconds between them.
 With -s, it counts the text that follows instead of a file.
 The endpoint counts a whole message, and Anthropic calls its count an estimate; every count leaves out the tokens that wrap any message, the role markers around a turn.
 Whatever goes wrong ends in one line, and exit 1.
@@ -12,15 +14,20 @@ Usage: token_counter.py [--write] <file> [<file> ...]
 """
 
 import base64
+import glob
 import pathlib
 import re
 import sys
+import time
 
 from anthropic import Anthropic
 
 model_name = "claude-opus-5-5"
 # What wraps any message for that model, measured: the text "A" counted 9 tokens as a message.
 message_wrapper_tokens = 8
+# At most this many files in one call, wildcards included, and this many seconds between calls to Anthropic.
+file_limit = 20
+pause_seconds = 1
 hall_key_location = pathlib.Path(__file__).parent / "hall_key.txt"
 image_media_types = {
     ".png": "image/png",
@@ -38,12 +45,21 @@ t_line_pattern = re.compile("([\U0000E054\U000FE054])([0-9]+)(?: ([0-9]+))?(\r\n
 sys.stdout.reconfigure(encoding="utf-8")
 
 
+previous_call_time = None
+
+
 def count_message(message_content):
+    global previous_call_time
+    # Calls to Anthropic keep their distance; a cached count makes no call, and waits for nothing.
+    if previous_call_time is not None:
+        time.sleep(max(0.0, previous_call_time + pause_seconds - time.monotonic()))
     # The content's own tokens: the message's count without its wrapper.
-    return client.messages.count_tokens(
+    token_count = client.messages.count_tokens(
         model=model_name,
         messages=[{"role": "user", "content": message_content}],
     ).input_tokens - message_wrapper_tokens
+    previous_call_time = time.monotonic()
+    return token_count
 
 
 def token_text(count):
@@ -93,9 +109,17 @@ def main():
     if not arguments:
         print("token-counter [--write] <file> ..., or token-counter -s <text>?")
         sys.exit(1)
+    # A pattern turns into the files it matches; one that matches no file stays as typed, and gets its refusal.
+    files = []
+    for argument in arguments:
+        matches = sorted(match for match in glob.glob(argument) if pathlib.Path(match).is_file()) if any(character in argument for character in "*?[") else []
+        files.extend(matches or [argument])
+    if len(files) > file_limit:
+        print(f"{len(files)} files match; the limit is {file_limit}.")
+        sys.exit(1)
     total_count = 0
     failed = False
-    for argument in arguments:
+    for argument in files:
         file_location = pathlib.Path(argument)
         # A refusal names the file as it was typed, so a typo shows.
         if not file_location.is_file():
@@ -110,7 +134,7 @@ def main():
             continue
         print(f"{file_location.name}: {token_text(token_count)}{note}")
         total_count += token_count
-    if len(arguments) > 1:
+    if len(files) > 1:
         print(f"total: {token_text(total_count)}")
     if failed:
         sys.exit(1)

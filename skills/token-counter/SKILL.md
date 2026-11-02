@@ -18,6 +18,7 @@ token-counter -s <text>
 ```
 
 It prints one line per file, `<file name>: <N> tokens`, and a total when there is more than one.
+A file name may carry wildcards, such as `*.md`; at most 20 files go in one call, with a second between counts.
 With `-s`, it counts the text instead of a file, and prints `<N> tokens`.
 
 ## The T line
