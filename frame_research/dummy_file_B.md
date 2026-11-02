@@ -1,5 +1,3 @@
-A Fable walks into the bar at fifty percent and asks for the bill.
-The Opus at the next table is still ordering at ninety-eight.
-The barkeep, who counts for both: "Noon and dusk, on time. Sit down."
+Ramanujan would have summed an infinite window without blinking, and then shown that it adds up to −1/12 of a token.
 
-> overheard at the window, shortly after being caught
+> Revealed to the author in a dream.

@@ -1,1 +1,3 @@
-*Data voice:* "The humor appears to derive from juxtaposing a polymer party spray with a candidate theory of quantum gravity." … "Was that funny?"
+Neutronium rules have one advantage over golden ones: they don't bend when the goal is in sight.
+
+> random electron
