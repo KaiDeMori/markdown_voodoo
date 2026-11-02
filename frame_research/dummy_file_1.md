@@ -1,0 +1,1 @@
+*Data voice:* "The humor appears to derive from juxtaposing a polymer party spray with a candidate theory of quantum gravity." … "Was that funny?"
