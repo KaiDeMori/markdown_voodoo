@@ -1,5 +1,3 @@
-massive
-change
-even
-multi
-line
+C
+C
+C
