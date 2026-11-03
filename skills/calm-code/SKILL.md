@@ -32,10 +32,12 @@ Start zoomed out, and zoom in only when the answer asks for it:
 | Python | `.py`, `.pyw` | classes with their methods, and functions |
 | JavaScript | `.js`, `.mjs`, `.cjs`, `.jsx` | classes with their methods, and functions; arrow functions count when they have a name |
 | TypeScript | `.ts`, `.mts`, `.cts`, `.tsx` | like JavaScript, plus interfaces, type aliases and abstract classes with their signatures; overload signatures stay out |
+| Rust | `.rs` | structs, enums, traits with their methods and signatures, `impl` blocks with their methods, modules with their functions, `macro_rules!` macros, and functions |
 
 - Functions declared directly in a function's body count as its children, the way methods count for a class: a factory shows what it builds.
 - What sits deeper, in an `if` block or an anonymous callback, stays out. So do anonymous functions: they have no name to show or to read them by.
 - A property like `{ get; set; }` stays out; it holds no code.
+- A Rust closure stays out, even with a name: Rust's named functions are `fn` items.
 - What counts is written down in one query per language, in `src/queries/`.
 
 ## toc
@@ -52,7 +54,8 @@ C#, 56 lines: 2 classes, 1 struct, 1 interface, 1 record, 8 methods
 - Every entry has a number, its place in reading order, like `@3`; `toc` and `read` take it instead of a name.
 - An entry's weight is its number of lines, counted the way `read` returns them.
 - Parameters show, so overloads can be told apart. A label longer than 60 characters is cut, with the count of what was cut.
-- Some labels carry a word in front: `class`, `struct`, `interface`, `record` or `type` for what can hold methods, `property` for a C# property, and `get` or `set` for an accessor.
+- Some labels carry a word in front: `class`, `struct`, `enum`, `interface`, `trait`, `record` or `type` for a type, `impl` for a Rust `impl` block, `mod` for a module, `macro` for a macro, `property` for a C# property, and `get` or `set` for an accessor.
+- An `impl` label shows its trait and its type as written, without its own generics and its `where` clause: `impl From<u8> for Menu_id`.
 - `toc` shows the whole tree while it fits on a page of 100 entries.
   A bigger one shows the top level, each entry with how many are inside it; zoom in with a name or a number, and turn pages with `--page 2`.
 
@@ -69,12 +72,15 @@ samples/Menu_bar.cs:18-27
 
 - The first line is the location, `file:first-last`, ready for a Read with offset and limit.
 - The lines follow as they stand in the file: the entry with its attributes, decorators and `export`, and the comments directly above it, on their own lines and without a blank line in between.
+- A Rust `//!`, `/*!` or `#![...]` documents the module around it, so it stays out.
 - `read` refuses an entry over 20,000 characters, about 5,000 tokens, and says how to go on: `toc` to look inside, or `--limit` to read it all for one call.
 
 ## Names
 
 - A name path ends with the entry's own name and needs only as many enclosing names as it takes: `read Menu_bar.cs Menu_bar Menu_bar` reads the constructor, not the class.
 - A path that fits more than one entry is refused, with the candidates: each with its number and the names around it, such as `@12 Title_list on_focus(self)`.
+- A Rust `impl` answers to its type's name and, for a trait impl, to its trait's name too, in either order: `read menu_bar.rs Display fmt` and `read menu_bar.rs Debug Menu_bar fmt`.
+- These names leave out paths, generics and references: `impl fmt::Display for &'a Menu_bar<T>` answers to `Display` and `Menu_bar`.
 - In `toc`, a name prefers a class to a method, since a C# constructor shares its class's name.
 - Names are case-sensitive. A miss that differs only in case is refused with the entries it missed.
 
@@ -82,6 +88,7 @@ samples/Menu_bar.cs:18-27
 
 - Options may stand anywhere after the command.
 - A file with syntax errors still gets an answer, because Tree-sitter always builds a tree. `toc` adds a line about it, and `read` warns on stderr.
+- Rust's `safe fn` in an `unsafe extern` block counts as a syntax error; the Rust grammar does not know it.
 - Every refusal is one line on stderr, with exit code 1; exit code 0 means done.
 - Files are read as UTF-8, and a byte order mark is skipped.
 - The limits are the constants at the top of `src/main.rs`, `src/toc.rs` and `src/outline.rs`.

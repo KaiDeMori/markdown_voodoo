@@ -73,8 +73,8 @@ The header line counts `2 structs, 1 trait, 4 impls, 1 mod, 1 macro, 7 methods, 
 
 ### 1. Grammar and query
 
-- [ ] Add `tree-sitter-rust = "0.24.2"` to the dependencies in `Cargo.toml`.
-- [ ] Add `src/queries/rust.scm`, as verified in the lab:
+- [x] Add `tree-sitter-rust = "0.24.2"` to the dependencies in `Cargo.toml`.
+- [x] Add `src/queries/rust.scm`, as verified in the lab:
 
 ```scheme
 (struct_item
@@ -115,7 +115,7 @@ Two captures are new.
 
 ### 2. Language support
 
-`Language_support` in `languages.rs` gets four fields, each with a doc comment on why it exists:
+`Language_support` in `languages.rs` gets four fields:
 
 | Field | Meaning | C#, Python, JavaScript, TypeScript | Rust |
 |---|---|---|---|
@@ -124,25 +124,25 @@ Two captures are new.
 | `inner_comment_markers` | a comment holding a node of these kinds documents what surrounds it | `[]` | `["inner_doc_comment_marker"]` |
 | `name_fields` | the fields a captured name follows down to the node that names it | `[]` | `["type", "name", "trait"]` |
 
-- [ ] Add the four fields.
-- [ ] Give the four existing languages their values from the table, which keep their behavior as it is.
-- [ ] Add the entry for `rs`: name `Rust`, grammar `tree_sitter_rust::LANGUAGE`, query `queries/rust.scm`, no `wrapper_kinds`, `body_kinds: ["block"]`, and the Rust values from the table.
+- [x] Add the four fields.
+- [x] Give the four existing languages their values from the table, which keep their behavior as it is.
+- [x] Add the entry for `rs`: name `Rust`, grammar `tree_sitter_rust::LANGUAGE`, query `queries/rust.scm`, no `wrapper_kinds`, `body_kinds: ["block"]`, and the Rust values from the table.
 
 ### 3. Outline
 
 In `outline.rs`:
 
-- [ ] `definition_kind_for` maps `enum`, `trait`, `impl`, `mod` and `macro` to containers.
-- [ ] A container carries whether it holds methods, such as `Container { word, holds_methods }`; `mod` and `macro` do not, so `nest_definitions` makes a callable in a module a function.
-- [ ] `collect_definitions` takes the language support:
+- [x] `definition_kind_for` maps `enum`, `trait`, `impl`, `mod` and `macro` to containers.
+- [x] A container carries whether it holds methods, such as `Container { word, holds_methods }`; `mod` and `macro` do not, so `nest_definitions` makes a callable in a module a function.
+- [x] `collect_definitions` takes the language support:
   `@name` and `@second_name` follow `name_fields` down before their text is taken, and `@label` collects its span, flattened like parameters.
-- [ ] `Entry` gets `second_name: Option<String>`.
-- [ ] `label_for` builds `word label` for a container with a label text, such as `impl fmt::Display for Menu_bar`.
-- [ ] `span_rows` walks back over `leading_kinds` instead of `decorator`.
-- [ ] `is_attached_comment` checks `comment_kinds` instead of `comment`, and never attaches a comment that holds a node of `inner_comment_markers`.
-- [ ] `collect_comment_ranges` checks `comment_kinds` instead of `comment`.
-- [ ] `matching_entries` follows the name rules below.
-- [ ] `candidate_list` shows both names of an enclosing impl, the name first.
+- [x] `Entry` gets `second_name: Option<String>`.
+- [x] `label_for` puts the label text where the name would stand, such as `impl fmt::Display for Menu_bar`.
+- [x] `span_rows` walks back over `leading_kinds` instead of `decorator`.
+- [x] `is_attached_comment` checks `comment_kinds` instead of `comment`, and never attaches a comment that holds a node of `inner_comment_markers`.
+- [x] `collect_comment_ranges` checks `comment_kinds` instead of `comment`.
+- [x] `matching_entries` follows the name rules below.
+- [x] `candidate_list` shows both names of an enclosing impl, the name first.
 
 The name rules:
 
@@ -154,11 +154,11 @@ The name rules:
 
 ### 4. toc
 
-- [ ] `KIND_WORDS` in `toc.rs` becomes `class`, `struct`, `enum`, `interface`, `trait`, `record`, `type`, `impl`, `mod`, `macro`, `method`, `property`, `function`; the words already there keep their order.
+- [x] `KIND_WORDS` in `toc.rs` becomes `class`, `struct`, `enum`, `interface`, `trait`, `record`, `type`, `impl`, `mod`, `macro`, `method`, `property`, `function`; the words already there keep their order.
 
 ### 5. Sample
 
-- [ ] Add `samples/menu_bar.rs` with what the toc under Result shows:
+- [x] Add `samples/menu_bar.rs` with what the toc under Result shows:
   - a `//!` module doc at the top
   - `struct Menu_bar` with a `///` doc and a `#[derive(...)]`, and `struct Menu`
   - `impl Menu_bar` with `new` and `open_menu`, which declares `fn matches` in its body
@@ -172,11 +172,11 @@ The name rules:
 
 In `README.md` and `SKILL.md`:
 
-- [ ] Languages: add the row below.
-- [ ] toc: add `enum`, `trait`, `impl`, `mod` and `macro` to the words in front of labels.
-- [ ] read: a Rust `//!`, `/*!` or `#![...]` stays with the module around it.
-- [ ] Names: an `impl` answers to its type's name and its trait's name, in either order, such as `read menu_bar.rs Display fmt`.
-- [ ] Good to know: `safe fn` in an `unsafe extern` block counts as a syntax error.
+- [x] Languages: add the row below.
+- [x] toc: add `enum`, `trait`, `impl`, `mod` and `macro` to the words in front of labels.
+- [x] read: a Rust `//!`, `/*!` or `#![...]` stays with the module around it.
+- [x] Names: an `impl` answers to its type's name and its trait's name, in either order, such as `read menu_bar.rs Display fmt`.
+- [x] Good to know: `safe fn` in an `unsafe extern` block counts as a syntax error.
 
 ```text
 | Rust | `.rs` | structs, enums, traits with their methods and signatures, `impl` blocks with their methods, modules with their functions, `macro_rules!` macros, and functions |
@@ -184,20 +184,18 @@ In `README.md` and `SKILL.md`:
 
 ### 7. Build and try out
 
-- [ ] Build as `README.md` says.
-- [ ] Try `toc` and `read` on `samples/menu_bar.rs`, on the lab samples in `scratchpad/rusty_lab/samples/`, and on calm-code's own `src/`.
-- [ ] Try `toc` and `read` on the samples of the other languages.
+- [x] Build as `README.md` says.
+- [x] Try `toc` and `read` on `samples/menu_bar.rs`, on the lab samples in `scratchpad/rusty_lab/samples/`, and on calm-code's own `src/`.
+- [x] Try `toc` and `read` on the samples of the other languages.
 - [ ] Wally's test_pilot ravens fly it.
 - [ ] Deploy with `deploy.bat` after Wally's review.
 
-## Proposed check
+## Check
 
-Wally decides on this check; no step depends on it.
-
-Before step 2, save the output of `toc` and of one `read` for every existing sample, and compare both byte for byte after step 4.
 Steps 2 to 4 change paths that every language goes through: the comment and decorator kinds, the name matching, the kind words and the label shapes.
-A slip there shows in the output of the existing samples, and the comparison finds it at once.
-It runs in the scratchpad, and nothing of it stays in the repo.
+`scratchpad/rusty_lab/check/capture.sh` runs a calm-code build over every sample: the whole `toc`, `toc` and `read` for every entry, and the calls in `name_paths.txt`, each with stdout, stderr and exit code.
+`before/` holds the 515 calls of the build before any change.
+`after/` holds the same 515 calls, byte-identical, plus the 37 calls of `samples/menu_bar.rs`.
 
 ## Limitations
 

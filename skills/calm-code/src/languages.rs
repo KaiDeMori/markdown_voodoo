@@ -10,6 +10,13 @@ pub struct Language_support {
     pub wrapper_kinds: &'static [&'static str],
     /// Nodes of these kinds may stand between a function and a definition directly in its body, which then counts as its child.
     pub body_kinds: &'static [&'static str],
+    /// Nodes of these kinds stand beside a definition, in front of it, and belong to it, such as decorators and attributes.
+    pub leading_kinds: &'static [&'static str],
+    pub comment_kinds: &'static [&'static str],
+    /// A comment holding a node of one of these kinds documents what surrounds it, so it never travels with the definition below.
+    pub inner_comment_markers: &'static [&'static str],
+    /// A captured name follows these fields down to the node that names it, so a reference or a generic type answers to its type's own name.
+    pub name_fields: &'static [&'static str],
 }
 
 pub fn language_for(path: &Path) -> Option<Language_support> {
@@ -21,6 +28,10 @@ pub fn language_for(path: &Path) -> Option<Language_support> {
             definitions_query: include_str!("queries/c_sharp.scm"),
             wrapper_kinds: &[],
             body_kinds: &[],
+            leading_kinds: &["decorator"],
+            comment_kinds: &["comment"],
+            inner_comment_markers: &[],
+            name_fields: &[],
         },
         "py" | "pyw" => Language_support {
             name: "Python",
@@ -28,6 +39,10 @@ pub fn language_for(path: &Path) -> Option<Language_support> {
             definitions_query: include_str!("queries/python.scm"),
             wrapper_kinds: &["decorated_definition"],
             body_kinds: &["block"],
+            leading_kinds: &["decorator"],
+            comment_kinds: &["comment"],
+            inner_comment_markers: &[],
+            name_fields: &[],
         },
         "js" | "mjs" | "cjs" | "jsx" => Language_support {
             name: "JavaScript",
@@ -35,6 +50,10 @@ pub fn language_for(path: &Path) -> Option<Language_support> {
             definitions_query: include_str!("queries/javascript.scm"),
             wrapper_kinds: &["export_statement", "lexical_declaration", "variable_declaration"],
             body_kinds: &["statement_block", "arrow_function", "function_expression", "generator_function"],
+            leading_kinds: &["decorator"],
+            comment_kinds: &["comment"],
+            inner_comment_markers: &[],
+            name_fields: &[],
         },
         "ts" | "mts" | "cts" => Language_support {
             name: "TypeScript",
@@ -42,6 +61,10 @@ pub fn language_for(path: &Path) -> Option<Language_support> {
             definitions_query: include_str!("queries/typescript.scm"),
             wrapper_kinds: &["export_statement", "lexical_declaration", "variable_declaration"],
             body_kinds: &["statement_block", "arrow_function", "function_expression", "generator_function"],
+            leading_kinds: &["decorator"],
+            comment_kinds: &["comment"],
+            inner_comment_markers: &[],
+            name_fields: &[],
         },
         "tsx" => Language_support {
             name: "TypeScript",
@@ -49,6 +72,21 @@ pub fn language_for(path: &Path) -> Option<Language_support> {
             definitions_query: include_str!("queries/typescript.scm"),
             wrapper_kinds: &["export_statement", "lexical_declaration", "variable_declaration"],
             body_kinds: &["statement_block", "arrow_function", "function_expression", "generator_function"],
+            leading_kinds: &["decorator"],
+            comment_kinds: &["comment"],
+            inner_comment_markers: &[],
+            name_fields: &[],
+        },
+        "rs" => Language_support {
+            name: "Rust",
+            grammar: tree_sitter_rust::LANGUAGE.into(),
+            definitions_query: include_str!("queries/rust.scm"),
+            wrapper_kinds: &[],
+            body_kinds: &["block"],
+            leading_kinds: &["attribute_item"],
+            comment_kinds: &["line_comment", "block_comment"],
+            inner_comment_markers: &["inner_doc_comment_marker"],
+            name_fields: &["type", "name", "trait"],
         },
         _ => return None,
     };
