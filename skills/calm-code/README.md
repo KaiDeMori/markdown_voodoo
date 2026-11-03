@@ -81,7 +81,7 @@ samples/Menu_bar.cs:18-27
 ## Build
 
 ```bash
-cargo build --release --manifest-path tree_sitting/Cargo.toml
+cargo build --release --manifest-path skills/calm-code/Cargo.toml
 ```
 
-The executable lands in `tree_sitting/target/release/calm-code.exe`.
+The executable lands in `skills/calm-code/target/release/calm-code.exe`.
