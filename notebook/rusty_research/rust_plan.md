@@ -188,7 +188,7 @@ In `README.md` and `SKILL.md`:
 - [x] Try `toc` and `read` on `samples/menu_bar.rs`, on the lab samples in `scratchpad/rusty_lab/samples/`, and on calm-code's own `src/`.
 - [x] Try `toc` and `read` on the samples of the other languages.
 - [ ] Wally's test_pilot ravens fly it.
-- [ ] Deploy with `deploy.bat` after Wally's review.
+- [ ] After the test flight, tell Wally the skill is ready for a deploy.
 
 ## Check
 
