@@ -55,3 +55,16 @@ Measured with Haiku 5.5 at effort max as the reader:
 - About a minute per page.
 - The words "including errors in spelling and grammar" matter: without them, readers added a missing word to the source, twice.
 - By sight, readers got words right where the text layer was broken. The glass caught a period that two readers had read as a comma.
+
+## Pages per reader
+
+Each reader takes a range of pages, and the views of those pages fill its window.
+
+1. Count one page's six views with token-counter.
+2. Decide how much of the reader's window the views may fill, leaving room for the brief, the writing and the glass.
+3. Divide. Eight pages per reader, about 80K tokens of views, worked well.
+
+Every request carries all images read so far, so the API's limits per request apply:
+
+- At most 100 images for a model with a 200K-token window, and 600 for others. A page brings six views, and the glass brings more.
+- With more than 20 images, each must stay at or below 2000 px per side. At 240 dpi, a US Letter page is 2040 px wide, so its bands need scaling down.
