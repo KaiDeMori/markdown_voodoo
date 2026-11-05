@@ -19,4 +19,16 @@ call "%~dp0self-flow\deploy.bat"
 echo.
 call "%~dp0screaming-skills\deploy.bat"
 
+echo:
+echo:
+echo:
+echo:
+echo   ####################
+echo   ### All deployed ###
+echo   ####################
+echo:
+echo:
+echo:
+echo:
+
 pause
