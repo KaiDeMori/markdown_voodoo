@@ -1,9 +1,10 @@
 use std::cmp::Reverse;
 use std::collections::HashMap;
 
-use tree_sitter::{Node, Parser, Query, QueryCursor, StreamingIterator, Tree};
+use tree_sitter::{Node, Parser, Query, QueryCursor, Range, StreamingIterator, Tree};
 
 use crate::languages::Language_support;
+use crate::markup;
 
 const LABEL_LIMIT: usize = 60;
 const CANDIDATE_LIMIT: usize = 10;
@@ -220,24 +221,38 @@ impl Outline {
     }
 }
 
+/// A page is built from its markup rather than from a query: its elements are picked by what they hold, and its scripts and styles are outlined in their own languages.
 pub fn build_outline(source: &str, language_support: &Language_support) -> Result<Outline, String> {
+    if language_support.name == "HTML" {
+        return markup::build_page_outline(source, language_support);
+    }
+    let (entries, syntax_error_count) = build_entries(source, language_support, None)?;
+    Ok(Outline { language_name: language_support.name, line_count: source.lines().count(), entries, syntax_error_count })
+}
+
+/// The entries of the whole source, or of one range of it, such as a script inside a page; their rows count from the source's start either way.
+pub fn build_entries(
+    source: &str,
+    language_support: &Language_support,
+    range: Option<Range>,
+) -> Result<(Vec<Entry>, usize), String> {
     let language_name = language_support.name;
     let mut parser = Parser::new();
     parser
         .set_language(&language_support.grammar)
         .map_err(|error| format!("the {language_name} grammar does not fit this Tree-sitter: {error}"))?;
+    if let Some(range) = range {
+        parser
+            .set_included_ranges(&[range])
+            .map_err(|_| format!("the {language_name} range in the file is broken"))?;
+    }
     let tree = parser
         .parse(source, None)
         .ok_or_else(|| format!("the {language_name} parser gave no tree"))?;
     let query = Query::new(&language_support.grammar, language_support.definitions_query)
         .map_err(|error| format!("the {language_name} query is broken: {error}"))?;
     let definitions = collect_definitions(&tree, &query, source, language_support);
-    Ok(Outline {
-        language_name,
-        line_count: source.lines().count(),
-        entries: nest_definitions(definitions, language_support),
-        syntax_error_count: count_syntax_errors(&tree),
-    })
+    Ok((nest_definitions(definitions, language_support), count_syntax_errors(&tree)))
 }
 
 /// A body capture ends the label where the body begins: a CSS at-rule's header labels it and answers as one more name.
@@ -424,7 +439,7 @@ fn outer_node<'tree>(definition_node: Node<'tree>, language_support: &Language_s
 
 /// The span reaches up over wrappers and back over attached comments, so it holds everything a reader needs.
 /// Some grammars, TypeScript's among them, place a member's decorators beside it instead of inside it.
-fn span_rows(definition_node: Node, language_support: &Language_support) -> (usize, usize) {
+pub fn span_rows(definition_node: Node, language_support: &Language_support) -> (usize, usize) {
     let outer = outer_node(definition_node, language_support);
     let mut first = outer;
     while let Some(leading) = first.prev_named_sibling().filter(|sibling| {
@@ -516,7 +531,7 @@ fn collect_comment_ranges(node: Node, comment_kinds: &[&str], comment_ranges: &m
     }
 }
 
-fn flatten_whitespace(text: &str) -> String {
+pub fn flatten_whitespace(text: &str) -> String {
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
@@ -529,7 +544,7 @@ fn flatten_parameters(text: &str) -> String {
     }
 }
 
-fn cut_to_limit(label: String) -> String {
+pub fn cut_to_limit(label: String) -> String {
     let length = label.chars().count();
     if length <= LABEL_LIMIT {
         return label;
@@ -538,7 +553,7 @@ fn cut_to_limit(label: String) -> String {
     format!("{kept}... (+{} characters)", length - LABEL_LIMIT)
 }
 
-fn count_syntax_errors(tree: &Tree) -> usize {
+pub fn count_syntax_errors(tree: &Tree) -> usize {
     let mut cursor = tree.walk();
     let mut count = 0;
     loop {

@@ -1,6 +1,7 @@
 #![allow(non_camel_case_types)]
 
 mod languages;
+mod markup;
 mod outline;
 mod read;
 mod toc;

@@ -20,8 +20,11 @@ pub struct Language_support {
 }
 
 pub fn language_for(path: &Path) -> Option<Language_support> {
-    let extension = path.extension()?.to_str()?.to_ascii_lowercase();
-    let language_support = match extension.as_str() {
+    language_for_extension(&path.extension()?.to_str()?.to_ascii_lowercase())
+}
+
+pub fn language_for_extension(extension: &str) -> Option<Language_support> {
+    let language_support = match extension {
         "cs" => Language_support {
             name: "C#",
             grammar: tree_sitter_c_sharp::LANGUAGE.into(),
@@ -96,6 +99,17 @@ pub fn language_for(path: &Path) -> Option<Language_support> {
             body_kinds: &[],
             leading_kinds: &[],
             comment_kinds: &["comment", "js_comment"],
+            inner_comment_markers: &[],
+            name_fields: &[],
+        },
+        "html" | "htm" => Language_support {
+            name: "HTML",
+            grammar: tree_sitter_html::LANGUAGE.into(),
+            definitions_query: "",
+            wrapper_kinds: &[],
+            body_kinds: &[],
+            leading_kinds: &[],
+            comment_kinds: &["comment"],
             inner_comment_markers: &[],
             name_fields: &[],
         },

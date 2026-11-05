@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="app.css">
+  <style>
+    .menu > li { display: inline-block; }
+    @media (max-width: 600px) {
+      .menu > li { display: block; }
+    }
+  </style>
+  <script src="vendor.js"></script>
+</head>
+<body onload="start()">
+  <!-- The menu bar at the top. -->
+  <nav id="menu">
+    <ul class="menu">
+      <li><button onclick="open_menu(this)">File</button></li>
+      <li><a href="javascript:void(0)">Edit</a></li>
+    </ul>
+  </nav>
+  <main>
+    <section>
+      <div style="color: teal">Welcome</div>
+      <p>Nothing to see in a plain paragraph.</p>
+    </section>
+    <form id="search" onsubmit="return search(event)">
+      <input type="text" name="query">
+    </form>
+  </main>
+  <script type="application/json">{"settings": true}</script>
+  <script>
+    function start() {
+      open_menu(null);
+    }
+
+    function open_menu(button) {
+      const log_opening = () => console.log(button);
+      log_opening();
+    }
+  </script>
+</body>
+</html>

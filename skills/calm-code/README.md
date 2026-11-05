@@ -26,6 +26,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 | TypeScript | `.ts`, `.mts`, `.cts`, `.tsx` | like JavaScript, plus interfaces, type aliases and abstract classes with their signatures; overload signatures stay out |
 | Rust | `.rs` | structs, enums, traits with their methods and signatures, `impl` blocks with their methods, modules with their functions, `macro_rules!` macros, and functions |
 | CSS | `.css` | rules, named by their selectors, and at-rules such as `@media`, `@supports`, `@keyframes`, `@font-face` and `@import`; a rule's nested rules and an at-rule's rules count as its children |
+| HTML | `.html`, `.htm` | the page's shape and every place its JavaScript and CSS live: `head`, `body`, `header`, `nav`, `main`, `section`, `article`, `aside`, `footer`, `form`, `dialog`, `template` and `iframe`, elements with an `id`, elements with `on…` handlers, `javascript:` links or `style` attributes, stylesheet links, and `script` and `style` blocks, whose functions and rules come along as their children |
 
 - Functions declared directly in a function's body count as its children, the way methods count for a class: a factory shows what it builds.
 - What sits deeper, in an `if` block or an anonymous callback, stays out. So do anonymous functions: they have no name to show or to read them by.
@@ -50,6 +51,7 @@ C#, 56 lines: 2 classes, 1 struct, 1 interface, 1 record, 8 methods
 - Some labels carry a word in front: `class`, `struct`, `enum`, `interface`, `trait`, `record` or `type` for a type, `impl` for a Rust `impl` block, `mod` for a module, `macro` for a macro, `property` for a C# property, and `get` or `set` for an accessor.
 - An `impl` label shows its trait and its type as written, without its own generics and its `where` clause: `impl From<u8> for Menu_id`.
 - A CSS rule's label is its selector list, and an at-rule's label its header, such as `@media (max-width: 600px)`.
+- An HTML element's label is its start tag with the attributes that matter: its `id`, its handlers, `javascript:` links and `style`, a script's `type` and `src`, a stylesheet's `rel` and `href`.
 - `toc` shows the whole tree while it fits on a page of 100 entries.
   A bigger one shows the top level, each entry with how many are inside it; zoom in with a name or a number, and turn pages with `--page 2`.
 
@@ -77,12 +79,14 @@ samples/Menu_bar.cs:18-27
 - These names leave out paths, generics and references: `impl fmt::Display for &'a Menu_bar<T>` answers to `Display` and `Menu_bar`.
 - A CSS rule answers to its whole selector list and to each selector in it, an at-rule to its keyword and to its header: `read app.css ".menu > li"`, `read app.css h2`, `read app.css "@layer base"`.
 - `@` followed by digits is a number; any other name may start with `@`.
+- An HTML element answers to its tag, its `id` with and without `#`, its handlers' names, and a script's `src` or a stylesheet's `href`: `read index.html "#search"`, `read index.html onclick`.
 - In `toc`, a name prefers a class to a method, since a C# constructor shares its class's name.
 - Names are case-sensitive. A miss that differs only in case is refused with the entries it missed.
 
 ## Good to know
 
 - Options may stand anywhere after the command.
+- A script with a `src`, or with a `type` that is not JavaScript, such as `application/json`, is listed without an outline of its text.
 - A file with syntax errors still gets an answer, because Tree-sitter always builds a tree. `toc` adds a line about it, and `read` warns on stderr.
 - Rust's `safe fn` in an `unsafe extern` block counts as a syntax error; the Rust grammar does not know it.
 - Every refusal is one line on stderr, with exit code 1; exit code 0 means done.
