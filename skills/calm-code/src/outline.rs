@@ -1,5 +1,5 @@
 use std::cmp::Reverse;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use tree_sitter::{Node, Parser, Query, QueryCursor, StreamingIterator, Tree};
 
@@ -20,7 +20,7 @@ pub struct Entry {
     pub number: usize,
     pub kind: Entry_kind,
     pub name: String,
-    pub second_name: Option<String>,
+    pub other_names: Vec<String>,
     pub label: String,
     pub parent: Option<usize>,
     pub depth: usize,
@@ -30,14 +30,14 @@ pub struct Entry {
 
 #[derive(Clone, Copy)]
 pub enum Entry_kind {
-    Container { word: &'static str, holds_methods: bool },
+    Container { word: &'static str, holds_methods: bool, shows_word: bool },
     Method,
     Function,
     Property,
 }
 
 enum Definition_kind {
-    Container { word: &'static str, holds_methods: bool },
+    Container { word: &'static str, holds_methods: bool, shows_word: bool },
     Callable,
     Property,
 }
@@ -46,7 +46,7 @@ struct Definition<'tree> {
     node: Node<'tree>,
     kind: Definition_kind,
     name: String,
-    second_name: Option<String>,
+    other_names: Vec<String>,
     prefix: Option<String>,
     parameters: Option<String>,
     label_text: Option<String>,
@@ -77,7 +77,7 @@ impl Entry {
     }
 
     pub fn names(&self) -> impl Iterator<Item = &str> {
-        std::iter::once(self.name.as_str()).chain(self.second_name.as_deref())
+        std::iter::once(self.name.as_str()).chain(self.other_names.iter().map(String::as_str))
     }
 
     pub fn line_count(&self) -> usize {
@@ -98,7 +98,10 @@ impl Outline {
     /// A name path ends with the entry's own name and needs only as many enclosing names as it takes to be unique.
     pub fn resolve(&self, name_path: &[String], prefer_containers: bool) -> Result<usize, String> {
         if let [single] = name_path {
-            if let Some(number_text) = single.strip_prefix('@') {
+            let number_text = single
+                .strip_prefix('@')
+                .filter(|rest| !rest.is_empty() && rest.bytes().all(|byte| byte.is_ascii_digit()));
+            if let Some(number_text) = number_text {
                 return self.resolve_number(single, number_text);
             }
         }
@@ -189,13 +192,23 @@ impl Outline {
     }
 
     /// The enclosing names in front tell apart candidates whose labels are equal.
+    /// An enclosing entry without a word in front, such as a CSS at-rule, shows its label: the name toc shows for it.
     fn candidate_list(&self, candidates: &[usize]) -> String {
         let mut shown: Vec<String> = candidates
             .iter()
             .take(CANDIDATE_LIMIT)
             .map(|&index| {
-                let mut parts: Vec<&str> =
-                    self.enclosing_entries(index).into_iter().flat_map(|enclosing| self.entries[enclosing].names()).collect();
+                let mut parts: Vec<&str> = self
+                    .enclosing_entries(index)
+                    .into_iter()
+                    .flat_map(|enclosing| {
+                        let entry = &self.entries[enclosing];
+                        match entry.kind {
+                            Entry_kind::Container { shows_word: false, .. } => vec![entry.label.as_str()],
+                            _ => entry.names().collect(),
+                        }
+                    })
+                    .collect();
                 parts.push(&self.entries[index].label);
                 format!("@{} {}", self.entries[index].number, parts.join(" "))
             })
@@ -227,6 +240,7 @@ pub fn build_outline(source: &str, language_support: &Language_support) -> Resul
     })
 }
 
+/// A body capture ends the label where the body begins: a CSS at-rule's header labels it and answers as one more name.
 fn collect_definitions<'tree>(
     tree: &'tree Tree,
     query: &Query,
@@ -236,20 +250,22 @@ fn collect_definitions<'tree>(
     let capture_names = query.capture_names();
     let mut cursor = QueryCursor::new();
     let mut matches = cursor.matches(query, tree.root_node(), source.as_bytes());
-    let mut seen_nodes = HashSet::new();
-    let mut definitions = Vec::new();
+    let mut definition_index_by_node: HashMap<usize, usize> = HashMap::new();
+    let mut definitions: Vec<Definition<'tree>> = Vec::new();
     while let Some(query_match) = matches.next() {
         let mut definition = None;
         let mut name = None;
-        let mut second_name = None;
+        let mut other_names = Vec::new();
+        let mut body_start = None;
         let mut prefix = None;
         let mut parameters = None;
         let mut label_span: Option<std::ops::Range<usize>> = None;
         for capture in query_match.captures() {
             let text = capture.node.utf8_text(source.as_bytes()).unwrap_or_default();
             match capture_names[capture.index as usize] {
-                "name" => name = Some(name_text(capture.node, source, language_support)),
-                "second_name" => second_name = Some(name_text(capture.node, source, language_support)),
+                "name" => name = Some(flatten_whitespace(&name_text(capture.node, source, language_support))),
+                "other_name" => other_names.push(flatten_whitespace(&name_text(capture.node, source, language_support))),
+                "body" => body_start = Some(capture.node.start_byte()),
                 "prefix" => prefix = Some(text.to_string()),
                 "parameters" => {
                     let text = text_without_comments(capture.node, capture.node.byte_range(), source, language_support);
@@ -270,11 +286,25 @@ fn collect_definitions<'tree>(
             }
         }
         if let (Some((node, kind)), Some(name)) = (definition, name) {
-            if seen_nodes.insert(node.id()) {
-                let label_text = label_span
-                    .map(|span| flatten_whitespace(&text_without_comments(node, span, source, language_support)));
-                definitions.push(Definition { node, kind, name, second_name, prefix, parameters, label_text });
+            if let Some(&known) = definition_index_by_node.get(&node.id()) {
+                let known_names = &mut definitions[known].other_names;
+                for other_name in other_names {
+                    if !known_names.contains(&other_name) {
+                        known_names.push(other_name);
+                    }
+                }
+                continue;
             }
+            let header_span = body_start.map(|start| node.start_byte()..start);
+            let label_text = label_span.or(header_span.clone()).map(|span| {
+                let text = flatten_whitespace(&text_without_comments(node, span, source, language_support));
+                text.trim_end_matches(';').trim_end().to_string()
+            });
+            if header_span.is_some() {
+                other_names.extend(label_text.clone());
+            }
+            definition_index_by_node.insert(node.id(), definitions.len());
+            definitions.push(Definition { node, kind, name, other_names, prefix, parameters, label_text });
         }
     }
     definitions.sort_by_key(|definition| (definition.node.start_byte(), Reverse(definition.node.end_byte())));
@@ -294,6 +324,10 @@ fn definition_kind_for(capture_name: &str) -> Option<Definition_kind> {
     let (word, holds_methods) = match capture_name.strip_prefix("definition.")? {
         "method" | "constructor" | "function" => return Some(Definition_kind::Callable),
         "property" => return Some(Definition_kind::Property),
+        "rule" => return Some(Definition_kind::Container { word: "rule", holds_methods: false, shows_word: false }),
+        "at_rule" => {
+            return Some(Definition_kind::Container { word: "at-rule", holds_methods: false, shows_word: false });
+        }
         "class" => ("class", true),
         "struct" => ("struct", true),
         "enum" => ("enum", true),
@@ -306,7 +340,7 @@ fn definition_kind_for(capture_name: &str) -> Option<Definition_kind> {
         "macro" => ("macro", false),
         _ => return None,
     };
-    Some(Definition_kind::Container { word, holds_methods })
+    Some(Definition_kind::Container { word, holds_methods, shows_word: true })
 }
 
 fn nest_definitions(definitions: Vec<Definition>, language_support: &Language_support) -> Vec<Entry> {
@@ -322,7 +356,9 @@ fn nest_definitions(definitions: Vec<Definition>, language_support: &Language_su
             }
         };
         let kind = match definition.kind {
-            Definition_kind::Container { word, holds_methods } => Entry_kind::Container { word, holds_methods },
+            Definition_kind::Container { word, holds_methods, shows_word } => {
+                Entry_kind::Container { word, holds_methods, shows_word }
+            }
             Definition_kind::Callable if parent.is_some_and(|index| entries[index].holds_methods()) => {
                 Entry_kind::Method
             }
@@ -343,7 +379,7 @@ fn nest_definitions(definitions: Vec<Definition>, language_support: &Language_su
             number: entries.len() + 1,
             kind,
             name: definition.name,
-            second_name: definition.second_name,
+            other_names: definition.other_names,
             label,
             parent,
             depth,
@@ -439,6 +475,7 @@ fn label_for(
         (None, None) => name.to_string(),
     };
     let label = match (kind, parameters) {
+        (Entry_kind::Container { shows_word: false, .. }, _) => name,
         (Entry_kind::Container { word, .. }, _) => format!("{word} {name}"),
         (Entry_kind::Property, _) => format!("property {name}"),
         (_, Some(parameters)) if parameters.starts_with('(') => format!("{name}{parameters}"),

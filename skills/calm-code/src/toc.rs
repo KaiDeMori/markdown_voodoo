@@ -1,8 +1,9 @@
 use crate::outline::{Entry, Outline};
 
 const PAGE_SIZE: usize = 100;
-const KIND_WORDS: [&str; 13] = [
+const KIND_WORDS: [&str; 15] = [
     "class", "struct", "enum", "interface", "trait", "record", "type", "impl", "mod", "macro", "method", "property", "function",
+    "rule", "at-rule",
 ];
 
 pub fn render(outline: &Outline, name_path: &[String], page: usize) -> Result<String, String> {

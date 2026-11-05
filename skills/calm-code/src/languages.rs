@@ -88,6 +88,17 @@ pub fn language_for(path: &Path) -> Option<Language_support> {
             inner_comment_markers: &["inner_doc_comment_marker"],
             name_fields: &["type", "name", "trait"],
         },
+        "css" => Language_support {
+            name: "CSS",
+            grammar: tree_sitter_css::LANGUAGE.into(),
+            definitions_query: include_str!("queries/css.scm"),
+            wrapper_kinds: &[],
+            body_kinds: &[],
+            leading_kinds: &[],
+            comment_kinds: &["comment", "js_comment"],
+            inner_comment_markers: &[],
+            name_fields: &[],
+        },
         _ => return None,
     };
     Some(language_support)

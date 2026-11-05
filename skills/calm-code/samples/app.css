@@ -1,0 +1,62 @@
+@charset "utf-8";
+@import url("base.css");
+
+/* The menu bar at the top. */
+.menu > li {
+  display: inline-block;
+}
+
+h1, h2, h3 {
+  font-family: "Fira Code";
+}
+
+a:hover,
+a:focus-visible {
+  color: teal;
+}
+
+.card {
+  padding: 1rem;
+
+  &:hover {
+    box-shadow: 0 0 4px gray;
+  }
+
+  .title {
+    font-weight: bold;
+  }
+}
+
+@media (max-width: 600px) {
+  .menu > li {
+    display: block;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+}
+
+@supports (display: grid) {
+  .layout {
+    display: grid;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@font-face {
+  font-family: "Fira Code";
+  src: url("fira.woff2");
+}
+
+@layer reset;
+
+@layer base {
+  html {
+    margin: 0;
+  }
+}

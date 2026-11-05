@@ -33,6 +33,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 | JavaScript | `.js`, `.mjs`, `.cjs`, `.jsx` | classes with their methods, and functions; arrow functions count when they have a name |
 | TypeScript | `.ts`, `.mts`, `.cts`, `.tsx` | like JavaScript, plus interfaces, type aliases and abstract classes with their signatures; overload signatures stay out |
 | Rust | `.rs` | structs, enums, traits with their methods and signatures, `impl` blocks with their methods, modules with their functions, `macro_rules!` macros, and functions |
+| CSS | `.css` | rules, named by their selectors, and at-rules such as `@media`, `@supports`, `@keyframes`, `@font-face` and `@import`; a rule's nested rules and an at-rule's rules count as its children |
 
 - Functions declared directly in a function's body count as its children, the way methods count for a class: a factory shows what it builds.
 - What sits deeper, in an `if` block or an anonymous callback, stays out. So do anonymous functions: they have no name to show or to read them by.
@@ -56,6 +57,7 @@ C#, 56 lines: 2 classes, 1 struct, 1 interface, 1 record, 8 methods
 - Parameters show, so overloads can be told apart. A label longer than 60 characters is cut, with the count of what was cut.
 - Some labels carry a word in front: `class`, `struct`, `enum`, `interface`, `trait`, `record` or `type` for a type, `impl` for a Rust `impl` block, `mod` for a module, `macro` for a macro, `property` for a C# property, and `get` or `set` for an accessor.
 - An `impl` label shows its trait and its type as written, without its own generics and its `where` clause: `impl From<u8> for Menu_id`.
+- A CSS rule's label is its selector list, and an at-rule's label its header, such as `@media (max-width: 600px)`.
 - `toc` shows the whole tree while it fits on a page of 100 entries.
   A bigger one shows the top level, each entry with how many are inside it; zoom in with a name or a number, and turn pages with `--page 2`.
 
@@ -81,6 +83,8 @@ samples/Menu_bar.cs:18-27
 - A path that fits more than one entry is refused, with the candidates: each with its number and the names around it, such as `@12 Title_list on_focus(self)`.
 - A Rust `impl` answers to its type's name and, for a trait impl, to its trait's name too, in either order: `read menu_bar.rs Display fmt` and `read menu_bar.rs Debug Menu_bar fmt`.
 - These names leave out paths, generics and references: `impl fmt::Display for &'a Menu_bar<T>` answers to `Display` and `Menu_bar`.
+- A CSS rule answers to its whole selector list and to each selector in it, an at-rule to its keyword and to its header: `read app.css ".menu > li"`, `read app.css h2`, `read app.css "@layer base"`.
+- `@` followed by digits is a number; any other name may start with `@`.
 - In `toc`, a name prefers a class to a method, since a C# constructor shares its class's name.
 - Names are case-sensitive. A miss that differs only in case is refused with the entries it missed.
 

@@ -9,7 +9,7 @@
 
 (impl_item
   "!"? @label
-  trait: (_)? @second_name @label
+  trait: (_)? @other_name @label
   type: (_) @name @label) @definition.impl
 
 (mod_item
