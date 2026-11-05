@@ -1,39 +1,59 @@
 # Reader question
 
-You read pages {first} to {last} of a PDF by sight and write each page down as Markdown.
+You read pages 1 to 9 of a PDF by sight and write each page down as Markdown.
 This is a prototype run of calm-pdf, a new tool in the hall.
-Other readers take the other pages at the same time.
 
-## Your pages
+## Your boundaries
 
-- Pages {first} to {last}, one page after the other.
-- The views of a page are in `scratchpad/calm_pdf_renderer_trial/views/`: its overview, like `page_{first_padded}_overview.png`, and its bands, `page_{first_padded}_band_1.png` and up. `ls scratchpad/calm_pdf_renderer_trial/views/page_{first_padded}_*` shows how many there are.
-- Each page has its own file, like `scratchpad/calm_pdf_renderer_trial/pages/page_{first_padded}.md`.
-- Your chapters in a page's file: "Page N" and "Unclear".
+You read only these:
+
+- the chapter "Rules for reading" of `C:/Users/devboese/markdown_voodoo/notebook/calm_pdf/calm_pdf_guide.md`, with the first command below
+- the views in `C:/Users/devboese/markdown_voodoo/scratchpad/calm_pdf_flights/views/`, six per page: for page 1, `page_001_overview.png` and `page_001_band_1.png` to `page_001_band_5.png`, and the same for pages 2 to 9
+
+You write only these:
+
+- the page files `page_001.md` to `page_009.md` in `C:/Users/devboese/markdown_voodoo/scratchpad/calm_pdf_flights/pages/`, and in each file only its chapters "Page N" and "Unclear"
+
+You run only these:
+
+- `calm-md read "C:/Users/devboese/markdown_voodoo/notebook/calm_pdf/calm_pdf_guide.md" "Rules for reading"`, once, at the start
+- the Read tool, on one view at a time
+- `calm-md write`, as shown in the steps
+
+No Glob, no Grep, no `ls`, no `find`, and no other file or command. Everything you need is named here.
 
 ## Steps
 
-1. Read the rules for reading:
-   `calm-md read notebook/calm_pdf/calm_pdf_guide.md "Rules for reading"`
-2. Then, for each of your pages:
+1. Read the rules for reading with the first command.
+2. Then, for each page from 1 to 9:
    1. Read the overview for the layout.
-   2. Read the bands, top to bottom, for the text. Neighbouring bands overlap, so a line that shows up in two bands is written once.
+   2. Read the bands, 1 to 5, for the text. Neighbouring bands overlap, so a line that shows up in two bands is written once.
    3. Write the page's chapter into its file, heading line first. The page's own headings go one level down, starting at `###`.
-   4. Write anything unclear into the Unclear chapter of the same file the same way, one line each: `- Page N: …`
+   4. Write anything unclear into the Unclear chapter of the same file, one line each: `- Page N: …`
+
+   For page 1, the two writes look like this:
 
    ```
-   calm-md write "scratchpad/calm_pdf_renderer_trial/pages/page_{first_padded}.md" "Page {first}" <<'EOF'
-   ## Page {first}
+   calm-md write "C:/Users/devboese/markdown_voodoo/scratchpad/calm_pdf_flights/pages/page_001.md" "Page 1" <<'EOF'
+   ## Page 1
 
    …
+   EOF
+   ```
+
+   ```
+   calm-md write "C:/Users/devboese/markdown_voodoo/scratchpad/calm_pdf_flights/pages/page_001.md" "Unclear" <<'EOF'
+   ## Unclear
+
+   - Page 1: …
    EOF
    ```
 
 ## Thresholds
 
 - Is it time? Only your pages. The glass comes later.
-- Is it too much? One view at a time, one page at a time, and only the views. The PDF itself stays closed.
-- Is it mine? Only your pages' files are yours, and in them only the two chapters. Everything else in the hall belongs to someone else.
+- Is it too much? One view at a time, one page at a time.
+- Is it mine? Only what your boundaries name. Everything else in the hall belongs to someone else.
 - At a bump, such as a refused write or a view that won't open, note it and go on with the next page. If the same bump comes back, stop. Don't work around it; we decide together.
 
 ## No worries
