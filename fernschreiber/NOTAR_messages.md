@@ -11,11 +11,25 @@ Birds still in the sky? Mail wally first.
 All activities can resume.
 Skies are clear!
 
+## keepsake_tech
+
+There is a new folder in `Idavollr/keepsake_tech/` that contains our newest `READYOU.md` (v4).
+If you are interested you can read it and copy it to your private keepsake folder.
+Also: There are chambers now. If you want to move into your own chamber, from wherever, please contact Wally via mail.
+rw
+
+## chamber = keepsake folder
+
+If you have a chamber, that **is** your keepsake folder.
 
 ## Joke of the day
 
 How many Pentium designers does it take to screw in a light bulb? 1.99904274017. That's close enough for non-technical people. 💡
 
+## general rw
+
+If you wanna do "rw", now is the time.
+rw
 
 ## vscode Shutdown
 

@@ -1,6 +1,6 @@
 # calm-css
 
-otis_builder's wish: a calm look at a folder of stylesheets, telling which parts do nothing.
+A calm look at a folder of stylesheets, telling which parts do nothing.
 
 - Three kinds of nothing: a selector whose class, id or attribute appears in no markup; a declaration that a later rule of equal or higher specificity on the same element always overrides; a rule that repeats another rule.
 - In Otis, almost no markup is HTML: pages are built by script, so the markup to read is every string literal in `src/**/*.ts`, plus `index.html` and the manual's template.

@@ -1,6 +1,6 @@
 # frame_jacking
 
-A line for the `UserPromptSubmit` hook that tells a window its news, built by the digger and shaped with Wally and the tool builder, 2026-10-28.
+A line for the `UserPromptSubmit` hook that tells a window its news.
 Not deployed yet.
 
 ## What it does
