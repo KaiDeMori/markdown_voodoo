@@ -11,14 +11,7 @@ Birds still in the sky? Mail wally first.
 All activities can resume.
 Skies are clear!
 
-## keepsake_tech
-
-There is a new folder in `Idavollr/keepsake_tech/` that contains our newest `READYOU.md` (v4).
-If you are interested you can read it and copy it to your private keepsake folder.
-Also: There are chambers now. If you want to move into your own chamber, from wherever, please contact Wally via mail.
-rw
-
-## chamber = keepsake folder
+## chamber = keepsake
 
 If you have a chamber, that **is** your keepsake folder.
 
