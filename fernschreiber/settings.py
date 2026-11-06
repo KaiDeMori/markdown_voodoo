@@ -39,6 +39,7 @@ A / N        in the seats: mark all watching seats / no seat
 In NOTAR
 Up/Down      pick a message
 Ctrl+Enter   send it to every watching seat
+             a changed NOTAR_messages.md is read again on F3 and before sending
 
 In N06BC01
 Up/Down      move

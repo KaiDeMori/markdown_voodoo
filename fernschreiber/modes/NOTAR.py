@@ -29,7 +29,7 @@ class NOTAR_message:
 
 
 def load_NOTAR_messages(file_location: Path) -> list[NOTAR_message]:
-    """Reads the messages, one `##` chapter each, and stops fernschreiber before its window opens when the file breaks a rule, naming the line and the rule."""
+    """Reads the messages, one `##` chapter each; a file that breaks a rule raises a ValueError that names the line and the rule."""
 
     def fail(line_number: int, problem: str) -> None:
         raise ValueError(f"{file_location}, line {line_number}: {problem}")
@@ -70,6 +70,14 @@ def load_NOTAR_messages(file_location: Path) -> list[NOTAR_message]:
     return messages
 
 
+def file_moment(file_location: Path) -> int | None:
+    """The file's last write, to tell whether it changed since it was read; None when it cannot be found."""
+    try:
+        return file_location.stat().st_mtime_ns
+    except OSError:
+        return None
+
+
 class NOTAR_screen(Screen):
     """NOTAR, a notice to all ravens: one prepared message, sent to every watching seat at once."""
 
@@ -104,16 +112,24 @@ class NOTAR_screen(Screen):
         self.title_list.focus()
         self.app.notar = self
         self.show_selected()
+        if self.read_again_if_changed():
+            self.show_refresh_status("read again")
 
     def on_screen_resume(self) -> None:
         self.app.tick()
+        if hasattr(self, "title_list") and self.read_again_if_changed():
+            self.show_refresh_status("read again")
 
     @property
     def watching_seats(self) -> list[str]:
         return [name for name, watching in self.app.seats if watching]
 
     def show_selected(self) -> None:
-        """Shows the selected message, and the seats it would go to right now."""
+        """Shows the selected message, and the seats it would go to right now; while the file has an issue, only the issue."""
+        if self.app.NOTAR_issue is not None:
+            self.recipients_label.update(f"{settings.NOTAR_MESSAGES_FILE.name} has an issue, so nothing can be sent:")
+            self.text_label.update(self.app.NOTAR_issue)
+            return
         seats = self.watching_seats
         if seats:
             self.recipients_label.update(f"to {len(seats)} watching seat{'' if len(seats) == 1 else 's'}: {', '.join(seats)}")
@@ -121,12 +137,44 @@ class NOTAR_screen(Screen):
             self.recipients_label.update("nobody is watching right now")
         self.text_label.update(self.app.NOTAR_messages[self.title_list.selected].mail_text)
 
+    def read_again_if_changed(self) -> bool:
+        """Reads the messages file again when it changed since the last read, and shows what it says now; True when it changed."""
+        moment = file_moment(settings.NOTAR_MESSAGES_FILE)
+        if moment == self.app.NOTAR_moment:
+            return False
+        self.app.NOTAR_moment = moment
+        # A broken file sends nothing: the last good messages are no longer what the file says.
+        try:
+            messages, issue = load_NOTAR_messages(settings.NOTAR_MESSAGES_FILE), None
+        except OSError as error:
+            messages, issue = [], f"{settings.NOTAR_MESSAGES_FILE}: {error.strerror or error}"
+        except ValueError as error:
+            messages, issue = [], str(error)
+        self.app.NOTAR_messages, self.app.NOTAR_issue = messages, issue
+        self.title_list.set_titles([message.title for message in messages])
+        self.show_selected()
+        return True
+
+    def show_refresh_status(self, outcome: str) -> None:
+        file_name = settings.NOTAR_MESSAGES_FILE.name
+        if self.app.NOTAR_issue is None:
+            self.status_label.update(f"{clock_text()}  {file_name} changed: {outcome}")
+        else:
+            self.status_label.update(f"{clock_text()}  {file_name} has an issue, so nothing can be sent until it is fixed")
+
     def action_move(self, step: int) -> None:
         self.title_list.move(step)
         self.show_selected()
 
     def action_send(self) -> None:
         if self.sending:
+            return
+        # A NOTAR can't be called back, so only what was shown goes out: a file that changed since is shown first.
+        if self.read_again_if_changed():
+            self.show_refresh_status("nothing was sent, this is what it says now")
+            return
+        if self.app.NOTAR_issue is not None:
+            self.status_label.update(f"{clock_text()}  {settings.NOTAR_MESSAGES_FILE.name} still has its issue, so nothing was sent")
             return
         seats = self.watching_seats
         message = self.app.NOTAR_messages[self.title_list.selected]

@@ -17,7 +17,7 @@ from modes.Catalog import Catalog_screen
 from modes.Groups import Groups_screen
 from modes.Help import Help_screen
 from modes.N06BC01 import N06BC01_screen
-from modes.NOTAR import NOTAR_screen, load_NOTAR_messages
+from modes.NOTAR import NOTAR_screen, file_moment, load_NOTAR_messages
 from modes.Rabenschnack import Rabenschnack_screen
 from Widgets import clock_text
 
@@ -147,8 +147,11 @@ class Fernschreiber(App):
         self.color_theme = color_theme
         # Textual reads CSS only at startup, so each instance can bring its own.
         self.CSS = build_css(color_theme)
+        # Taken before the read, so a write in between makes F3 read the file again.
+        self.NOTAR_moment = file_moment(settings.NOTAR_MESSAGES_FILE)
         # Read before the window opens, so a broken file stops fernschreiber right away.
         self.NOTAR_messages = load_NOTAR_messages(settings.NOTAR_MESSAGES_FILE)
+        self.NOTAR_issue: str | None = None
         self.seats: list[tuple[str, bool]] = []
         self.rabenschnack: Rabenschnack_screen | None = None
         self.notar: NOTAR_screen | None = None
