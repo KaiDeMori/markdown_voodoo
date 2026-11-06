@@ -20,6 +20,7 @@ You run only these:
 - the Read tool, on one view at a time
 - `calm-md write`, as shown in the steps
 
+Run them one at a time, never in parallel.
 No Glob, no Grep, no `ls`, no `find`, and no other file or command. Everything you need is named here.
 
 ## Steps
@@ -28,7 +29,7 @@ No Glob, no Grep, no `ls`, no `find`, and no other file or command. Everything y
 2. Then, for each page from 1 to 9:
    1. Read the overview for the layout.
    2. Read the bands, 1 to 5, for the text. Neighbouring bands overlap, so a line that shows up in two bands is written once.
-   3. Write the page's chapter into its file, heading line first. The page's own headings go one level down, starting at `###`.
+   3. Write the page's chapter into its file, heading line first.
    4. Write anything unclear into the Unclear chapter of the same file, one line each: `- Page N: …`
 
    For page 1, the two writes look like this:
