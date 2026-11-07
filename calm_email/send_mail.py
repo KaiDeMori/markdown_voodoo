@@ -26,8 +26,11 @@ attachment_types = {
     ".jpeg": ("image", "jpeg"),
     ".md": ("text", "markdown"),
     ".txt": ("text", "plain"),
+    ".zip": ("application", "zip"),
 }
 attachment_limit_bytes = 5 * 1024 * 1024
+# A zip may carry anything, so it travels smaller.
+zip_limit_bytes = 1 * 1024 * 1024
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -47,15 +50,18 @@ def checked_attachment(outbox_folder, name):
         refuse(f"{name} is not in the outbox.")
     file_type = attachment_types.get(location.suffix.lower())
     if not file_type:
-        refuse(f"{name}: only png, jpeg, md and txt go out.")
-    data = location.read_bytes()
-    if len(data) > attachment_limit_bytes:
-        refuse(f"{name} is over 5 MB.")
+        refuse(f"{name}: only png, jpeg, md, txt and zip go out.")
     maintype, subtype = file_type
+    limit = zip_limit_bytes if subtype == "zip" else attachment_limit_bytes
+    data = location.read_bytes()
+    if len(data) > limit:
+        refuse(f"{name} is over {limit // (1024 * 1024)} MB.")
     if subtype == "png" and not data.startswith(b"\x89PNG\r\n\x1a\n"):
         refuse(f"{name} is no png inside.")
     if subtype == "jpeg" and not data.startswith(b"\xff\xd8\xff"):
         refuse(f"{name} is no jpeg inside.")
+    if subtype == "zip" and not data.startswith(b"PK\x03\x04"):
+        refuse(f"{name} is no zip inside.")
     if maintype == "text":
         try:
             data = data.decode("utf-8")

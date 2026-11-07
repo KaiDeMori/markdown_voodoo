@@ -13,7 +13,7 @@
 # send: sends a plain-text mail to a label in the catalog, and to nobody else, with files from the post office's outbox if named.
 # relay: sends a raven's hall mail from the postmaster's seat the way send does, its text exactly as written; a block between lines of --- goes out alone.
 # on: waits for the first new mail from a label in the catalog, or the timer, and exits.
-# attachments: saves the png, jpeg, md and txt attachments of one mail into the post office's inbox, under names the tool chooses.
+# attachments: saves the png, jpeg, md, txt and zip attachments of one mail into the post office's inbox, under names the tool chooses.
 # read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
 # polite: answers one mail without plain text with the polite reply, in its thread; it goes out only when the postmaster calls it.
 # Usage: calm_email.sh setup

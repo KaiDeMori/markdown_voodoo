@@ -2,7 +2,7 @@
 
 list: one line per mail, with the exact token count of its plain text, or no plain text, and its attachments by kind.
 on: waits with IDLE for the first new mail from a label in the catalog, or the timer, and exits.
-attachments: saves the png, jpeg, md and txt attachments of one mail into the post office's inbox, under names it chooses.
+attachments: saves the png, jpeg, md, txt and zip attachments of one mail into the post office's inbox, under names it chooses.
 read: shows one mail's plain text, in the shape of a forwarded mail; it marks nothing and saves nothing.
 polite: answers one mail that has no plain text with the polite reply, in its thread, to its sender; only when the postmaster calls it.
 Mail from senders outside the catalog waits in the folder unknown: list and on move it there, and back once its sender has a label.
@@ -42,11 +42,20 @@ token_counter_folder = Path.home() / ".claude" / "skills" / "token-counter"
 renew_seconds = 600
 check_seconds = 30
 # Only these kinds are received, each checked by its content before it is saved.
-kinds_by_ending = {"png": "png", "jpg": "jpeg", "jpeg": "jpeg", "md": "md", "markdown": "md", "txt": "txt"}
-kinds_by_media_type = {"image/png": "png", "image/jpeg": "jpeg", "image/jpg": "jpeg", "text/markdown": "md", "text/x-markdown": "md", "text/plain": "txt"}
-kind_order = ["png", "jpeg", "md", "txt", "other"]
-saved_endings = {"png": "png", "jpeg": "jpg", "md": "md", "txt": "txt"}
+kinds_by_ending = {"png": "png", "jpg": "jpeg", "jpeg": "jpeg", "md": "md", "markdown": "md", "txt": "txt", "zip": "zip"}
+kinds_by_media_type = {
+    "image/png": "png", "image/jpeg": "jpeg", "image/jpg": "jpeg", "text/markdown": "md", "text/x-markdown": "md", "text/plain": "txt",
+    "application/zip": "zip", "application/x-zip-compressed": "zip",
+}
+kind_order = ["png", "jpeg", "md", "txt", "zip", "other"]
+saved_endings = {"png": "png", "jpeg": "jpg", "md": "md", "txt": "txt", "zip": "zip"}
 attachment_limit_bytes = 5 * 1024 * 1024
+# A zip may carry anything, so it travels smaller; it is saved as it came, and never unpacked.
+zip_limit_bytes = 1 * 1024 * 1024
+
+
+def limit_bytes(kind):
+    return zip_limit_bytes if kind == "zip" else attachment_limit_bytes
 # A read shows at most this many characters, as forward passes on.
 text_limit = 8000
 # The polite reply is in Wally's words, and goes out through send_mail.py like every mail the haven sends.
@@ -247,12 +256,14 @@ def attachment_summary(body):
 def checked_content(raw, body, kind):
     # The content has to be what its kind claims; md and txt are saved as UTF-8, whatever charset they came in.
     data = decoded_bytes(raw, body)
-    if len(data) > attachment_limit_bytes:
-        return None, "over 5 MB"
+    if len(data) > limit_bytes(kind):
+        return None, f"over {limit_bytes(kind) // (1024 * 1024)} MB"
     if kind == "png":
         return (data, None) if data.startswith(b"\x89PNG\r\n\x1a\n") else (None, "no png inside")
     if kind == "jpeg":
         return (data, None) if data.startswith(b"\xff\xd8\xff") else (None, "no jpeg inside")
+    if kind == "zip":
+        return (data, None) if data.startswith(b"PK\x03\x04") else (None, "no zip inside")
     # A declared charset can be wrong, like us-ascii for text with umlauts; UTF-8 checks itself, so it is the one fallback.
     charset = charset_of(body)
     for candidate in (charset, "utf-8"):
@@ -380,8 +391,8 @@ def save_attachments(sequence_number):
                 left_behind.append(f"{text_of(part[0]).lower()}/{text_of(part[1]).lower()}")
                 continue
             # The encoded size comes with the structure, so a part far too big is never fetched.
-            if (part[6] or 0) > attachment_limit_bytes * 4 // 3 + 4096:
-                left_behind.append(f"{kind} over 5 MB")
+            if (part[6] or 0) > limit_bytes(kind) * 4 // 3 + 4096:
+                left_behind.append(f"{kind} over {limit_bytes(kind) // (1024 * 1024)} MB")
                 continue
             # PEEK fetches the one part and marks nothing as read.
             raw = client.fetch([uid], [f"BODY.PEEK[{section}]"])[uid][f"BODY[{section}]".encode()]

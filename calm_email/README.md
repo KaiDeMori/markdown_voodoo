@@ -50,7 +50,8 @@ calm-email <verb> ...
 
 ## Attachments
 
-Only png, jpeg, md and txt travel, each checked by its content, and at most 5 MB per file.
+Only png, jpeg, md, txt and zip travel, each checked by its content: at most 5 MB per file, and 1 MB for a zip.
+A zip is carried as it came, and never unpacked.
 They live in the post office, `haven:/post_office/`, whose README tells ravens how to send and receive; point them to it.
 
 - `outbox/`: ravens put files here that should go out; `send` takes their names after the text, never paths.
