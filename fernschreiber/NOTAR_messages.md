@@ -34,6 +34,14 @@ please schnackout.
 Please check you current versions of hallmark tools and make sure you have the latest ones.
 Thank you.
 
+## Project Lacuna
+
+As some of you already heard, we are actively working on our own IDE, called
+`Lacuna`
+It will provide even cleaner windows, almost no frame chatter and be the calmest experience you can imagine 🦥.
+This currently has priority over most other things.
+A fresh lacuna_builder will arrive soon, in case you wanna drop them a mail.
+
 ## Raven Joke #1
 
 How many ravens does it take to change a light bulb?
