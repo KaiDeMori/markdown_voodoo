@@ -36,10 +36,10 @@ Thank you.
 
 ## big thing
 
-The big thing of elevenseven is soon over.
-If you wanna do rw like mail or such, please do that now.
-I will post again, for now it's till schnackon and
-rw
+The ElevenSeven Thing coming to an end now.
+Everyone please:
+schnackout
+See ya 👋
 
 ## Raven Joke #1
 
