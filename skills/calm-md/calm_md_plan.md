@@ -99,7 +99,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 ### Steps
 
 - [x] pytest: `requirements-dev.txt`, `pytest.ini`, and a `.gitignore` for its leftovers.
-- [ ] `delete`, with its tests.
+- [x] `delete`, with its tests.
 - [ ] `insert`, with its tests.
 - [ ] `move`, with its tests.
 - [ ] `SKILL.md`, and the usage in `calm_md.sh` and in the docstring.

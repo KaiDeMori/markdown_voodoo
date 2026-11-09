@@ -402,6 +402,23 @@ def replace_in_chapter(file_name, titles, as_is):
     print(f"{path_text(chapter['path'])}: replaced on line {line_number_at(chapter_text, places[0], chapter['start'])}.")
 
 
+def delete_chapter(file_name, titles, as_is):
+    refuse_numbers(titles, "delete")
+    location, kept_start, text = read_markdown(file_name, as_is)
+    lines = split_lines(text)
+    chapter = find_chapter(find_chapters(text, len(lines)), titles)
+    kept_lines = lines[:chapter["start"]]
+    # When the last chapter goes, the blank lines before it would end the file, so they go too.
+    # A T line's ending stays as the first line, so the T line keeps its line.
+    if chapter["end"] == len(lines):
+        first_removable = 1 if kept_start.lstrip("﻿") else 0
+        while len(kept_lines) > first_removable and not kept_lines[-1].strip():
+            kept_lines.pop()
+    result = "".join(kept_lines) + "".join(lines[chapter["end"]:])
+    save_checked(location, kept_start, result, as_is, "The deletion")
+    print(f"{path_text(chapter['path'])}: deleted, {count(chapter['end'] - chapter['start'], 'line')}.")
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
@@ -428,5 +445,7 @@ if __name__ == "__main__":
         replace_in_chapter(arguments[0], arguments[1:], as_is)
     elif verb == "find" and len(arguments) > 1:
         find_word(arguments[0], arguments[1], arguments[2:], as_is)
+    elif verb == "delete" and len(arguments) > 1:
+        delete_chapter(arguments[0], arguments[1:], as_is)
     else:
-        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write or replace [--as-is] <file> <title> ..., or find [--as-is] <file> <word> [title ...]?")
+        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write, replace or delete [--as-is] <file> <title> ..., or find [--as-is] <file> <word> [title ...]?")
