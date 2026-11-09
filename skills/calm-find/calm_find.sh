@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # calm_find: what kinds of files a folder holds, where they are, and what one of them would cost a window.
 # overview: a map one level down: the folder's own files and each subfolder, counted by kind, nothing inside named.
-# <kind>: the paths of one kind, up to a limit, then how many more.
+# <kind>: the paths of one kind, up to a limit, then how many more; a text file's token count stands in front while its T line holds.
 # what: one fact about one file, the one its kind is about.
 # Usage: calm_find.sh [folder]
 #        calm_find.sh <kind> [folder]
@@ -79,13 +79,44 @@ show_overview() {
     }'
 }
 
+# The T, U+FE054, and the old T, U+E054, as their UTF-8 bytes: a T line is read the way token-counter reads it.
+t_character=$'\xf3\xbe\x81\x94'
+old_t_character=$'\xee\x81\x94'
+t_line_pattern="^($t_character|$old_t_character)([0-9]+)( ([0-9]+))?("$'\r\n|\r|\n'")"
+
+t_line_token_count() {
+  # The size on a T line counts the bytes below it, so the count holds while the file is that line plus that many bytes.
+  # A line without a size always holds.
+  # The C locale reads and counts bytes; under UTF-8, this bash counts in UTF-16 units, and the T would count as two.
+  local LC_ALL=C first_bytes
+  IFS= read -r -N 64 first_bytes < "$1" || true
+  [[ $first_bytes =~ $t_line_pattern ]] || return 0
+  if [[ -z ${BASH_REMATCH[4]} ]] || (( ${#BASH_REMATCH[0]} + 10#${BASH_REMATCH[4]} == $(wc -c < "$1") )); then
+    echo $(( 10#${BASH_REMATCH[2]} ))
+  fi
+}
+
+put_token_counts_in_front() {
+  # Only the listed paths are files; the closing line, such as "and 3 more", passes as it is.
+  local line token_count
+  while IFS= read -r line; do
+    token_count=''
+    if [[ -f $line ]]; then token_count=$(t_line_token_count "$line"); fi
+    if [[ -n $token_count ]]; then line="$t_character$token_count $line"; fi
+    printf '%s\n' "$line"
+  done
+}
+
 show_kind() {
+  local token_step=cat
+  # T lines live in the text kinds, the ones what counts too.
+  if [[ $1 == markdown || $1 == source || $1 == text ]]; then token_step=put_token_counts_in_front; fi
   list_files "$2" | awk -v wanted="$1" -v limit="$list_limit" "$classify"'
     kind($0) == wanted { if (++count <= limit) print }
     END {
       if (count > limit) print "and " (count - limit) " more"
       if (!count) print "no " wanted
-    }'
+    }' | "$token_step"
 }
 
 show_what() {
