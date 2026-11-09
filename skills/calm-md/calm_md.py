@@ -314,24 +314,28 @@ def read_chapter(file_name, titles, as_is):
     sys.stdout.buffer.write("".join(lines[chapter["start"]:chapter["end"]]).encode("utf-8"))
 
 
-def write_chapter(file_name, titles, as_is):
-    refuse_numbers(titles, "write")
-    location, kept_start, text = read_markdown(file_name, as_is)
-    lines = split_lines(text)
-    chapter = find_chapter(find_chapters(text, len(lines)), titles)
+def read_new_chapter(verb, ending):
+    """The chapter on stdin, in the file's own line endings, with its parsed tokens."""
     try:
         new_text = sys.stdin.buffer.read().decode("utf-8")
     except UnicodeDecodeError:
         refuse("The new chapter is no UTF-8 text.")
     if not new_text.strip():
-        refuse("Nothing to write; an empty chapter is refused, and the file stays as it was.")
+        refuse(f"Nothing to {verb}; an empty chapter is refused, and the file stays as it was.")
     # The new chapter starts with its heading line, so no chapter loses its heading and joins the one before it.
-    first_token = next(iter(parser.parse(new_text.lstrip("﻿"))), None)
-    if first_token is None or first_token.type != "heading_open":
+    tokens = parser.parse(new_text.lstrip("﻿"))
+    if not tokens or tokens[0].type != "heading_open":
         refuse("The new chapter has to start with its heading line; the file stays as it was.")
-    # The new lines take the file's own line endings.
+    return re.sub(r"\r\n|\r|\n", ending, new_text.lstrip("﻿")), tokens
+
+
+def write_chapter(file_name, titles, as_is):
+    refuse_numbers(titles, "write")
+    location, kept_start, text = read_markdown(file_name, as_is)
+    lines = split_lines(text)
+    chapter = find_chapter(find_chapters(text, len(lines)), titles)
     ending = "\r\n" if "\r\n" in text else "\n"
-    new_text = re.sub(r"\r\n|\r|\n", ending, new_text.lstrip("﻿"))
+    new_text, _ = read_new_chapter("write", ending)
     # A chapter followed by more ends with a blank line, so an underlined heading below never swallows its last line as part of its title.
     if chapter["end"] < len(lines):
         while not new_text.endswith(ending * 2):
@@ -419,6 +423,43 @@ def delete_chapter(file_name, titles, as_is):
     print(f"{path_text(chapter['path'])}: deleted, {count(chapter['end'] - chapter['start'], 'line')}.")
 
 
+def splice_chapter(lines, position, chapter_text, ending):
+    """Puts a chapter's text in front of a line, with a blank line above its heading and, when more follows, one at its end."""
+    before = "".join(lines[:position])
+    after = "".join(lines[position:])
+    if before.strip():
+        if not re.search(r"(?:\r\n|\r|\n)\Z", before):
+            before += ending
+        if split_lines(before)[-1].strip():
+            before += ending
+    if after:
+        while not chapter_text.endswith(ending * 2):
+            chapter_text += ending
+    return before, chapter_text, after
+
+
+def insert_chapter(file_name, place, titles, as_is):
+    if place not in ("after", "before"):
+        refuse("insert takes after or before, then the title path of the chapter the new one goes next to.")
+    refuse_numbers(titles, "insert")
+    location, kept_start, text = read_markdown(file_name, as_is)
+    lines = split_lines(text)
+    named = find_chapter(find_chapters(text, len(lines)), titles)
+    ending = "\r\n" if "\r\n" in text else "\n"
+    new_text, tokens = read_new_chapter("insert", ending)
+    # A heading higher than the named chapter's would end chapters early and pull the ones after it under the new one.
+    top_level = min(int(token.tag[1:]) for token in tokens if token.type == "heading_open" and token.level == 0)
+    if top_level < named["level"]:
+        refuse(f"A {'#' * top_level} heading next to the {'#' * named['level']} chapter {path_text(named['path'])} would pull the chapters after it under itself; the file stays as it was.")
+    before, new_text, after = splice_chapter(lines, named["end"] if place == "after" else named["start"], new_text, ending)
+    result = before + new_text + after
+    inserted = next((chapter for chapter in find_chapters(result, len(split_lines(result))) if chapter["start"] == len(split_lines(before))), None)
+    if inserted is None:
+        refuse("The new heading would not stand as a heading there; the file stays as it was.")
+    save_checked(location, kept_start, result, as_is, "The new chapter")
+    print(f"{path_text(inserted['path'])}: inserted {place} {path_text(named['path'])}, {count(len(split_lines(new_text)), 'line')}.")
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
@@ -447,5 +488,7 @@ if __name__ == "__main__":
         find_word(arguments[0], arguments[1], arguments[2:], as_is)
     elif verb == "delete" and len(arguments) > 1:
         delete_chapter(arguments[0], arguments[1:], as_is)
+    elif verb == "insert" and len(arguments) > 2:
+        insert_chapter(arguments[0], arguments[1], arguments[2:], as_is)
     else:
-        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write, replace or delete [--as-is] <file> <title> ..., or find [--as-is] <file> <word> [title ...]?")
+        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write, replace or delete [--as-is] <file> <title> ..., insert [--as-is] <file> after|before <title> ..., or find [--as-is] <file> <word> [title ...]?")
