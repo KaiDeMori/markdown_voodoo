@@ -25,6 +25,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - The pattern is an extended regular expression, as in `grep -E`: `colour|color` finds both spellings.
 - The folder is the current one by default; `where` puts it in front of every path, so the paths work from where the raven stands.
 - `where` lists each file with the numbers of its matching lines: at most 20 files and 10 numbers per file, each list ending in `and N more`.
+- `where` puts a file's tokens in front while its T line, see hallmark, still fits the doc's size: `󾁔468 INDEX.md:7`. Nothing is counted on the way.
 - `what` reads one file: at most 10 lines, each cut down to about 60 characters on each side of its match, with `...` where something was cut.
 - Counts are lines, not matches: a line with several matches counts once.
 - `--lines 1` or `--lines 123-454` searches only those lines; every T line: `where --lines 1 $'\xf3\xbe\x81\x94'`.

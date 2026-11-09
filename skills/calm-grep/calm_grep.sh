@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # calm_grep: searches a folder's files, starting zoomed out: how many, then where, then what.
 # count: how many lines match, in how many files; or nowhere.
-# where: each file with the numbers of its matching lines; or nowhere.
+# where: each file with the numbers of its matching lines, and its token count in front while its T line holds; or nowhere.
 # what: one file's matching lines, each cut down to the part around its match; or nowhere.
 # --lines keeps a search to one line or a span of lines in every file, like 1 or 123-454.
 # Usage: calm_grep.sh count [--lines <line|span>] <pattern> [folder]
@@ -93,8 +93,25 @@ count_matches() {
   fi
 }
 
+# The T, U+FE054, and the old T, U+E054, as their UTF-8 bytes: a T line is read the way token-counter reads it.
+t_character=$'\xf3\xbe\x81\x94'
+old_t_character=$'\xee\x81\x94'
+t_line_pattern="^($t_character|$old_t_character)([0-9]+)( ([0-9]+))?("$'\r\n|\r|\n'")"
+
+t_line_token_count() {
+  # The size on a T line counts the bytes below it, so the count holds while the file is that line plus that many bytes.
+  # A line without a size always holds.
+  # The C locale reads and counts bytes; under UTF-8, this bash counts in UTF-16 units, and the T would count as two.
+  local LC_ALL=C first_bytes
+  IFS= read -r -N 64 first_bytes < "$1" || true
+  [[ $first_bytes =~ $t_line_pattern ]] || return 0
+  if [[ -z ${BASH_REMATCH[4]} ]] || (( ${#BASH_REMATCH[0]} + 10#${BASH_REMATCH[4]} == $(wc -c < "$1") )); then
+    echo $(( 10#${BASH_REMATCH[2]} ))
+  fi
+}
+
 show_locations() {
-  local line path line_count file_count=0 path_prefix=''
+  local line path line_count token_count file_count=0 path_prefix=''
   # The folder goes back in front of grep's relative paths, so they work from where the raven stands.
   if [[ -d $folder ]]; then
     if [[ $folder != . ]]; then path_prefix=${folder%/}/; fi
@@ -108,6 +125,8 @@ show_locations() {
     path=${path#./}
     line_count=${line##*:}
     line="$path_prefix$path:$(first_line_numbers "$path")"
+    token_count=$(t_line_token_count "$path_prefix$path")
+    if [[ -n $token_count ]]; then line="$t_character$token_count $line"; fi
     if (( line_count > where_line_number_limit )); then
       line+=" and $(describe_number $(( line_count - where_line_number_limit )) 'more line')"
     fi
