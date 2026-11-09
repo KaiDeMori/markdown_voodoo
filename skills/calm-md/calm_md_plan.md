@@ -23,7 +23,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
     Empty input is refused, and so is input that does not start with a heading line.
   - `calm-md replace <file> <title> ...`: the old text on stdin's first line, the new text after it; the old text occurs exactly once in the chapter, and the chapter keeps its heading line.
     The Packorator's flight log asked for it: a one-word fix should not send a whole chapter back.
-- Later: an override that turns every cap off, and maybe a verb that removes a chapter.
+- Later: an override that turns every cap off.
 
 ## Linting
 
@@ -74,6 +74,36 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - [x] `find`, its context kept to the hit's own line, so it never drags in a neighboring heading.
 - [x] Test each on a big flat doc and a deep one, with LF and CRLF.
 - [x] `SKILL.md`, and a raven flies it.
+
+## Insert, delete and move
+
+### Decided
+
+- Three verbs for the chapter layer, next to `write`; like `write` and `replace`, they take titles, never numbers.
+- `insert <file> after <title> ... < chapter`: the new chapter lands right after the named chapter, its subchapters included; with `before`, right before its heading line.
+- `delete <file> <title> ...`: the chapter goes, its subchapters with it.
+- `move <file> <title> ... after <title> ...`, and with `before`: one write, so a chapter is never lost between a delete and an insert.
+  The first `after` or `before` divides the two title paths.
+- An inserted chapter brings its own level: the named chapter's level makes a sibling, a deeper one hangs under the chapter before it.
+  A higher level would pull the following chapters under the new one, so it is refused.
+- A moved chapter becomes the named chapter's sibling: it takes that level, and its subchapters shift by the same number of levels.
+  A shift past level 6 is refused, and so is a shift of an underlined heading, since underlines know only two levels.
+- A chapter never moves next to itself or into its own subchapters.
+- Everything else stays byte for byte; only blank lines are added where a heading needs one.
+  When the last chapter goes, the blank lines it leaves at the end of the file go too.
+- Like `write`, each verb checks the doc it would leave behind, replaces the file in one step, and answers in one line, like `Steps > Two: moved after Steps > Four, one level up.`
+- Tests cover the three new verbs only; the proven verbs keep their record from real use.
+  pytest comes from `requirements-dev.txt` into the source folder's venv, the tests live in `tests/`, and `deploy.bat` leaves both behind, as in yt-transcript-extractor.
+  The cases: LF and CRLF, a T line, front matter, the first and the last chapter, the level rule, a shift past level 6, an underlined heading, and a move into its own subchapter.
+
+### Steps
+
+- [ ] pytest: `requirements-dev.txt`, `pytest.ini`, and a `.gitignore` for its leftovers.
+- [ ] `delete`, with its tests.
+- [ ] `insert`, with its tests.
+- [ ] `move`, with its tests.
+- [ ] `SKILL.md`, and the usage in `calm_md.sh` and in the docstring.
+- [ ] A raven flies it.
 
 ## Steps
 
