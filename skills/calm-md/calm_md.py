@@ -406,6 +406,18 @@ def replace_in_chapter(file_name, titles, as_is):
     print(f"{path_text(chapter['path'])}: replaced on line {line_number_at(chapter_text, places[0], chapter['start'])}.")
 
 
+def t_line_ending_lines(kept_start):
+    # A T line's ending stays behind as the text's first line; it has to stay, so the T line keeps its line.
+    return 1 if kept_start.lstrip("﻿") else 0
+
+
+def without_trailing_blank_lines(lines, kept_lines):
+    lines = list(lines)
+    while len(lines) > kept_lines and not lines[-1].strip():
+        lines.pop()
+    return lines
+
+
 def delete_chapter(file_name, titles, as_is):
     refuse_numbers(titles, "delete")
     location, kept_start, text = read_markdown(file_name, as_is)
@@ -413,11 +425,8 @@ def delete_chapter(file_name, titles, as_is):
     chapter = find_chapter(find_chapters(text, len(lines)), titles)
     kept_lines = lines[:chapter["start"]]
     # When the last chapter goes, the blank lines before it would end the file, so they go too.
-    # A T line's ending stays as the first line, so the T line keeps its line.
     if chapter["end"] == len(lines):
-        first_removable = 1 if kept_start.lstrip("﻿") else 0
-        while len(kept_lines) > first_removable and not kept_lines[-1].strip():
-            kept_lines.pop()
+        kept_lines = without_trailing_blank_lines(kept_lines, t_line_ending_lines(kept_start))
     result = "".join(kept_lines) + "".join(lines[chapter["end"]:])
     save_checked(location, kept_start, result, as_is, "The deletion")
     print(f"{path_text(chapter['path'])}: deleted, {count(chapter['end'] - chapter['start'], 'line')}.")
@@ -460,6 +469,54 @@ def insert_chapter(file_name, place, titles, as_is):
     print(f"{path_text(inserted['path'])}: inserted {place} {path_text(named['path'])}, {count(len(split_lines(new_text)), 'line')}.")
 
 
+# A # heading's marks: up to three spaces, then one to six #, then a space or the line's end.
+heading_marks = re.compile(r"( {0,3})#{1,6}(?=[ \t\r\n]|\Z)")
+level_words = ("", "one", "two", "three", "four", "five")
+
+
+def move_chapter(file_name, arguments, as_is):
+    places = [index for index, word in enumerate(arguments) if word in ("after", "before")]
+    if not places or places[0] == 0 or places[0] == len(arguments) - 1:
+        refuse("move takes the moved chapter's title path, then after or before, then the title path of the chapter it goes next to.")
+    place = arguments[places[0]]
+    moved_titles, named_titles = arguments[:places[0]], arguments[places[0] + 1:]
+    refuse_numbers(moved_titles + named_titles, "move")
+    location, kept_start, text = read_markdown(file_name, as_is)
+    lines = split_lines(text)
+    chapters = find_chapters(text, len(lines))
+    moved = find_chapter(chapters, moved_titles)
+    named = find_chapter(chapters, named_titles)
+    if moved["start"] <= named["start"] < moved["end"]:
+        refuse(f"{path_text(moved['path'])} can't move next to itself or into its own subchapters; the file stays as it was.")
+    # The moved chapter becomes the named chapter's sibling, and its subchapters shift with it.
+    shift = named["level"] - moved["level"]
+    moved_lines = lines[moved["start"]:moved["end"]]
+    if shift:
+        for chapter in [chapter for chapter in chapters if moved["start"] <= chapter["start"] < moved["end"]]:
+            new_level = chapter["level"] + shift
+            if new_level > 6:
+                refuse(f"{path_text(chapter['path'])} would need {'#' * new_level}, and headings stop at ######; the file stays as it was.")
+            index = chapter["start"] - moved["start"]
+            if not heading_marks.match(moved_lines[index]):
+                refuse(f"{path_text(chapter['path'])} is an underlined heading, and underlines know only two levels; the file stays as it was.")
+            moved_lines[index] = heading_marks.sub(lambda match: match.group(1) + "#" * new_level, moved_lines[index], count=1)
+    remaining = lines[:moved["start"]] + lines[moved["end"]:]
+    # A chapter that leaves the end, or arrives there, leaves its blank lines behind, like a deleted one.
+    if moved["end"] == len(lines):
+        remaining = without_trailing_blank_lines(lines[:moved["start"]], t_line_ending_lines(kept_start))
+    position = named["end"] if place == "after" else named["start"]
+    if position >= moved["end"]:
+        position -= moved["end"] - moved["start"]
+    position = min(position, len(remaining))
+    if position == len(remaining):
+        moved_lines = without_trailing_blank_lines(moved_lines, 1)
+    ending = "\r\n" if "\r\n" in text else "\n"
+    before, moved_text, after = splice_chapter(remaining, position, "".join(moved_lines), ending)
+    save_checked(location, kept_start, before + moved_text + after, as_is, "The move")
+    how = f", {level_words[abs(shift)]} level{'s' if abs(shift) > 1 else ''} {'up' if shift < 0 else 'down'}" if shift else ""
+    print(f"{path_text(moved['path'])}: moved {place} {path_text(named['path'])}{how}.")
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
@@ -490,5 +547,7 @@ if __name__ == "__main__":
         delete_chapter(arguments[0], arguments[1:], as_is)
     elif verb == "insert" and len(arguments) > 2:
         insert_chapter(arguments[0], arguments[1], arguments[2:], as_is)
+    elif verb == "move" and len(arguments) > 3:
+        move_chapter(arguments[0], arguments[1:], as_is)
     else:
-        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write, replace or delete [--as-is] <file> <title> ..., insert [--as-is] <file> after|before <title> ..., or find [--as-is] <file> <word> [title ...]?")
+        refuse("toc [--as-is] [--page <number>] <file> [title ...], read, write, replace or delete [--as-is] <file> <title> ..., insert [--as-is] <file> after|before <title> ..., move [--as-is] <file> <title> ... after|before <title> ..., or find [--as-is] <file> <word> [title ...]?")
