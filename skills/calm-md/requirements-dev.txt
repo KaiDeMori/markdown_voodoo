@@ -1,0 +1,6 @@
+# Test-only dependencies on top of the runtime ones; deploy.bat leaves them behind. Install into the source folder's venv:
+#   .venv/Scripts/python -m pip install -r requirements-dev.txt
+# Run the tests from the skill's folder: .venv/Scripts/python -m pytest
+
+-r requirements.txt
+pytest
