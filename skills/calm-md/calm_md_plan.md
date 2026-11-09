@@ -95,6 +95,12 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - Tests cover the three new verbs only; the proven verbs keep their record from real use.
   pytest comes from `requirements-dev.txt` into the source folder's venv, the tests live in `tests/`, and `deploy.bat` leaves both behind, as in yt-transcript-extractor.
   The cases: LF and CRLF, a T line, front matter, the first and the last chapter, the level rule, a shift past level 6, an underlined heading, and a move into its own subchapter.
+- The first flight brought five surprises, and each got its answer:
+  - A move to where the chapter already stands writes nothing, and says so.
+  - A refused change names each issue by its heading's title path, since the doc with the issue was never written; this holds for `write` and `replace` too.
+  - `delete` refuses the chapter that holds the whole doc.
+  - `insert` refuses a deeper chapter before the doc's first one, where nothing could hold it.
+  - A path that fits no chapter, but would with quotes around a title with spaces, says so.
 
 ### Steps
 
@@ -103,7 +109,9 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - [x] `insert`, with its tests.
 - [x] `move`, with its tests.
 - [x] `SKILL.md`, and the usage in `calm_md.sh` and in the docstring.
-- [ ] A raven flies it.
+- [x] A raven flies it.
+- [x] The first flight's five surprises, with their tests.
+- [x] A second flight.
 
 ## Steps
 

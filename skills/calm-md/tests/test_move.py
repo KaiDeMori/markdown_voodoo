@@ -95,6 +95,13 @@ def test_the_t_line_stays_on_top(tmp_path, calm_md):
     )
 
 
+def test_a_chapter_that_already_stands_there_stays_and_says_so(tmp_path, calm_md):
+    doc = tmp_path / "doc.md"
+    doc.write_bytes(nested_doc)
+    assert calm_md("move", doc, "Two", "after", "One") == (0, "Doc > Two already stands after Doc > One; nothing changed.")
+    assert doc.read_bytes() == nested_doc
+
+
 def test_a_shift_past_level_six_is_refused(tmp_path, calm_md):
     doc = tmp_path / "doc.md"
     deep_doc = b"# Doc\n\n## A\n\n### B\n\n#### C\n\n##### E\n\ne\n\n## F\n\n### G\n\n#### H\n\nh\n"

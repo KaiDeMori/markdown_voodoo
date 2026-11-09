@@ -95,10 +95,10 @@ def lint(text):
     return sorted(issues)
 
 
-def show_issues(issues, first_line):
+def show_issues(issues, first_line, place_of=lambda line_number: f"line {line_number}"):
     print(first_line)
     for line_number, rule_id, description in issues[:issue_limit]:
-        print(f"line {line_number}: {rule_id} {description}")
+        print(f"{place_of(line_number)}: {rule_id} {description}")
     if len(issues) > issue_limit:
         print(f"and {len(issues) - issue_limit} more")
     sys.exit(1)
@@ -160,6 +160,17 @@ def refuse_numbers(titles, verb):
         refuse(f"{verb} takes the chapter's title, not its number, so a number that shifted never changes the wrong chapter.")
 
 
+def quoting_hint(chapters, titles):
+    # The words of a title given without quotes arrive as titles of their own; joined again, they may fit.
+    for joined_count in range(len(titles), 1, -1):
+        for first in range(len(titles) - joined_count + 1):
+            candidate = titles[:first] + [" ".join(titles[first:first + joined_count])] + titles[first + joined_count:]
+            if any(chapter["path"][-len(candidate):] == candidate for chapter in chapters):
+                shown = " ".join(f'"{title}"' if " " in title else title for title in candidate)
+                return f" A title with spaces goes in quotes: {shown}"
+    return ""
+
+
 def find_chapter(chapters, titles):
     if is_number(titles):
         number = int(titles[0][1:])
@@ -170,7 +181,7 @@ def find_chapter(chapters, titles):
     if len(fits) == 1:
         return fits[0]
     if not fits:
-        refuse(f"No chapter fits {path_text(titles)}.")
+        refuse(f"No chapter fits {path_text(titles)}.{quoting_hint(chapters, titles)}")
     refuse(f"{path_text(titles)} fits {len(fits)} chapters: " + "; ".join(path_text(chapter["path"]) for chapter in fits))
 
 
@@ -357,7 +368,13 @@ def save_checked(location, kept_start, result, as_is, what_changes):
     if not as_is:
         new_issues = lint(result)
         if new_issues:
-            show_issues(new_issues, f"{what_changes} would bring {count(len(new_issues), 'issue')}; the file stays as it was:")
+            # That doc was never written, so its line numbers point nowhere; the rules are heading rules, so an issue names its heading instead.
+            headings = {chapter["start"] + 1: path_text(chapter["path"]) for chapter in find_chapters(result, len(split_lines(result)))}
+            show_issues(
+                new_issues,
+                f"{what_changes} would bring {count(len(new_issues), 'issue')}; the file stays as it was:",
+                lambda line_number: headings.get(line_number, f"line {line_number} of the doc it would leave behind"),
+            )
     result = kept_start.replace("\U0000E054", "\U000FE054") + result
     # The file is replaced in one step, so a reader never sees half of it.
     handle, temporary_name = tempfile.mkstemp(dir=location.parent, prefix=f".{location.name}.", suffix=".tmp")
@@ -412,14 +429,9 @@ def replace_in_chapter(file_name, titles, as_is):
     print(f"{path_text(chapter['path'])}: replaced on line {line_number_at(chapter_text, places[0], chapter['start'])}.")
 
 
-def t_line_ending_lines(kept_start):
-    # A T line's ending stays behind as the text's first line; it has to stay, so the T line keeps its line.
-    return 1 if kept_start.lstrip("﻿") else 0
-
-
-def without_trailing_blank_lines(lines, kept_lines):
+def without_trailing_blank_lines(lines):
     lines = list(lines)
-    while len(lines) > kept_lines and not lines[-1].strip():
+    while lines and not lines[-1].strip():
         lines.pop()
     return lines
 
@@ -428,11 +440,14 @@ def delete_chapter(file_name, titles, as_is):
     refuse_numbers(titles, "delete")
     location, kept_start, text = read_markdown(file_name, as_is)
     lines = split_lines(text)
-    chapter = find_chapter(find_chapters(text, len(lines)), titles)
+    chapters = find_chapters(text, len(lines))
+    chapter = find_chapter(chapters, titles)
+    if all(chapter["start"] <= other["start"] < chapter["end"] for other in chapters):
+        refuse(f"{path_text(chapter['path'])} holds the whole doc, so no chapter would be left; the file stays as it was.")
     kept_lines = lines[:chapter["start"]]
     # When the last chapter goes, the blank lines before it would end the file, so they go too.
     if chapter["end"] == len(lines):
-        kept_lines = without_trailing_blank_lines(kept_lines, t_line_ending_lines(kept_start))
+        kept_lines = without_trailing_blank_lines(kept_lines)
     result = "".join(kept_lines) + "".join(lines[chapter["end"]:])
     save_checked(location, kept_start, result, as_is, "The deletion")
     print(f"{path_text(chapter['path'])}: deleted, {count(chapter['end'] - chapter['start'], 'line')}.")
@@ -466,6 +481,8 @@ def insert_chapter(file_name, place, titles, as_is):
     top_level = min(int(token.tag[1:]) for token in tokens if token.type == "heading_open" and token.level == 0)
     if top_level < named["level"]:
         refuse(f"A {'#' * top_level} heading next to the {'#' * named['level']} chapter {path_text(named['path'])} would pull the chapters after it under itself; the file stays as it was.")
+    if place == "before" and top_level > named["level"] and named["number"] == 1:
+        refuse(f"A {'#' * top_level} chapter before {path_text(named['path'])}, the doc's first chapter, would have nothing to hang under; the file stays as it was.")
     before, new_text, after = splice_chapter(lines, named["end"] if place == "after" else named["start"], new_text, ending)
     result = before + new_text + after
     inserted = next((chapter for chapter in find_chapters(result, len(split_lines(result))) if chapter["start"] == len(split_lines(before))), None)
@@ -509,16 +526,20 @@ def move_chapter(file_name, arguments, as_is):
     remaining = lines[:moved["start"]] + lines[moved["end"]:]
     # A chapter that leaves the end, or arrives there, leaves its blank lines behind, like a deleted one.
     if moved["end"] == len(lines):
-        remaining = without_trailing_blank_lines(lines[:moved["start"]], t_line_ending_lines(kept_start))
+        remaining = without_trailing_blank_lines(lines[:moved["start"]])
     position = named["end"] if place == "after" else named["start"]
     if position >= moved["end"]:
         position -= moved["end"] - moved["start"]
     position = min(position, len(remaining))
     if position == len(remaining):
-        moved_lines = without_trailing_blank_lines(moved_lines, 1)
+        moved_lines = without_trailing_blank_lines(moved_lines)
     ending = "\r\n" if "\r\n" in text else "\n"
     before, moved_text, after = splice_chapter(remaining, position, "".join(moved_lines), ending)
-    save_checked(location, kept_start, before + moved_text + after, as_is, "The move")
+    result = before + moved_text + after
+    if result == text:
+        print(f"{path_text(moved['path'])} already stands {place} {path_text(named['path'])}; nothing changed.")
+        return
+    save_checked(location, kept_start, result, as_is, "The move")
     how = f", {level_words[abs(shift)]} level{'s' if abs(shift) > 1 else ''} {'up' if shift < 0 else 'down'}" if shift else ""
     print(f"{path_text(moved['path'])}: moved {place} {path_text(named['path'])}{how}.")
 

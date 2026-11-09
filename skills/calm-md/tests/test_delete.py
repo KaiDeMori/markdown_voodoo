@@ -38,18 +38,26 @@ def test_the_t_line_stays_on_top(tmp_path, calm_md):
     assert doc.read_bytes() == t_line + b"\n# Doc\n\n## One\n\nfirst\n\n## Three\n\nthird\n"
 
 
-def test_the_t_line_keeps_its_line_ending_when_the_only_chapter_goes(tmp_path, calm_md):
+def test_the_chapter_that_holds_the_whole_doc_is_refused(tmp_path, calm_md):
     doc = tmp_path / "doc.md"
-    doc.write_bytes(t_line + b"\n# Doc\n\nbody\n")
-    assert calm_md("delete", doc, "Doc") == (0, "Doc: deleted, 3 lines.")
-    assert doc.read_bytes() == t_line + b"\n"
+    doc.write_bytes(t_line + b"\n" + nested_doc)
+    exit_code, answer = calm_md("delete", doc, "Doc")
+    assert exit_code == 1
+    assert "whole doc" in answer
+    assert doc.read_bytes() == t_line + b"\n" + nested_doc
 
 
-def test_front_matter_stays_when_the_only_chapter_goes(tmp_path, calm_md):
+def test_front_matter_stays_when_the_first_chapter_goes(tmp_path, calm_md):
     doc = tmp_path / "doc.md"
-    doc.write_bytes(b"---\ntitle: notes\n---\n\n# Doc\n\nbody\n")
-    assert calm_md("delete", doc, "Doc")[0] == 0
-    assert doc.read_bytes() == b"---\ntitle: notes\n---\n"
+    doc.write_bytes(b"---\ntitle: notes\n---\n\n## One\n\nfirst\n\n## Two\n\nsecond\n")
+    assert calm_md("delete", doc, "One")[0] == 0
+    assert doc.read_bytes() == b"---\ntitle: notes\n---\n\n## Two\n\nsecond\n"
+
+
+def test_a_title_with_spaces_given_without_quotes_gets_a_hint(tmp_path, calm_md):
+    doc = tmp_path / "doc.md"
+    doc.write_bytes(b"# Doc\n\n## Scope check\n\nscope\n\n## Other\n\nother\n")
+    assert calm_md("delete", doc, "Scope", "check") == (1, 'No chapter fits Scope > check. A title with spaces goes in quotes: "Scope check"')
 
 
 def test_a_number_is_refused_and_the_file_stays(tmp_path, calm_md):

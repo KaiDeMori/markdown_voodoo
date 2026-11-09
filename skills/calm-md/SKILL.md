@@ -41,6 +41,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - Headings of every level make chapters; a heading inside a list item, a quote, a code block or front matter does not.
 - A title is the heading's plain text: `## Setext *Chapter*` reads as `Setext Chapter`.
 - A title path ends with the chapter's own title and needs only as many parents as it takes: `read notes.md Attachments Steps`. A path that fits more than one chapter is refused, with the candidates.
+  A title with spaces goes in quotes; a path that would fit with quotes says so.
 - Every chapter in the toc has a number, its place in reading order, like `@3`; `toc`, `read` and `find` take it instead of a title path, and the next chapter is `@4`.
   The verbs that change a doc take titles only, so a number that shifted never changes the wrong chapter.
 - `toc` shows the whole tree while it fits on a page of 100 chapters.
@@ -49,6 +50,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - `write` takes the chapter in the shape `read` gives it, heading line first, on stdin; empty input, and input that does not start with a heading line, are refused.
 - `write` changes only the chapter's lines, and the rest of the file stays byte for byte. The new lines take the file's own line endings, and a chapter followed by more ends with a blank line.
 - `write` checks the doc it would leave behind, and refuses if that doc would have issues, so a clean doc stays clean.
+  That doc was never written, so each of its issues names its heading's title path, not a line.
 - `--as-is` skips the check for one call: calm-md works anyway, and says on stderr how many issues wait.
 - A pragma comment cannot silence a rule; calm-md leaves it out of the check.
 - `piko_bello.json` starts quiet, with the heading rules only: one level at a time, `#` headings only, blank lines around headings, no title twice among siblings, one `#` title.
@@ -57,11 +59,13 @@ Start zoomed out, and zoom in only when the answer asks for it:
   The chapter keeps its heading line, and the doc it leaves behind is checked like after `write`.
 - `insert` takes the new chapter on stdin, like `write`, and puts it right after the named chapter, its subchapters included, or, with `before`, right before its heading line.
   The new chapter's level decides where it hangs: the named chapter's level makes a sibling, and a deeper one hangs under the chapter before it.
-  A higher level is refused, since it would pull the chapters after it under itself.
+  A higher level is refused, since it would pull the chapters after it under itself, and so is a deeper one before the doc's first chapter, with nothing to hang under.
 - `delete` takes a chapter out, its subchapters with it; when the last chapter goes, the blank lines it leaves at the end of the file go too.
+  The chapter that holds the whole doc is refused, so a doc is never left without a chapter.
 - `move` takes the moved chapter's title path, then `after` or `before`, then the named chapter's title path; the first `after` or `before` divides the two.
   The moved chapter becomes the named chapter's sibling: it takes that level, and its subchapters shift along.
   A shift past `######`, a shift of an underlined heading, and a move next to itself or into its own subchapters are refused.
+  A move to where the chapter already stands changes nothing, and says so.
 - `insert`, `delete` and `move` keep the rest of the file byte for byte, add only the blank lines a heading needs, and check the doc they would leave behind, like `write`.
 - `find` looks for words that start with the given word, in any case: `fox` finds `Foxes` and `(fox)`, and leaves `outfox` alone.
   Each hit shows its chapter's number and title path, with up to five words on either side from its own line; more than 10 hits give only their count.

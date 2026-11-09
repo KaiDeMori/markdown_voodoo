@@ -49,6 +49,15 @@ def test_the_t_line_stays_on_top(tmp_path, calm_md):
     assert doc.read_bytes() == t_line + b"\n# Doc\n\n## New\n\nnew\n\n## One\n\nfirst\n\n## Two\n\nsecond\n\n### Deep\n\ndeeper\n\n## Three\n\nthird\n"
 
 
+def test_an_issue_names_its_heading_not_a_line_of_the_unwritten_doc(tmp_path, calm_md):
+    doc = tmp_path / "doc.md"
+    doc.write_bytes(nested_doc)
+    exit_code, answer = calm_md("insert", doc, "after", "Two", stdin=b"## One\n\nagain\n")
+    assert exit_code == 1
+    assert "Doc > One: MD024" in answer
+    assert doc.read_bytes() == nested_doc
+
+
 @pytest.mark.parametrize(
     "arguments, stdin, refusal_words",
     [
@@ -57,6 +66,7 @@ def test_the_t_line_stays_on_top(tmp_path, calm_md):
         (("after", "Two"), b"just text\n", "heading line"),
         (("after", "Two"), b"", "Nothing to insert"),
         (("before", "Deep"), new_chapter, "pull"),
+        (("before", "Doc"), new_chapter, "nothing to hang under"),
     ],
 )
 def test_refusals_leave_the_file_as_it_was(tmp_path, calm_md, arguments, stdin, refusal_words):
