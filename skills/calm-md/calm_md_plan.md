@@ -102,7 +102,7 @@ A raven sees a markdown file's chapters, reads one, or writes one, without the w
 - [x] `delete`, with its tests.
 - [x] `insert`, with its tests.
 - [x] `move`, with its tests.
-- [ ] `SKILL.md`, and the usage in `calm_md.sh` and in the docstring.
+- [x] `SKILL.md`, and the usage in `calm_md.sh` and in the docstring.
 - [ ] A raven flies it.
 
 ## Steps

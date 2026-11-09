@@ -2,8 +2,8 @@
 name: calm-md
 description: >-
   hallmark_tool
-  A calm markdown file: its chapters at a glance, one chapter to read, one chapter to write.
-  Use when a raven wants to see how a markdown file is built, read one chapter of it, rewrite one chapter, fix one piece of text in it, or find where a word comes up, without the whole file entering its window.
+  A calm markdown file: its chapters at a glance, one chapter to read, one chapter to write, insert, delete or move.
+  Use when a raven wants to see how a markdown file is built, read one chapter of it, rewrite one chapter, fix one piece of text in it, insert, delete or move a chapter, or find where a word comes up, without the whole file entering its window.
 ---
 
 # calm-md
@@ -13,6 +13,9 @@ calm-md toc [--as-is] [--page <number>] <file> [title ...]
 calm-md read [--as-is] <file> <title> ...
 calm-md write [--as-is] <file> <title> ... < chapter
 calm-md replace [--as-is] <file> <title> ... < old line, new text
+calm-md insert [--as-is] <file> after|before <title> ... < chapter
+calm-md delete [--as-is] <file> <title> ...
+calm-md move [--as-is] <file> <title> ... after|before <title> ...
 calm-md find [--as-is] <file> <word> [title ...]
 ```
 
@@ -28,6 +31,9 @@ Start zoomed out, and zoom in only when the answer asks for it:
 | `read <file> <title> ...` | What does one chapter say? | the chapter's original lines, heading line included |
 | `write <file> <title> ... < chapter` | Change one chapter, and nothing else | `Sample > Receiving: 4 lines became 5 lines.` |
 | `replace <file> <title> ... < old line, new text` | Fix one piece, and send only that | `Doc > Alpha: replaced on line 7.` |
+| `insert <file> after <title> ... < chapter` | Add one chapter next to another | `Doc > New: inserted after Doc > Two, 4 lines.` |
+| `delete <file> <title> ...` | Take one chapter out, subchapters included | `Doc > Two: deleted, 8 lines.` |
+| `move <file> <title> ... after <title> ...` | Restructure: one chapter to a new place | `Doc > Two > Deep: moved after Doc > Two, one level up.` |
 | `find <file> <word> [title ...]` | Where does a word come up? | `@2  Den > Foxes: Many Foxes live here (fox) and none...` |
 
 - A chapter runs from its heading to the next heading of the same or a higher level, so it holds its subchapters, and its weight counts them too.
@@ -36,7 +42,7 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - A title is the heading's plain text: `## Setext *Chapter*` reads as `Setext Chapter`.
 - A title path ends with the chapter's own title and needs only as many parents as it takes: `read notes.md Attachments Steps`. A path that fits more than one chapter is refused, with the candidates.
 - Every chapter in the toc has a number, its place in reading order, like `@3`; `toc`, `read` and `find` take it instead of a title path, and the next chapter is `@4`.
-  `write` and `replace` take titles only, so a number that shifted never changes the wrong chapter.
+  The verbs that change a doc take titles only, so a number that shifted never changes the wrong chapter.
 - `toc` shows the whole tree while it fits on a page of 100 chapters.
   A bigger one shows where you are and the level right below, each chapter with how many are inside it; zoom in with a title path or a number, and turn pages with `--page 2`.
   A title longer than 60 characters is cut, with the count of what was cut.
@@ -49,6 +55,14 @@ Start zoomed out, and zoom in only when the answer asks for it:
 - `replace` takes the old text on stdin's first line and the new text after it, which may span lines; an empty second line deletes the old text, and its line too when the old text is a whole line, so a list keeps no gap.
   The old text has to occur exactly once in the chapter; otherwise calm-md names where it occurs, and nothing changes.
   The chapter keeps its heading line, and the doc it leaves behind is checked like after `write`.
+- `insert` takes the new chapter on stdin, like `write`, and puts it right after the named chapter, its subchapters included, or, with `before`, right before its heading line.
+  The new chapter's level decides where it hangs: the named chapter's level makes a sibling, and a deeper one hangs under the chapter before it.
+  A higher level is refused, since it would pull the chapters after it under itself.
+- `delete` takes a chapter out, its subchapters with it; when the last chapter goes, the blank lines it leaves at the end of the file go too.
+- `move` takes the moved chapter's title path, then `after` or `before`, then the named chapter's title path; the first `after` or `before` divides the two.
+  The moved chapter becomes the named chapter's sibling: it takes that level, and its subchapters shift along.
+  A shift past `######`, a shift of an underlined heading, and a move next to itself or into its own subchapters are refused.
+- `insert`, `delete` and `move` keep the rest of the file byte for byte, add only the blank lines a heading needs, and check the doc they would leave behind, like `write`.
 - `find` looks for words that start with the given word, in any case: `fox` finds `Foxes` and `(fox)`, and leaves `outfox` alone.
   Each hit shows its chapter's number and title path, with up to five words on either side from its own line; more than 10 hits give only their count.
   A title path or a number after the word searches one chapter, its subchapters included.

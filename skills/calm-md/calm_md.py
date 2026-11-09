@@ -1,21 +1,27 @@
-"""calm_md: a markdown file by chapter: its table of contents, one chapter to read, one chapter to write.
+"""calm_md: a markdown file by chapter: its table of contents, one chapter to read, one chapter to write, insert, delete or move.
 
 toc: one line per chapter, indented by level, with its weight in words, an estimate; a title path shows one chapter's part.
 The toc shows the whole tree while it fits on a page; a bigger one shows where you are and the level right below, page by page.
 read: one chapter's original lines, its heading line included.
 write: replaces one chapter's lines with what comes on stdin, in the same shape.
 replace: changes one piece of text inside one chapter: the old text on stdin's first line, the new text after it; the old text has to occur exactly once in the chapter.
+insert: puts the chapter on stdin right after the named chapter, its subchapters included, or right before its heading; a heading higher than the named chapter's is refused.
+delete: takes a chapter out, its subchapters with it.
+move: puts a chapter right after or before the named one, as its sibling: it takes that level, and its subchapters shift along.
 find: the places where words start with one word, case-insensitive, each with its chapter and five words on either side; more than ten give only their count.
 calm-md works only on piko bello markdown: pymarkdownlnt checks the file by piko_bello.json first, and with issues calm-md only lists them.
 --as-is skips that check for one call, and still says how many issues wait.
 The parser only finds the headings; the original lines are cut and spliced, never re-rendered, so everything outside a chapter stays as it was.
 A T line, the doc's token count on its first line, stays where it was, and neither the parser nor the linter sees it.
 A title path ends with the chapter's own title and needs only as many parents as it takes to fit one chapter.
-Every chapter has a number, its place in reading order, written @3; numbers are for looking, in toc and read, and write and replace take titles.
+Every chapter has a number, its place in reading order, written @3; numbers are for looking, in toc, read and find, and the verbs that change a doc take titles.
 Usage: calm_md.py toc [--as-is] [--page <number>] <file> [title ...]
        calm_md.py read [--as-is] <file> <title> ...
        calm_md.py write [--as-is] <file> <title> ... < chapter
        calm_md.py replace [--as-is] <file> <title> ... < old line, new text
+       calm_md.py insert [--as-is] <file> after|before <title> ... < chapter
+       calm_md.py delete [--as-is] <file> <title> ...
+       calm_md.py move [--as-is] <file> <title> ... after|before <title> ...
        calm_md.py find [--as-is] <file> <word> [title ...]
 """
 
