@@ -9,6 +9,8 @@ mkdir "%target%" 2>nul
 
 call :copy_file SKILL.md
 call :copy_file calm_hall_overview.sh
+call :copy_file read_haven_location.py
+call :copy_file calm_hall_overview_settings.json
 
 rem pause
 exit /b

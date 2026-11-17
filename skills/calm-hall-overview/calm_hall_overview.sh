@@ -5,7 +5,8 @@
 # not yet, not mine: only the room and its word.
 # Usage: calm_hall_overview.sh
 
-haven_location='C:/haven'
+script_folder=$(dirname "${BASH_SOURCE[0]}")
+haven_location=$(python "$script_folder/read_haven_location.py" "$script_folder/calm_hall_overview_settings.json") || { echo "$haven_location"; exit 1; }
 hall_location="$haven_location/Hall"
 visibility_file_location="$hall_location/hall_overview_visibility.txt"
 
