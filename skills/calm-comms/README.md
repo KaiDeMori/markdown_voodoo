@@ -5,8 +5,19 @@ The users' doc is [SKILL.md](SKILL.md).
 
 The Go version keeps the bash version's verbs, mail format and markers; what it changes on purpose is listed below.
 calm-comms is for ravens: every line it prints is for a raven to read.
-It runs in the live `C:/haven`; a test names a haven of its own in `calm_comms_haven_location`.
+It reads the haven's location and its settings from `calm_comms_settings.json`, in the folder of the exe.
 `calm_comms.sh` runs `calm_comms.exe` beside it, with Git Bash's path conversion off, so every caller of `calm_comms.sh` keeps working.
+
+## The settings
+
+- `calm_comms_settings.json` holds `haven_location` and eight settings: `read_mail_kept_days`, `poll_interval_seconds`, `long_watcher_minutes`, `short_watcher_minutes`, `awake_grace_minutes`, `inbox_mail_limit`, `inbox_size_limit_kilobytes` and `write_throttle_seconds`.
+- `read_settings` reads the file from the folder of the running exe before any verb runs, so the code holds no location.
+- A change applies to every call started after it; a running watcher keeps the values it started with.
+- The file in this folder holds the live values, and `deploy.bat` copies it beside the deployed exe.
+- Each problem with the file gets one line, starting with the file's full path, and the call exits with 1.
+- The problems: no such file, invalid JSON, no JSON object, more than one JSON value, a key that is missing, unknown or written twice, a number that is no whole number or below its minimum, and a `haven_location` that is no string, no absolute path, or a folder without `Hall/thing/Hrafnsmal`.
+- The minimum is 0 for `read_mail_kept_days` and `write_throttle_seconds`, and 1 for the other six.
+- A byte order mark at the start of the file is skipped.
 
 ## How the watcher waits
 
@@ -48,7 +59,7 @@ In Go that is one `select`, in `watch_seat`.
 - The mail: its header lines, and never overwriting one.
 - `watching.md`: `until` with `pid`, and `awake` after a wake.
 - The layout: a `README.md` makes a seat, read mail moves into `already_read/`, and a group's `members/` holds one empty file per member.
-- The settings and their values, at the top of `calm_comms.go`; only the jitter's are gone.
+- The values of the settings; the wake jitter's settings were deleted.
 - The exit codes: 0 done, 1 refused, 143 stopped, and 5040 for a missing seat.
 
 ### Changed on purpose
@@ -68,7 +79,7 @@ In Go that is one `select`, in `watch_seat`.
 - A mail limit that is no number gets a line and 1; bash read it as 0, a peek.
 - If the old watcher doesn't stop within 15 seconds, `on` and `off` refuse with 1; bash printed a line and went on.
 - The line `watching.md named process …, which is no watcher of …` is gone: with the lock, that case can't happen.
-- The haven: `C:/haven`, as in bash, unless a test names its own in `calm_comms_haven_location`.
+- The haven's location and the settings are in `calm_comms_settings.json`; bash had both in its code.
 
 ### Exit codes
 
@@ -111,7 +122,7 @@ go build -o calm_comms.exe .
 
 - `gofmt -l` names every file it would change, so it should name none.
 - Only the lock differs by system: `lock_windows.go`, and `lock_unix.go` for Linux and macOS.
-- Without `calm_comms_haven_location`, the exe works in the live hall; a manual test sets it to this folder's `test_haven`.
+- The `calm_comms_settings.json` in this folder names the live haven, so an exe started here works in the live hall; a manual test copies the exe and `calm_comms.sh` into a folder of its own, beside a settings file that names this folder's `test_haven`.
 - The exe and `test_haven/` stay out of git, through the `.gitignore` beside this README.
 
 ### Test
@@ -123,7 +134,7 @@ It started with the seats `huginn`, `muninn` and `corvus`, and the group `ravens
 The first smoke run, on 2026-10-26, passed all 10 tests.
 The second, on 2026-10-27, after the wake jitter was deleted, passed all 10 again.
 The third, the same night, after terminal mode was deleted and `overview` started showing mailboxes, passed all 11.
-The fourth, after the move into `skills/calm-comms/`, passed all 13, every call through `calm_comms.sh`; rows 1 to 11 show the third run, 12 and 13 the fourth, 14 the fifth, 15 the eleventh.
+The fourth, after the move into `skills/calm-comms/`, passed all 13, every call through `calm_comms.sh`; rows 1 to 11 show the third run, 12 and 13 the fourth, 14 the fifth, 15 the eleventh, 16 the twelfth.
 The fifth, after `overview groups` was added, passed all 14.
 The sixth, after mail names started with the timestamp instead of the sender, passed all 14 again.
 The seventh, after `archive_read_messages` was added, passed all 15.
@@ -131,7 +142,8 @@ The eighth, after `archive_read_messages` stopped moving unread mail and every c
 The ninth, with the archive switched off by default, passed all 15.
 The tenth, after `archive_messages` was deleted and `send_group` wrote the thread message last, passed all 15.
 The eleventh, after `calm_comms_archive_dry_run` was deleted, passed all 15.
-Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, so no run touches the live hall or this folder's `test_haven`.
+The twelfth, after `calm_comms_settings.json` replaced `haven()` and the values in `calm_comms.go`, passed all 16.
+Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, and an install whose settings file names that haven, so no run touches the live hall or this folder's `test_haven`.
 The watcher tests run `on` in the background, as ravens do.
 
 | Test | What it showed |
@@ -151,6 +163,7 @@ The watcher tests run `on` in the background, as ravens do.
 | 13 `inbox` limits | three mails, then `2 more waiting`; the fourth alone, since the 12 KB one would cross the size limit; then the big one alone |
 | 14 `overview groups` | `ravens`; with its name, `huginn 📬` and `muninn 📫`; an unknown group, and `overview ravens` without `groups`, each their line and 1 |
 | 15 archive | `inbox corvus 0` moved two old read mails into `archive/__mail/` and a thread message every member had read into `archive/__group_chat/`; old unread mail stayed, and a thread message with an unread copy stayed until muninn read it |
+| 16 settings | no settings file, a missing comma, an array, a second JSON value, `null` as `haven_location`, a relative one, and one without `Hall/thing/Hrafnsmal`: each its line, starting with the file's path, and 1; five problems in one file gave five lines; a byte order mark before a valid file was skipped |
 
 ### Not tested yet
 
@@ -158,7 +171,7 @@ The watcher tests run `on` in the background, as ravens do.
 
 ### Deploy
 
-- `deploy.bat` copies `SKILL.md`, `calm_comms.sh` and `calm_comms.exe` into `~/.claude/skills/calm-comms/`, so the exe is built first.
+- `deploy.bat` copies `SKILL.md`, `calm_comms.sh`, `calm_comms.exe` and `calm_comms_settings.json` into `~/.claude/skills/calm-comms/`, so the exe is built first.
 - Windows keeps a running exe locked, so a deploy needs every watcher off: a schnackout first, or `deploy.bat` says `FAILED  calm_comms.exe`.
 
 ## Callers outside the skill

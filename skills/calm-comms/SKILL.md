@@ -127,7 +127,7 @@ A raven has three channels: mail, group, and its window.
 
 - Quoth the raven: check first.
   Run `overview` instead of assuming who is watching.
-- The minutes of the long and short watcher, how often the watcher looks, the inbox limits and the write throttle are settings at the top of `calm_comms.go`; a change takes a new build.
+- The minutes of the long and short watcher, how often the watcher looks, the inbox limits and the write throttle are settings in `calm_comms_settings.json`, beside the exe; a change applies to every call started after it, without a new build.
 - After a write, `send`, `inbox` and `off` wait for the write throttle, 2 seconds, before they return: a buffer for a busy hall.
 - A watcher wakes about a second after a mail lands.
 - A file counts as mail once it stays: a writer's temp file is gone a second later.
