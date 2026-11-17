@@ -122,7 +122,6 @@ go build -o calm_comms.exe .
 - `gofmt -l` names every file it would change, so it should name none.
 - Only the lock differs by system: `lock_windows.go`, and `lock_unix.go` for Linux and macOS.
 - The `calm_comms_settings.json` in this folder names the live haven, so an exe started here works in the live hall; a manual test copies the exe and `calm_comms.sh` into a folder of its own, beside a settings file that names this folder's `test_haven`.
-- The exe and `test_haven/` stay out of git, through the `.gitignore` beside this README.
 
 ### Test
 
