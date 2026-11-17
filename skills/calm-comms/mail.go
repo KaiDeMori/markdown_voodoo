@@ -189,6 +189,27 @@ func read_members(group_name string) []string {
 	return members
 }
 
+func move_thread_messages_read_by_all() {
+	for _, group := range group_names() {
+		group_folder := filepath.Join(group_chat_location, group)
+		members := read_members(group)
+		for _, entry := range message_entries(group_folder) {
+			if read_by_every_member(members, entry.Name()) {
+				move_message(group_folder, entry.Name(), filepath.Join(group_folder, "already_read"))
+			}
+		}
+	}
+}
+
+func read_by_every_member(members []string, message_name string) bool {
+	for _, member := range members {
+		if exists(filepath.Join(hrafnsmal_location, member, message_name)) {
+			return false
+		}
+	}
+	return true
+}
+
 func member_count(count int) string {
 	if count == 1 {
 		return "1 member"

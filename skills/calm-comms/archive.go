@@ -12,49 +12,41 @@ const message_name_stamp_layout = "2006-01-02_150405"
 func archive_read_messages() {
 	oldest_kept_moment := time.Now().AddDate(0, 0, -read_mail_kept_days)
 	for _, seat := range folder_names(hrafnsmal_location) {
-		seat_folder := filepath.Join(hrafnsmal_location, seat)
-		if !is_file(filepath.Join(seat_folder, "README.md")) {
-			continue
-		}
-		read_folder := filepath.Join(seat_folder, "already_read")
-		for _, entry := range message_entries(read_folder) {
-			if moment, known := message_moment(entry); known && moment.Before(oldest_kept_moment) {
-				archive_message(read_folder, entry.Name(), filepath.Join(archive_location, "mail", moment.Format("2006-01"), seat, "already_read"))
-			}
+		if is_file(filepath.Join(hrafnsmal_location, seat, "README.md")) {
+			archive_old_messages(filepath.Join(hrafnsmal_location, seat, "already_read"), "mail", seat, oldest_kept_moment)
 		}
 	}
-	for _, group := range folder_names(group_chat_location) {
-		group_folder := filepath.Join(group_chat_location, group)
-		if !is_folder(filepath.Join(group_folder, "members")) {
-			continue
-		}
-		members := read_members(group)
-		for _, entry := range message_entries(group_folder) {
-			if moment, known := message_moment(entry); known && moment.Before(oldest_kept_moment) && read_by_every_member(members, entry.Name()) {
-				archive_message(group_folder, entry.Name(), filepath.Join(archive_location, "group_chat", moment.Format("2006-01"), group))
-			}
+	for _, group := range group_names() {
+		archive_old_messages(filepath.Join(group_chat_location, group, "already_read"), "group_chat", group, oldest_kept_moment)
+	}
+}
+
+func archive_old_messages(read_folder string, message_kind string, owner_name string, oldest_kept_moment time.Time) {
+	for _, entry := range message_entries(read_folder) {
+		if moment, known := message_moment(entry); known && moment.Before(oldest_kept_moment) {
+			move_message(read_folder, entry.Name(), filepath.Join(archive_location, moment.Format("2006-01"), message_kind, owner_name))
 		}
 	}
 }
 
-func read_by_every_member(members []string, message_name string) bool {
-	for _, member := range members {
-		if exists(filepath.Join(hrafnsmal_location, member, message_name)) {
-			return false
-		}
-	}
-	return true
-}
-
-func archive_message(folder string, message_name string, archive_folder string) {
-	source_location := filepath.Join(folder, message_name)
-	archived_location := filepath.Join(archive_folder, message_name)
-	if exists(archived_location) {
+func move_message(folder string, message_name string, target_folder string) {
+	target_location := filepath.Join(target_folder, message_name)
+	if exists(target_location) {
 		return
 	}
-	if os.MkdirAll(archive_folder, 0o755) == nil {
-		os.Rename(source_location, archived_location)
+	if os.MkdirAll(target_folder, 0o755) == nil {
+		os.Rename(filepath.Join(folder, message_name), target_location)
 	}
+}
+
+func group_names() []string {
+	names := []string{}
+	for _, name := range folder_names(group_chat_location) {
+		if is_folder(filepath.Join(group_chat_location, name, "members")) {
+			names = append(names, name)
+		}
+	}
+	return names
 }
 
 func message_entries(folder string) []os.DirEntry {

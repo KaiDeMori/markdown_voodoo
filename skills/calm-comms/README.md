@@ -25,9 +25,9 @@ The reasons behind the code of calm-comms.
 
 ## The archive
 
-- The archive moves only read mail: mail at the top of a seat is unread, and it stays there until `inbox` prints it.
-- `group` writes the thread message after every member's copy, so `archive_read_messages` sees a thread message only once all its copies exist.
-- A file whose move fails stays where it is: the next call tries again, and the verb that called `archive_read_messages` continues.
+- The archive moves mail only out of `already_read/` folders, a seat's or a group's: mail at the top of a seat is unread, and a thread message at the top of a group is unread by at least one member.
+- `group` writes the thread message after every member's copy, so `move_thread_messages_read_by_all` sees a thread message only once all its copies exist.
+- A file whose move fails stays where it is: the next call tries again, and the current verb continues.
 - Old archive folders are deleted by hand.
 
 ## Build

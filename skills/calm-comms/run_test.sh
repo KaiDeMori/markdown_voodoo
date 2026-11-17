@@ -153,24 +153,26 @@ run overview ravens
 echo '--- 15 archive'
 calm_comms inbox huginn 100 > /dev/null
 mkdir -p "$hrafnsmal/huginn/already_read"
-echo 'Old and unread: stays.' > "$hrafnsmal/huginn/2026-01-05_100000_from_muninn.md"
-echo 'Old and read: moves.' > "$hrafnsmal/huginn/already_read/2026-01-04_100000_from_corvus.md"
-echo 'Old, read, without a stamp: moves by its file time.' > "$hrafnsmal/huginn/already_read/a_note_without_a_stamp.md"
+echo 'Old and unread: stays at the top of huginn.' > "$hrafnsmal/huginn/2026-01-05_100000_from_muninn.md"
+echo 'Old and read: moves into the archive.' > "$hrafnsmal/huginn/already_read/2026-01-04_100000_from_corvus.md"
+echo 'Old and read, without a stamp: moves into the archive by its file time.' > "$hrafnsmal/huginn/already_read/a_note_without_a_stamp.md"
 touch -d '2026-03-01 12:00' "$hrafnsmal/huginn/already_read/a_note_without_a_stamp.md"
-echo 'Read by every member: moves.' > "$group_chat/ravens/2026-02-01_090000_from_huginn.md"
-echo 'Still unread at muninn: stays.' > "$group_chat/ravens/2026-02-02_090000_from_huginn.md"
+echo 'Old and read by every member: moves into already_read, then into the archive.' > "$group_chat/ravens/2026-02-01_090000_from_huginn.md"
+echo 'Old and unread at muninn: stays at the top of ravens until muninn reads it.' > "$group_chat/ravens/2026-02-02_090000_from_huginn.md"
 cp "$group_chat/ravens/2026-02-02_090000_from_huginn.md" "$hrafnsmal/muninn/"
-echo 'Read by every member, but 2 days old: stays.' > "$group_chat/ravens/$(date -d '2 days ago' '+%Y-%m-%d_%H%M%S')_from_huginn.md"
+echo 'Read by every member, 2 days old: moves into already_read and stays there.' > "$group_chat/ravens/$(date -d '2 days ago' '+%Y-%m-%d_%H%M%S')_from_huginn.md"
+show_files() {
+  find "$haven/archive" "$hrafnsmal/huginn" "$group_chat/ravens" -type f -not -name README.md -not -name watching.md -not -path '*/members/*' 2>/dev/null | sort | while IFS= read -r file; do
+    echo "    ${file#"$haven"/}: $(tail -n 1 "$file")"
+  done
+}
 run inbox corvus 0
-echo '  in the archive:'
-find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"
-echo '  muninn reads its copies; the next call moves the thread messages older than 7 days:'
+echo '  after one call, each file with its last line:'
+show_files
+echo '  after muninn has read its copies, and one more call:'
 calm_comms inbox muninn 100 > /dev/null
 calm_comms inbox corvus 0 > /dev/null
-find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"
-echo '  still in the hall:'
-ls "$hrafnsmal/huginn" | sed 's/^/    huginn: /'
-ls "$group_chat/ravens" | sed 's/^/    ravens: /'
+show_files
 
 echo '--- 16 settings'
 install_calm_comms "$refusal_location"

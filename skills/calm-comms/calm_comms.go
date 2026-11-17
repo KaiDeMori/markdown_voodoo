@@ -65,6 +65,7 @@ func main() {
 		}
 	case "inbox":
 		check_seat(seat_name)
+		move_thread_messages_read_by_all()
 		archive_read_messages()
 		show_inbox(read_mail_limit())
 	case "send":
@@ -75,12 +76,14 @@ func main() {
 			os.Exit(exit_refused)
 		}
 		check_seat(target_seat_name)
+		move_thread_messages_read_by_all()
 		archive_read_messages()
 		send_mail(target_seat_name, text_from(4))
 	case "group":
 		group_name := argument(3)
 		check_seat(seat_name)
 		check_group(group_name)
+		move_thread_messages_read_by_all()
 		archive_read_messages()
 		send_group(group_name, text_from(4))
 	case "join", "leave":
