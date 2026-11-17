@@ -121,7 +121,7 @@ func send_group(group_name string, mail_text string) {
 		os.Exit(exit_refused)
 	}
 	file_name := mail_file_name()
-	locations := []string{filepath.Join(group_chat_location, group_name, file_name)}
+	locations := []string{}
 	for _, member := range members {
 		if member == seat_name {
 			continue
@@ -132,6 +132,7 @@ func send_group(group_name string, mail_text string) {
 		}
 		locations = append(locations, filepath.Join(hrafnsmal_location, member, file_name))
 	}
+	locations = append(locations, filepath.Join(group_chat_location, group_name, file_name))
 	for _, location := range locations {
 		if exists(location) {
 			fmt.Println("One mail per second; send it again in a moment.")

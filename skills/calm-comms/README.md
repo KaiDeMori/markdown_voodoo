@@ -87,6 +87,7 @@ Callers only tell zero from not zero, and the line says why.
 - `inbox`, `send` and `group` call `archive_read_messages` right after their checks pass.
 - Read mail in a seat's `already_read/` moves after `read_mail_kept_days`, 7, to `haven:/archive/__mail/<YYYY-MM>/<seat>/already_read/`.
 - A thread message moves as soon as no member has its copy unread at the top of their seat, to `haven:/archive/__group_chat/<YYYY-MM>/<group>/`.
+- `group` writes the thread message last, after every member's copy, so the archive never takes a thread message whose copies are still on their way.
 - Unread mail never moves: a file's place says whether it was read, and a move has to keep that.
 - The month comes from the stamp a message's name begins with, or from its file time when the name has none.
 - A name that is already in the archive keeps its place there, and the newcomer stays where it was.
