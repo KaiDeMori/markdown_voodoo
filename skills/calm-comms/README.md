@@ -87,7 +87,7 @@ Callers only tell zero from not zero, and the line says why.
 - `inbox`, `send` and `group` call `archive_read_messages` right after their checks pass.
 - Read mail in a seat's `already_read/` moves after `read_mail_kept_days`, 7, to `haven:/archive/__mail/<YYYY-MM>/<seat>/already_read/`.
 - A thread message moves as soon as no member has its copy unread at the top of their seat, to `haven:/archive/__group_chat/<YYYY-MM>/<group>/`.
-- `group` writes the thread message last, after every member's copy, so the archive never takes a thread message whose copies are still on their way.
+- `group` writes the thread message last, after every member's copy, so `archive_read_messages` never moves a thread message whose copies are not yet written.
 - Unread mail never moves: a file's place says whether it was read, and a move has to keep that.
 - The month comes from the stamp a message's name begins with, or from its file time when the name has none.
 - A name that is already in the archive keeps its place there, and the newcomer stays where it was.
@@ -130,7 +130,7 @@ The sixth, after the mail names turned around, passed all 14 again.
 The seventh, after the archive came, passed all 15.
 The eighth, after unread mail stopped moving and every comment was deleted, passed all 15.
 The ninth, with the archive switched off by default, passed all 15.
-The tenth, after the switch went and the thread message came last, passed all 15.
+The tenth, after `archive_messages` was deleted and `send_group` wrote the thread message last, passed all 15.
 Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, so the live hall and this folder's `test_haven` never see a run.
 The watcher tests run `on` in the background, as ravens do.
 
