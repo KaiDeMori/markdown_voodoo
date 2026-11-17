@@ -96,14 +96,13 @@ Callers only tell zero from not zero, and the line says why.
 ## The archive
 
 - `inbox`, `send` and `group` call `archive_read_messages` right after their checks pass.
-- Read mail in a seat's `already_read/` moves after `read_mail_kept_days`, 7, to `haven:/archive/__mail/<YYYY-MM>/<seat>/already_read/`.
-- A thread message moves as soon as no member has its copy unread at the top of their seat, to `haven:/archive/__group_chat/<YYYY-MM>/<group>/`.
+- Read mail in a seat's `already_read/` moves after `read_mail_kept_days`, 7, to `haven:/archive/mail/<YYYY-MM>/<seat>/already_read/`.
+- A thread message moves as soon as no member has its copy unread at the top of their seat, to `haven:/archive/group_chat/<YYYY-MM>/<group>/`.
 - `group` writes the thread message last, after every member's copy, so `archive_read_messages` never moves a thread message whose copies are not yet written.
 - Unread mail never moves: a file's place says whether it was read, and a move has to keep that.
 - The month comes from the stamp a message's name begins with, or from its file time when the name has none.
 - A name that is already in the archive keeps its place there, and the newcomer stays where it was.
 - A move that fails waits for the next call, and never stops the call it rides on.
-- The archive folders start with `__`, so the haven's `.gitignore` covers them, like the mail itself.
 - Old archive folders are deleted by hand.
 
 ## Build, test, deploy
@@ -143,6 +142,7 @@ The ninth, with the archive switched off by default, passed all 15.
 The tenth, after `archive_messages` was deleted and `send_group` wrote the thread message last, passed all 15.
 The eleventh, after `calm_comms_archive_dry_run` was deleted, passed all 15.
 The twelfth, after `calm_comms_settings.json` replaced `haven()` and the values in `calm_comms.go`, passed all 16.
+The thirteenth, after the archive folders `__mail` and `__group_chat` were renamed to `mail` and `group_chat`, passed all 16.
 Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, and an install whose settings file names that haven, so no run touches the live hall or this folder's `test_haven`.
 The watcher tests run `on` in the background, as ravens do.
 
@@ -162,7 +162,7 @@ The watcher tests run `on` in the background, as ravens do.
 | 12 beyond ASCII | umlauts, Ⓦ, 📬 and a second line starting with `/` arrived exactly as sent; straight into the exe, without `calm_comms.sh`, `/ok` became `C:/Program Files/Git/ok` |
 | 13 `inbox` limits | three mails, then `2 more waiting`; the fourth alone, since the 12 KB one would cross the size limit; then the big one alone |
 | 14 `overview groups` | `ravens`; with its name, `huginn 📬` and `muninn 📫`; an unknown group, and `overview ravens` without `groups`, each their line and 1 |
-| 15 archive | `inbox corvus 0` moved two old read mails into `archive/__mail/` and a thread message every member had read into `archive/__group_chat/`; old unread mail stayed, and a thread message with an unread copy stayed until muninn read it |
+| 15 archive | `inbox corvus 0` moved two old read mails into `archive/mail/` and a thread message every member had read into `archive/group_chat/`; old unread mail stayed, and a thread message with an unread copy stayed until muninn read it |
 | 16 settings | no settings file, a missing comma, an array, a second JSON value, `null` as `haven_location`, a relative one, and one without `Hall/thing/Hrafnsmal`: each its line, starting with the file's path, and 1; five problems in one file gave five lines; a byte order mark before a valid file was skipped |
 
 ### Not tested yet

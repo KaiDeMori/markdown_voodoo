@@ -19,7 +19,7 @@ func archive_read_messages() {
 		read_folder := filepath.Join(seat_folder, "already_read")
 		for _, entry := range message_entries(read_folder) {
 			if moment, known := message_moment(entry); known && moment.Before(oldest_kept_moment) {
-				archive_message(read_folder, entry.Name(), filepath.Join(archive_location, "__mail", moment.Format("2006-01"), seat, "already_read"))
+				archive_message(read_folder, entry.Name(), filepath.Join(archive_location, "mail", moment.Format("2006-01"), seat, "already_read"))
 			}
 		}
 	}
@@ -31,7 +31,7 @@ func archive_read_messages() {
 		members := read_members(group)
 		for _, entry := range message_entries(group_folder) {
 			if moment, known := message_moment(entry); known && read_by_every_member(members, entry.Name()) {
-				archive_message(group_folder, entry.Name(), filepath.Join(archive_location, "__group_chat", moment.Format("2006-01"), group))
+				archive_message(group_folder, entry.Name(), filepath.Join(archive_location, "group_chat", moment.Format("2006-01"), group))
 			}
 		}
 	}
