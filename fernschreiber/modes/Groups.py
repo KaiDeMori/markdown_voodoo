@@ -9,7 +9,7 @@ from textual.widgets import Static, TextArea
 
 import settings
 from calm_comms import Group, group_snapshot, join_or_leave, read_groups, send_mail, thread_files
-from Mail import read_mail
+from Mail import read_mail_where_it_lies
 from Widgets import Divider_line, Message_area, Rule_line, Title_list, clock_text
 
 
@@ -124,7 +124,9 @@ class Groups_screen(Screen):
             return
         widgets = []
         for file in thread_files(group.name)[-settings.GROUP_THREAD_COUNT:]:
-            mail = read_mail(file)
+            mail = read_mail_where_it_lies(file)
+            if mail is None:
+                continue
             own = mail.sender == settings.OWN_SEAT
             widgets.append(Static(f"{mail.time}  {'-> ' if own else ''}{mail.sender}", markup=False, classes="thread_entry mail_head"))
             widgets.append(Static(mail.text, markup=False, classes="thread_entry mail_body sent" if own else "thread_entry mail_body"))

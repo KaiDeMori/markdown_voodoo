@@ -42,6 +42,16 @@ def read_mail(file_location: Path) -> Mail:
     return Mail(display_time(moment), file_location.name, content.strip("\n"))
 
 
+def read_mail_where_it_lies(file_location: Path) -> Mail | None:
+    """Reads a mail that may have moved into its folder's already_read since it was listed; None when it is gone."""
+    for location in (file_location, file_location.parent / "already_read" / file_location.name):
+        try:
+            return read_mail(location)
+        except FileNotFoundError:
+            pass
+    return None
+
+
 def recent_direct_mails(count: int) -> list[Mail]:
     """The last mails to the own seat, oldest first; group mails are skipped on the way back, since they live in their threads."""
     mails = []

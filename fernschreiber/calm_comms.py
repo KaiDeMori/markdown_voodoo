@@ -1,6 +1,7 @@
 """The bridge to calm-comms: every call to calm_comms.sh goes through here."""
 
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,6 +19,8 @@ WATCHING_MAILBOXES = ("📬", "📭")
 CALM_COMMS_OPTIONS = dict(stdin=subprocess.DEVNULL, env=CALM_COMMS_ENVIRONMENT)
 # The text goes in on stdin, so the Windows command line never carries it: no quoting, no globbing.
 SEND_SCRIPT = 'exec bash "$0" "$1" "$2" "$3" "$(cat)"'
+# A mail's file name carries the moment it was written, and these moments sort the way time runs.
+MAIL_MOMENT = re.compile(r"\d{4}-\d{2}-\d{2}_\d{6}")
 
 
 @dataclass
@@ -70,19 +73,28 @@ def read_groups() -> list[Group]:
 
 
 def group_snapshot() -> tuple:
-    """What the groups look like right now: each group's name, its members and its thread files; equal snapshots mean nothing changed."""
+    """What the groups look like right now: each group's name, its members and its thread's mail names; equal snapshots mean nothing changed."""
     snapshot = []
     for group in read_groups():
-        threads = tuple(sorted(file.name for file in (settings.GROUP_CHAT / group.name).glob("*.md")))
+        # Names, not places: a mail that every member has read moves into already_read, and the thread stays the same.
+        threads = tuple(file.name for file in thread_files(group.name))
         snapshot.append((group.name, tuple(group.members), threads))
     return tuple(snapshot)
 
 
 def thread_files(group_name: str) -> list[Path]:
-    """A group's thread: its mail files, oldest first."""
+    """A group's thread, oldest first: the mails still on their way to a reader, and those every member has read, in already_read."""
     folder = settings.GROUP_CHAT / group_name
-    files = [file for file in folder.glob("*.md") if file.is_file() and file.name != "README.md"]
-    return sorted(files, key=lambda file: file.stat().st_mtime)
+    # Listed before already_read, so a mail that moves in between still turns up there.
+    files = {file.name: file for file in folder.glob("*.md") if file.is_file() and file.name != "README.md"}
+    files.update({file.name: file for file in (folder / "already_read").glob("*.md") if file.is_file()})
+    return sorted(files.values(), key=mail_moment)
+
+
+def mail_moment(file: Path) -> tuple[str, str]:
+    """Sorts by the moment in a mail's file name, which a move into already_read never changes; a name without one sorts by itself."""
+    moment = MAIL_MOMENT.search(file.name)
+    return (moment.group() if moment else file.name, file.name)
 
 
 def join_or_leave(verb: str, group_name: str) -> tuple[bool, str]:
