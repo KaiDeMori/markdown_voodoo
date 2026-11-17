@@ -21,6 +21,8 @@ CALM_COMMS_OPTIONS = dict(stdin=subprocess.DEVNULL, env=CALM_COMMS_ENVIRONMENT)
 SEND_SCRIPT = 'exec bash "$0" "$1" "$2" "$3" "$(cat)"'
 # A mail's file name carries the moment it was written, and these moments sort the way time runs.
 MAIL_MOMENT = re.compile(r"\d{4}-\d{2}-\d{2}_\d{6}")
+# A group's name becomes a folder's name and a word in calm-comms commands.
+GROUP_NAME = re.compile(r"[A-Za-z0-9_-]+")
 
 
 @dataclass
@@ -102,6 +104,33 @@ def join_or_leave(verb: str, group_name: str) -> tuple[bool, str]:
     result = run_calm_comms(verb, settings.OWN_SEAT, group_name)
     output = (result.stdout + result.stderr).decode("utf-8", "replace").strip()
     return result.returncode == 0, output or f"calm-comms stopped with exit code {result.returncode}"
+
+
+def new_group_problem(group_name: str, purpose: str) -> str | None:
+    """Why a group by this name can't be created, or None when it can."""
+    if not group_name:
+        return "the first line names the new group"
+    if not GROUP_NAME.fullmatch(group_name):
+        return f"{group_name}: a group's name takes only letters, digits, _ and -"
+    if (settings.GROUP_CHAT / group_name).exists():
+        return f"#{group_name} exists already"
+    if (settings.HRAFNSMAL / group_name).exists():
+        return f"{group_name} is a seat's name"
+    if not purpose:
+        return "the second line says what the group is for; it goes into the README"
+    return None
+
+
+def create_group(group_name: str, purpose: str) -> str:
+    """Creates the group's folder, its members folder and a README that says what it is for, then joins the own seat; returns the line to show."""
+    folder = settings.GROUP_CHAT / group_name
+    try:
+        folder.mkdir()
+        (folder / "members").mkdir()
+        (folder / "README.md").write_text(f"# {group_name}\n\n{purpose}\n", encoding="utf-8")
+    except OSError as error:
+        return f"#{group_name} could not be created: {error.strerror or error}"
+    return join_or_leave("join", group_name)[1]
 
 
 def read_mailboxes() -> dict[str, str] | None:

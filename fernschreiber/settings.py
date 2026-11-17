@@ -12,7 +12,7 @@ N06BC01_FIRST_LINE = "☕ N06BC01: please wake these ravens and ask them to schn
 HALLMASTER_SEAT = "hallmaster"
 CATALOG_KEY_HINTS = "[A] add  [N] note  [Del] remove  [Esc] back"
 CATALOG_META_VARIABLE = "calm_email_catalog_meta"
-GROUPS_KEY_HINTS = "[J/L] join/leave  [^Enter] post  [F6] help"
+GROUPS_KEY_HINTS = "[J/L] join/leave  [N] new  [^Enter] post  [F6] help"
 GROUP_THREAD_COUNT = 50
 GROUP_REFRESH_SECONDS = 10
 HELP_TEXT = """\
@@ -56,9 +56,10 @@ In the groups
 Tab          next pane: groups, thread, input
 Up/Down      in the groups: pick a group, and see its thread
 J / L        in the groups: join / leave the group under ">"
+N            in the groups: a new group; line 1 its name, line 2 what it is for
 Enter        new line
-Ctrl+Enter   post to the selected group
-Esc          back to the input
+Ctrl+Enter   post to the selected group; after N, create the new one
+Esc          back to the input; after N, drop the new group
 
 ^ stands for Ctrl."""
 

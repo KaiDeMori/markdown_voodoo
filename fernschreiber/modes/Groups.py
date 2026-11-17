@@ -8,23 +8,24 @@ from textual.screen import Screen
 from textual.widgets import Static, TextArea
 
 import settings
-from calm_comms import Group, group_snapshot, join_or_leave, read_groups, send_mail, thread_files
+from calm_comms import Group, create_group, group_snapshot, join_or_leave, new_group_problem, read_groups, send_mail, thread_files
 from Mail import read_mail_where_it_lies
 from Widgets import Divider_line, Message_area, Rule_line, Title_list, clock_text
 
 
 class Groups_screen(Screen):
-    """The groups: yours lit, the others dimmed with their member count; the selected group's thread; an input that posts with `group`."""
+    """The groups: yours lit, the others dimmed with their member count; the selected group's thread; an input that posts with `group`, or names a new group after N."""
 
     BINDINGS = [
         Binding("ctrl+enter", "post", show=False, priority=True),
         Binding("pageup", "scroll_thread(-1)", show=False, priority=True),
         Binding("pagedown", "scroll_thread(1)", show=False, priority=True),
-        # Up, Down, J and L reach the screen only when the focused pane leaves them alone, which the list does.
+        # Up, Down, J, L and N reach the screen only when the focused pane leaves them alone, which the list does.
         Binding("up", "move(-1)", show=False),
         Binding("down", "move(1)", show=False),
         Binding("j", "membership('join')", show=False),
         Binding("l", "membership('leave')", show=False),
+        Binding("n", "new_group", show=False),
         Binding("escape", "focus_input", show=False),
     ]
 
@@ -34,6 +35,9 @@ class Groups_screen(Screen):
         self.shown_group = ""
         self.last_snapshot: tuple = ()
         self.busy = False
+        self.creating_group = False
+        # While the input names a new group, the post that was being written waits here.
+        self.post_draft = ""
 
     def compose(self) -> ComposeResult:
         yield Rule_line(left="GROUPS", right=clock_text(), id="top_rule", classes="rule")
@@ -113,11 +117,10 @@ class Groups_screen(Screen):
         group = self.selected
         self.thread.remove_children(".thread_entry")
         self.show_members()
+        self.update_prompt()
         if group is None:
             self.thread_title.update("")
-            self.prompt_label.update(" to ...: ")
             return
-        self.prompt_label.update(f" to #{group.name}: ")
         self.thread_title.update(f"#{group.name}")
         if not group.joined:
             self.thread.mount(Static("You're not in this group. J joins it.", markup=False, classes="thread_entry mail_head"))
@@ -145,6 +148,12 @@ class Groups_screen(Screen):
         members = [f"{member} {self.app.mailboxes.get(member, '')}".rstrip() for member in group.members]
         self.members_label.update(", ".join(members) or "no members")
 
+    def update_prompt(self) -> None:
+        if self.creating_group:
+            self.prompt_label.update(" new group: ")
+        else:
+            self.prompt_label.update(f" to #{self.selected.name}: " if self.selected else " to ...: ")
+
     def mail_arrived(self) -> None:
         """Called by the app whenever mail came in: the thread may have grown, so no need to wait for the next look."""
         self.reload()
@@ -156,6 +165,10 @@ class Groups_screen(Screen):
         self.show_thread()
 
     def action_focus_input(self) -> None:
+        """Esc goes back to the input; while the input names a new group, it drops the new group."""
+        if self.creating_group and not self.busy:
+            self.end_new_group()
+            self.say("no new group")
         self.message_area.focus()
 
     def action_scroll_thread(self, step: int) -> None:
@@ -178,9 +191,58 @@ class Groups_screen(Screen):
         self.say(line)
         self.reload()
 
+    # A new group
+
+    def action_new_group(self) -> None:
+        """N turns the input into the new group's lines, only while the list has the focus."""
+        if not self.group_list.has_focus or self.busy or self.creating_group:
+            return
+        self.creating_group = True
+        self.post_draft = self.message_area.text
+        self.message_area.clear()
+        self.update_prompt()
+        self.message_area.focus()
+        self.say("its name on the first line, what it is for on the second; Ctrl+Enter creates it, Esc drops it")
+
+    def create_new_group(self) -> None:
+        """The first line names the group, the rest goes into its README."""
+        name, _, purpose = self.message_area.text.strip().partition("\n")
+        name, purpose = name.strip(), purpose.strip()
+        problem = new_group_problem(name, purpose)
+        if problem:
+            self.say(problem)
+            return
+        self.busy = True
+        self.message_area.read_only = True
+        self.say(f"creating #{name} ...")
+        self.run_worker(lambda: self.app.post(self.new_group_done, name, create_group(name, purpose)), thread=True, group="groups")
+
+    def new_group_done(self, name: str, line: str) -> None:
+        """Shows the answer; a group that now stands is selected, and the input takes back the post that was being written."""
+        self.busy = False
+        self.message_area.read_only = False
+        self.say(line)
+        self.reload()
+        names = [group.name for group in self.groups]
+        if name in names:
+            self.end_new_group()
+            self.group_list.selected = names.index(name)
+            self.group_list.redraw()
+            self.show_thread()
+
+    def end_new_group(self) -> None:
+        self.creating_group = False
+        self.message_area.load_text(self.post_draft)
+        self.post_draft = ""
+        self.update_prompt()
+
     # Posting
 
     def action_post(self) -> None:
+        if self.creating_group:
+            if not self.busy:
+                self.create_new_group()
+            return
         group = self.selected
         text = self.message_area.text.strip()
         if self.busy or group is None or not text:
