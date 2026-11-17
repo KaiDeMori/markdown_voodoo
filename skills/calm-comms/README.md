@@ -121,17 +121,17 @@ The tool never creates a haven: a seat is a folder in `test_haven/Hall/thing/Hra
 It started with the seats `huginn`, `muninn` and `corvus`, and the group `ravens` with huginn and muninn.
 
 The first smoke run, on 2026-10-26, passed all 10 tests.
-The second, on 2026-10-27, after the jitter went, passed all 10 again.
-The third, the same night, after terminal mode went and the mailboxes came, passed all 11.
-The fourth, after the move into `skills/calm-comms/`, passed all 13, every call through `calm_comms.sh`; the table shows the third, with 12 and 13 from the fourth.
-The fifth, after `overview groups` came, passed all 14.
-The sixth, after the mail names turned around, passed all 14 again.
-The seventh, after the archive came, passed all 15.
-The eighth, after unread mail stopped moving and every comment was deleted, passed all 15.
+The second, on 2026-10-27, after the wake jitter was deleted, passed all 10 again.
+The third, the same night, after terminal mode was deleted and `overview` started showing mailboxes, passed all 11.
+The fourth, after the move into `skills/calm-comms/`, passed all 13, every call through `calm_comms.sh`; rows 1 to 11 show the third run, 12 and 13 the fourth, 14 the fifth, 15 the eleventh.
+The fifth, after `overview groups` was added, passed all 14.
+The sixth, after mail names started with the timestamp instead of the sender, passed all 14 again.
+The seventh, after `archive_read_messages` was added, passed all 15.
+The eighth, after `archive_read_messages` stopped moving unread mail and every comment was deleted, passed all 15.
 The ninth, with the archive switched off by default, passed all 15.
 The tenth, after `archive_messages` was deleted and `send_group` wrote the thread message last, passed all 15.
 The eleventh, after `calm_comms_archive_dry_run` was deleted, passed all 15.
-Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, so the live hall and this folder's `test_haven` never see a run.
+Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, so no run touches the live hall or this folder's `test_haven`.
 The watcher tests run `on` in the background, as ravens do.
 
 | Test | What it showed |

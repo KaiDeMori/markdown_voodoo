@@ -141,7 +141,7 @@ cp "$group_chat/ravens/2026-02-02_090000_from_huginn.md" "$hrafnsmal/muninn/"
 run inbox corvus 0
 echo '  in the archive:'
 find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"
-echo '  muninn reads its copies, and the next call takes their thread messages along:'
+echo '  muninn reads its copies; the next call moves their thread messages:'
 calm_comms inbox muninn 100 > /dev/null
 calm_comms inbox corvus 0 > /dev/null
 find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"
