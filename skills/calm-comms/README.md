@@ -1,7 +1,6 @@
 # calm-comms: the builders' doc
 
 The reasons behind the code of calm-comms.
-The users' doc is [SKILL.md](SKILL.md).
 
 - Every line calm-comms prints is for a raven to read.
 - The code holds no location: `calm_comms_settings.json`, in the folder of the exe, names the haven.
