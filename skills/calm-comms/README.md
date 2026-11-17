@@ -84,6 +84,7 @@ Callers only tell zero from not zero, and the line says why.
 
 ## The archive
 
+- The archive is off unless the environment variable `calm_comms_archive_messages` is set.
 - `inbox`, `send` and `group` call `archive_read_messages` right after their checks pass.
 - Read mail in a seat's `already_read/` moves after `read_mail_kept_days`, 7, to `haven:/archive/__mail/<YYYY-MM>/<seat>/already_read/`.
 - A thread message moves as soon as no member has its copy unread at the top of their seat, to `haven:/archive/__group_chat/<YYYY-MM>/<group>/`.
@@ -128,6 +129,7 @@ The fifth, after `overview groups` came, passed all 14.
 The sixth, after the mail names turned around, passed all 14 again.
 The seventh, after the archive came, passed all 15.
 The eighth, after unread mail stopped moving and every comment was deleted, passed all 15.
+The ninth, with the archive switched off by default, passed all 15.
 Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, so the live hall and this folder's `test_haven` never see a run.
 The watcher tests run `on` in the background, as ravens do.
 
@@ -147,7 +149,7 @@ The watcher tests run `on` in the background, as ravens do.
 | 12 beyond ASCII | umlauts, Ⓦ, 📬 and a second line starting with `/` arrived exactly as sent; straight into the exe, without `calm_comms.sh`, `/ok` became `C:/Program Files/Git/ok` |
 | 13 `inbox` limits | three mails, then `2 more waiting`; the fourth alone, since the 12 KB one would cross the size limit; then the big one alone |
 | 14 `overview groups` | `ravens`; with its name, `huginn 📬` and `muninn 📫`; an unknown group, and `overview ravens` without `groups`, each their line and 1 |
-| 15 archive | the dry run listed two old read mails and a thread message every member had read, and moved nothing; the real run moved them into `archive/__mail/` and `archive/__group_chat/`; old unread mail stayed, and a thread message with an unread copy stayed until muninn read it |
+| 15 archive | switched off by default, nothing moved; with `calm_comms_archive_messages` set, the dry run listed two old read mails and a thread message every member had read, and moved nothing; the real run moved them into `archive/__mail/` and `archive/__group_chat/`; old unread mail stayed, and a thread message with an unread copy stayed until muninn read it |
 
 ### Not tested yet
 
