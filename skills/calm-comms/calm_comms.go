@@ -8,6 +8,7 @@
 // send: writes a mail from one seat into another, never overwrites a mail, and answers with the target's mailbox.
 // group: writes a mail from one seat to every other member of a group, and keeps a copy as the group's thread.
 // join and leave: create or delete a seat's own file in a group's members folder, and wake nobody.
+// inbox, send and group first move every message older than a week, read or unread, from the seats and the group threads into the haven's archive.
 // calm-comms is for ravens: every line it prints is for a raven to read.
 // Usage: calm_comms on <seat_name> [long|short|<minutes>]
 //        calm_comms off <seat_name>
@@ -34,6 +35,9 @@ var (
 	hrafnsmal_location = filepath.Join(haven_location, "Hall", "thing", "Hrafnsmal")
 	// Each group is a folder here: its members folder holds one empty file per member, named after the seat, and the group's folder keeps the thread.
 	group_chat_location = filepath.Join(haven_location, "Hall", "thing", "group_chat")
+	// Old messages leave the hall for the archive, into a folder for their month, then one for their seat or group; the archive is cleared by hand when it weighs too much.
+	archive_location   = filepath.Join(haven_location, "archive")
+	archive_after_days = 7
 	// The watcher hears of new mail at once; it still looks this often, as a safety net for lost notifications.
 	poll_interval_seconds = 10
 	long_watcher_minutes  = 55
@@ -93,6 +97,7 @@ func main() {
 		}
 	case "inbox":
 		check_seat(seat_name)
+		archive_old_messages()
 		show_inbox(read_mail_limit())
 	case "send":
 		target_seat_name := argument(3)
@@ -103,11 +108,13 @@ func main() {
 			os.Exit(exit_refused)
 		}
 		check_seat(target_seat_name)
+		archive_old_messages()
 		send_mail(target_seat_name, text_from(4))
 	case "group":
 		group_name := argument(3)
 		check_seat(seat_name)
 		check_group(group_name)
+		archive_old_messages()
 		send_group(group_name, text_from(4))
 	case "join", "leave":
 		group_name := argument(3)
