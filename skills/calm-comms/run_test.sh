@@ -134,23 +134,32 @@ run overview groups nogroup
 run overview ravens
 
 echo '--- 15 archive'
-# Messages older than a week leave the seats and the thread for the archive, by their month; a name without a stamp goes by its file time.
-# They land before the watcher starts, so their move out of the watched seat is no new mail.
 calm_comms inbox huginn 100 > /dev/null
 mkdir -p "$hrafnsmal/huginn/already_read"
-echo 'Old, unread.' > "$hrafnsmal/huginn/2026-01-05_100000_from_muninn.md"
-echo 'Old, read.' > "$hrafnsmal/huginn/already_read/2026-01-04_100000_from_corvus.md"
-echo 'Old, in the thread.' > "$group_chat/ravens/2026-02-01_090000_from_huginn.md"
-echo 'Old, without a stamp.' > "$hrafnsmal/muninn/a_note_without_a_stamp.md"
-touch -d '2026-03-01 12:00' "$hrafnsmal/muninn/a_note_without_a_stamp.md"
-( calm_comms on huginn short > "$test_location/watch_15.txt" 2>&1; echo "$?" > "$test_location/exit_15.txt" ) &
-watcher_pid=$!
-sleep 2
-run send corvus muninn 'A fresh mail stays.'
+echo 'Old and unread: stays.' > "$hrafnsmal/huginn/2026-01-05_100000_from_muninn.md"
+echo 'Old and read: moves.' > "$hrafnsmal/huginn/already_read/2026-01-04_100000_from_corvus.md"
+echo 'Old, read, without a stamp: moves by its file time.' > "$hrafnsmal/huginn/already_read/a_note_without_a_stamp.md"
+touch -d '2026-03-01 12:00' "$hrafnsmal/huginn/already_read/a_note_without_a_stamp.md"
+echo 'Read by every member: moves.' > "$group_chat/ravens/2026-02-01_090000_from_huginn.md"
+echo 'Still unread at muninn: stays.' > "$group_chat/ravens/2026-02-02_090000_from_huginn.md"
+cp "$group_chat/ravens/2026-02-02_090000_from_huginn.md" "$hrafnsmal/muninn/"
+find "$haven" -type f | sort > "$test_location/files_before.txt"
+echo '  the dry run:'
+env calm_comms_archive_dry_run=1 bash "$ng_location/calm_comms.sh" inbox corvus 0 | sed "s|$haven/||g; s/^/    /"
+find "$haven" -type f | sort > "$test_location/files_after_dry_run.txt"
+if cmp -s "$test_location/files_before.txt" "$test_location/files_after_dry_run.txt"; then
+  echo '  the dry run moved nothing'
+else
+  echo '  the dry run changed files:'
+  diff "$test_location/files_before.txt" "$test_location/files_after_dry_run.txt" | sed 's/^/    /'
+fi
+run inbox corvus 0
+echo '  in the archive:'
 find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"
-ls "$hrafnsmal/muninn" | sed 's/^/    muninn: /'
-sleep 2
-run overview
-run off huginn
-wait "$watcher_pid"
-echo "  watcher: exit $(< "$test_location/exit_15.txt"), said: $(tr '\n' ' ' < "$test_location/watch_15.txt")"
+echo '  muninn reads its copies, and the next call takes their thread messages along:'
+calm_comms inbox muninn 100 > /dev/null
+calm_comms inbox corvus 0 > /dev/null
+find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"
+echo '  still in the hall:'
+ls "$hrafnsmal/huginn" | sed 's/^/    huginn: /'
+ls "$group_chat/ravens" | sed 's/^/    ravens: /'
