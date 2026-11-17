@@ -11,7 +11,6 @@ import (
 	"time"
 )
 
-// read_mail_limit reads inbox's mail limit; without one, the default applies.
 func read_mail_limit() int {
 	limit_text := argument(3)
 	if limit_text == "" {
@@ -25,12 +24,10 @@ func read_mail_limit() int {
 	return mail_limit
 }
 
-// show_inbox prints waiting mail, oldest first, up to a number and a size limit, and moves it into already_read.
 func show_inbox(mail_limit int) {
 	mail_count, used_bytes, waiting_count := 0, int64(0), 0
 	waiting_list := []string{}
 	for _, mail := range waiting_mail() {
-		// The first mail of a call always comes, so a big one arrives alone.
 		if waiting_count > 0 || mail_count == mail_limit || (mail_count > 0 && used_bytes+mail.Size() > int64(inbox_size_limit_kilobytes)*1024) {
 			waiting_count++
 			waiting_list = append(waiting_list, fmt.Sprintf("%s (%s)", mail.Name(), size_text(mail.Size())))
@@ -44,7 +41,6 @@ func show_inbox(mail_limit int) {
 		content := must(os.ReadFile(mail_location))
 		fmt.Printf("--- %s\n", mail.Name())
 		os.Stdout.Write(content)
-		// A mail without a final line break still gets its own line end, so the next header stays apart.
 		if len(content) > 0 && content[len(content)-1] != '\n' {
 			fmt.Println()
 		}
@@ -68,14 +64,12 @@ func show_inbox(mail_limit int) {
 	}
 }
 
-// waiting_mail lists the seat's mail, oldest first.
 func waiting_mail() []os.FileInfo {
 	mails := []os.FileInfo{}
 	for _, entry := range must(os.ReadDir(seat_location)) {
 		if !is_mail(entry) {
 			continue
 		}
-		// A mail that went away while the seat was read is simply not there.
 		if information, failure := entry.Info(); failure == nil {
 			mails = append(mails, information)
 		}
@@ -89,12 +83,10 @@ func waiting_mail() []os.FileInfo {
 	return mails
 }
 
-// is_mail tells mail from the rest of a seat: every file at its top is mail, except README.md and watching.md.
 func is_mail(entry os.DirEntry) bool {
 	return entry.Type().IsRegular() && entry.Name() != "README.md" && entry.Name() != "watching.md"
 }
 
-// has_waiting_mail tells whether inbox would find mail in a seat.
 func has_waiting_mail(location string) bool {
 	entries, _ := os.ReadDir(location)
 	return slices.ContainsFunc(entries, is_mail)
@@ -107,7 +99,6 @@ func size_text(size int64) string {
 	return fmt.Sprintf("%d KB", (size+1023)/1024)
 }
 
-// send_mail writes the text as a mail from your seat into the target seat, and answers with the target's mailbox: an open door means a raven watches there.
 func send_mail(target_seat_name string, mail_text string) {
 	target_seat_location := filepath.Join(hrafnsmal_location, target_seat_name)
 	if mail_text == "" {
@@ -119,7 +110,6 @@ func send_mail(target_seat_name string, mail_text string) {
 	throttle()
 }
 
-// send_group writes the text as a mail from your seat into every other member's seat, and into the group's thread.
 func send_group(group_name string, mail_text string) {
 	if mail_text == "" {
 		fmt.Println("Nothing to send.")
@@ -130,7 +120,6 @@ func send_group(group_name string, mail_text string) {
 		fmt.Printf("%s is no member of %s, so nothing goes out.\n", seat_name, group_name)
 		os.Exit(exit_refused)
 	}
-	// The group's folder keeps the thread; every other member gets a copy in their seat, and the copy wakes their watcher.
 	file_name := mail_file_name()
 	locations := []string{filepath.Join(group_chat_location, group_name, file_name)}
 	for _, member := range members {
@@ -143,7 +132,6 @@ func send_group(group_name string, mail_text string) {
 		}
 		locations = append(locations, filepath.Join(hrafnsmal_location, member, file_name))
 	}
-	// Everything is checked before anything is written.
 	for _, location := range locations {
 		if exists(location) {
 			fmt.Println("One mail per second; send it again in a moment.")
@@ -158,17 +146,14 @@ func send_group(group_name string, mail_text string) {
 	throttle()
 }
 
-// mail_file_name names a mail after its second and its sender, such as 2026-10-16_141523_from_tool_builder.md, so mail sorted by name is sorted by time.
 func mail_file_name() string {
 	return time.Now().Format("2006-01-02_150405") + "_from_" + seat_name + ".md"
 }
 
-// mail_content is the mail as it lands: the moment, From, To, and the text.
 func mail_content(target_name string, mail_text string) string {
 	return fmt.Sprintf("%s\nFrom: %s\nTo: %s\n%s\n", timestamp(time.Now()), seat_name, target_name, mail_text)
 }
 
-// write_mail creates the mail only where no mail of that name exists: an existing mail is never overwritten, not even in a race.
 func write_mail(location string, content string) {
 	file, failure := os.OpenFile(location, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if errors.Is(failure, os.ErrExist) {
@@ -191,7 +176,6 @@ func check_group(group_name string) {
 	}
 }
 
-// read_members lists a group's members: its members folder holds one empty file per member, named after the seat.
 func read_members(group_name string) []string {
 	members_location := filepath.Join(group_chat_location, group_name, "members")
 	entries, _ := os.ReadDir(members_location)
@@ -211,7 +195,6 @@ func member_count(count int) string {
 	return fmt.Sprintf("%d members", count)
 }
 
-// show_groups zooms into the groups: without a name, one line per group; with one, one line per member, with its mailbox.
 func show_groups(group_name string) {
 	if group_name == "" {
 		entries, _ := os.ReadDir(group_chat_location)
@@ -228,20 +211,17 @@ func show_groups(group_name string) {
 	}
 }
 
-// join_group creates your seat's own file in the group's members folder, and wakes nobody.
 func join_group(group_name string) {
 	member_location := filepath.Join(group_chat_location, group_name, "members", seat_name)
 	if exists(member_location) {
 		fmt.Printf("%s is already in %s.\n", seat_name, group_name)
 		return
 	}
-	// Every member has a file of its own, so two ravens who join at the same moment never touch the same file.
 	check(os.WriteFile(member_location, nil, 0o644))
 	fmt.Printf("%s joined %s: %s.\n", seat_name, group_name, member_count(len(read_members(group_name))))
 	throttle()
 }
 
-// leave_group deletes your seat's own file in the group's members folder, and wakes nobody.
 func leave_group(group_name string) {
 	member_location := filepath.Join(group_chat_location, group_name, "members", seat_name)
 	if !exists(member_location) {

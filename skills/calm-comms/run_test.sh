@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-# Runs calm-comms in a test haven of its own, through calm_comms.sh as ravens do, so the live hall never sees a test.
-# calm_comms_haven_location points the exe at the test haven.
 ng_location='c:/Users/devboese/markdown_voodoo/skills/calm-comms'
-# The test haven is temporary, so it lives in the scratchpad.
 test_location='c:/Users/devboese/markdown_voodoo/scratchpad/calm_comms_NG_test'
 haven="$test_location/test_haven"
 hrafnsmal="$haven/Hall/thing/Hrafnsmal"
@@ -46,7 +43,6 @@ run overview
 echo "  the bytes of the first line: $(calm_comms overview | head -n 1 | od -An -tx1 | tr -s ' \n' ' ')"
 
 echo '--- 7 wake'
-# An older mail lands before the watcher starts, so it counts as already there and wakes nobody.
 calm_comms send corvus huginn 'An older mail, unread.' > /dev/null
 ( sleep 3; echo "$EPOCHREALTIME" > "$test_location/send_time.txt"; calm_comms send muninn huginn 'Wake up, huginn!' > "$test_location/send_7.txt" 2>&1 ) &
 sender_pid=$!
@@ -110,7 +106,6 @@ calm_comms send muninn corvus "$text" > /dev/null
 received=$(tail -n +4 "$hrafnsmal/corvus"/*_from_muninn.md)
 if [[ $received == "$text" ]]; then echo '  through calm_comms.sh, the text arrived exactly as sent'; else echo "  through calm_comms.sh, the text changed: $received"; fi
 calm_comms inbox corvus | sed 's/^/  /'
-# Straight into the exe from Git Bash, without calm_comms.sh: what the wrapper prevents.
 sleep 1
 "$exe" send muninn corvus '/ok' > /dev/null
 echo "  straight into the exe, /ok arrived as: $(tail -n +4 "$hrafnsmal/corvus"/*_from_muninn.md)"

@@ -6,11 +6,8 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-// On Windows a lock binds every process, so it sits on a single byte far beyond the end of watching.md, as SQLite's locks do:
-// reading and writing what the file says never meet it.
 var locked_byte = windows.Overlapped{Offset: 0x40000000}
 
-// try_lock takes the lock on watching.md without waiting: exclusive for a watcher, shared for a look.
 func try_lock(file *os.File, exclusive bool) bool {
 	flags := uint32(windows.LOCKFILE_FAIL_IMMEDIATELY)
 	if exclusive {
