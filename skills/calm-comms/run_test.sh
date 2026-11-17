@@ -138,16 +138,6 @@ touch -d '2026-03-01 12:00' "$hrafnsmal/huginn/already_read/a_note_without_a_sta
 echo 'Read by every member: moves.' > "$group_chat/ravens/2026-02-01_090000_from_huginn.md"
 echo 'Still unread at muninn: stays.' > "$group_chat/ravens/2026-02-02_090000_from_huginn.md"
 cp "$group_chat/ravens/2026-02-02_090000_from_huginn.md" "$hrafnsmal/muninn/"
-find "$haven" -type f | sort > "$test_location/files_before.txt"
-echo '  the dry run:'
-env calm_comms_archive_dry_run=1 bash "$ng_location/calm_comms.sh" inbox corvus 0 | sed "s|$haven/||g; s/^/    /"
-find "$haven" -type f | sort > "$test_location/files_after_dry_run.txt"
-if cmp -s "$test_location/files_before.txt" "$test_location/files_after_dry_run.txt"; then
-  echo '  the dry run moved nothing'
-else
-  echo '  the dry run changed files:'
-  diff "$test_location/files_before.txt" "$test_location/files_after_dry_run.txt" | sed 's/^/    /'
-fi
 run inbox corvus 0
 echo '  in the archive:'
 find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"

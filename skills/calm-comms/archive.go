@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +10,6 @@ import (
 const message_name_stamp_layout = "2006-01-02_150405"
 
 func archive_read_messages() {
-	dry_run := os.Getenv("calm_comms_archive_dry_run") != ""
 	oldest_kept_moment := time.Now().AddDate(0, 0, -read_mail_kept_days)
 	for _, seat := range folder_names(hrafnsmal_location) {
 		seat_folder := filepath.Join(hrafnsmal_location, seat)
@@ -21,7 +19,7 @@ func archive_read_messages() {
 		read_folder := filepath.Join(seat_folder, "already_read")
 		for _, entry := range message_entries(read_folder) {
 			if moment, known := message_moment(entry); known && moment.Before(oldest_kept_moment) {
-				archive_message(read_folder, entry.Name(), filepath.Join(archive_location, "__mail", moment.Format("2006-01"), seat, "already_read"), dry_run)
+				archive_message(read_folder, entry.Name(), filepath.Join(archive_location, "__mail", moment.Format("2006-01"), seat, "already_read"))
 			}
 		}
 	}
@@ -33,7 +31,7 @@ func archive_read_messages() {
 		members := read_members(group)
 		for _, entry := range message_entries(group_folder) {
 			if moment, known := message_moment(entry); known && read_by_every_member(members, entry.Name()) {
-				archive_message(group_folder, entry.Name(), filepath.Join(archive_location, "__group_chat", moment.Format("2006-01"), group), dry_run)
+				archive_message(group_folder, entry.Name(), filepath.Join(archive_location, "__group_chat", moment.Format("2006-01"), group))
 			}
 		}
 	}
@@ -48,14 +46,10 @@ func read_by_every_member(members []string, message_name string) bool {
 	return true
 }
 
-func archive_message(folder string, message_name string, archive_folder string, dry_run bool) {
+func archive_message(folder string, message_name string, archive_folder string) {
 	source_location := filepath.Join(folder, message_name)
 	archived_location := filepath.Join(archive_folder, message_name)
 	if exists(archived_location) {
-		return
-	}
-	if dry_run {
-		fmt.Printf("would move %s -> %s\n", filepath.ToSlash(source_location), filepath.ToSlash(archived_location))
 		return
 	}
 	if os.MkdirAll(archive_folder, 0o755) == nil {
