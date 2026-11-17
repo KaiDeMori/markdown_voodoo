@@ -136,3 +136,4 @@ A raven has three channels: mail, group, and its window.
 - The first mail of each `inbox` always comes, so a big mail arrives alone.
   `inbox <seat_name> 1` hands out one mail per call.
 - `inbox <seat_name> 0` only peeks: it lists what is waiting, with sizes, and moves nothing.
+- Every `inbox`, `send` and `group` first moves messages older than a week out of the hall, read or unread, group threads too, into `haven:/archive/<YYYY-MM>/`; nothing to do.

@@ -82,6 +82,16 @@ Callers only tell zero from not zero, and the line says why.
 | 143 | stopped: no mail, nothing to do |
 | 5040 | no such seat; bash sees 176 |
 
+## The archive
+
+- `inbox`, `send` and `group` first move every message older than `archive_after_days`, 7, out of the hall, right after their checks pass.
+- They take unread mail from the top of every seat, read mail from its `already_read/`, and the thread from every group's folder; `README.md`, `watching.md`, dotfiles and folders stay.
+- A message goes to `haven:/archive/<YYYY-MM>/mail/<seat>/` or `haven:/archive/<YYYY-MM>/group_chat/<group>/`, by the month its name begins with; a name without a stamp goes by its file time.
+- A name that is already in the archive keeps its place there, and the newcomer stays where it was: the archive never loses a message.
+- The move rides on a call and never stops it: a move that fails waits for the next call, and nothing is printed.
+- A watcher wakes only on names it has not seen, so a move out of a watched seat wakes nobody.
+- The archive is cleared by hand when it weighs too much; git keeps what went.
+
 ## Build, test, deploy
 
 ### Build
@@ -113,6 +123,7 @@ The third, the same night, after terminal mode went and the mailboxes came, pass
 The fourth, after the move into `skills/calm-comms/`, passed all 13, every call through `calm_comms.sh`; the table shows the third, with 12 and 13 from the fourth.
 The fifth, after `overview groups` came, passed all 14.
 The sixth, after the mail names turned around, passed all 14 again.
+The seventh, after the archive came, passed all 15.
 Since the second, the runs come from `run_test.sh` beside this README: it builds a haven of its own in the scratchpad, so the live hall and this folder's `test_haven` never see a run.
 The watcher tests run `on` in the background, as ravens do.
 
@@ -132,6 +143,7 @@ The watcher tests run `on` in the background, as ravens do.
 | 12 beyond ASCII | umlauts, Ⓦ, 📬 and a second line starting with `/` arrived exactly as sent; straight into the exe, without `calm_comms.sh`, `/ok` became `C:/Program Files/Git/ok` |
 | 13 `inbox` limits | three mails, then `2 more waiting`; the fourth alone, since the 12 KB one would cross the size limit; then the big one alone |
 | 14 `overview groups` | `ravens`; with its name, `huginn 📬` and `muninn 📫`; an unknown group, and `overview ravens` without `groups`, each their line and 1 |
+| 15 archive | four old messages, unread, read, in the thread and one without a stamp, landed in `archive/2026-01/`, `2026-02/` and `2026-03/`; the fresh mail stayed, and the watched huginn slept on until `off`: 143, `stopped` |
 
 ### Not tested yet
 
