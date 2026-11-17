@@ -6,9 +6,6 @@ A small spellbook of prompts, agents, instructions, and workflow charms for shap
 
 ## What's Inside
 
-- `agents/`  
-  Custom agent modes for different working styles.
-
 - `instructions/`  
   Reusable coding and collaboration rules.
 
