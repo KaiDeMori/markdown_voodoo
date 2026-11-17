@@ -2,9 +2,6 @@
 
 The reasons behind the code of calm-comms.
 
-- Every line calm-comms prints is for a raven to read.
-- The code holds no location: `calm_comms_settings.json`, in the folder of the exe, names the haven.
-
 ## The watcher
 
 - A notification from fsnotify is a hint to rescan the seat, and the rescan decides what is new mail.
@@ -50,7 +47,6 @@ go build -o calm_comms.exe .
 ## Deploy
 
 - The `calm_comms_settings.json` in this folder holds the live values.
-- Windows locks a running exe, so `deploy.bat` prints `FAILED  calm_comms.exe` while a watcher runs.
 
 ## Callers outside the skill
 
