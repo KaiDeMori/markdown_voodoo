@@ -13,7 +13,6 @@ var (
 	hrafnsmal_location         = filepath.Join(haven_location, "Hall", "thing", "Hrafnsmal")
 	group_chat_location        = filepath.Join(haven_location, "Hall", "thing", "group_chat")
 	archive_location           = filepath.Join(haven_location, "archive")
-	archive_messages           = true
 	read_mail_kept_days        = 7
 	poll_interval_seconds      = 10
 	long_watcher_minutes       = 55
