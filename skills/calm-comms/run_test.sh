@@ -160,10 +160,11 @@ touch -d '2026-03-01 12:00' "$hrafnsmal/huginn/already_read/a_note_without_a_sta
 echo 'Read by every member: moves.' > "$group_chat/ravens/2026-02-01_090000_from_huginn.md"
 echo 'Still unread at muninn: stays.' > "$group_chat/ravens/2026-02-02_090000_from_huginn.md"
 cp "$group_chat/ravens/2026-02-02_090000_from_huginn.md" "$hrafnsmal/muninn/"
+echo 'Read by every member, but 2 days old: stays.' > "$group_chat/ravens/$(date -d '2 days ago' '+%Y-%m-%d_%H%M%S')_from_huginn.md"
 run inbox corvus 0
 echo '  in the archive:'
 find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"
-echo '  muninn reads its copies; the next call moves their thread messages:'
+echo '  muninn reads its copies; the next call moves the thread messages older than 7 days:'
 calm_comms inbox muninn 100 > /dev/null
 calm_comms inbox corvus 0 > /dev/null
 find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"

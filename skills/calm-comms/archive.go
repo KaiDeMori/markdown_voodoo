@@ -30,7 +30,7 @@ func archive_read_messages() {
 		}
 		members := read_members(group)
 		for _, entry := range message_entries(group_folder) {
-			if moment, known := message_moment(entry); known && read_by_every_member(members, entry.Name()) {
+			if moment, known := message_moment(entry); known && moment.Before(oldest_kept_moment) && read_by_every_member(members, entry.Name()) {
 				archive_message(group_folder, entry.Name(), filepath.Join(archive_location, "group_chat", moment.Format("2006-01"), group))
 			}
 		}
