@@ -139,6 +139,15 @@ echo 'Read by every member: moves.' > "$group_chat/ravens/2026-02-01_090000_from
 echo 'Still unread at muninn: stays.' > "$group_chat/ravens/2026-02-02_090000_from_huginn.md"
 cp "$group_chat/ravens/2026-02-02_090000_from_huginn.md" "$hrafnsmal/muninn/"
 find "$haven" -type f | sort > "$test_location/files_before.txt"
+calm_comms inbox corvus 0 > /dev/null
+find "$haven" -type f | sort > "$test_location/files_after_switched_off.txt"
+if cmp -s "$test_location/files_before.txt" "$test_location/files_after_switched_off.txt"; then
+  echo '  switched off by default, the archive moved nothing'
+else
+  echo '  switched off by default, the archive changed files:'
+  diff "$test_location/files_before.txt" "$test_location/files_after_switched_off.txt" | sed 's/^/    /'
+fi
+export calm_comms_archive_messages=1
 echo '  the dry run:'
 env calm_comms_archive_dry_run=1 bash "$ng_location/calm_comms.sh" inbox corvus 0 | sed "s|$haven/||g; s/^/    /"
 find "$haven" -type f | sort > "$test_location/files_after_dry_run.txt"

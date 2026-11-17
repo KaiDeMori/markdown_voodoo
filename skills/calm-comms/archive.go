@@ -11,6 +11,9 @@ import (
 const message_name_stamp_layout = "2006-01-02_150405"
 
 func archive_read_messages() {
+	if !archive_messages {
+		return
+	}
 	dry_run := os.Getenv("calm_comms_archive_dry_run") != ""
 	oldest_kept_moment := time.Now().AddDate(0, 0, -read_mail_kept_days)
 	for _, seat := range folder_names(hrafnsmal_location) {
