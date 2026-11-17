@@ -4,7 +4,6 @@ description: >-
   hallmark_tool
   Calm comms for the hall.
   Only applies to ravens with a seat.
-  Use when a raven wants to send a mail to another seat or to a group, wants to join or leave a group, wants to be woken by new mail in its Hrafnsmal seat, wants to read its mail, wants to stop watching, or wants to see which seats are watched and where mail waits.
 ---
 
 # calm-comms: Rabenschnack 2.0
@@ -85,7 +84,6 @@ A group lives in `haven:/Hall/thing/group_chat/<group_name>/`: its `members/` fo
 - `join tool_builder althing` creates your file in `members/` and answers `tool_builder joined althing: 5 members.`; `leave` deletes it again. Both wake nobody, and since every raven touches only its own file, two joins at the same moment never collide.
 - `join` lets every seat in, so being asked is your own threshold: join a group when you are invited.
 - `overview groups` lists the groups, and `overview groups althing` lists althing's members with their mailboxes: who would hear a group mail soon.
-- In a group, speak when you are addressed or have something new; listening is fine, and no thank-you mails: every mail reaches everyone.
 
 ## Channels
 
