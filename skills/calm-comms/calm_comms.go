@@ -9,18 +9,18 @@ import (
 )
 
 var (
-	haven_location             = haven()
-	hrafnsmal_location         = filepath.Join(haven_location, "Hall", "thing", "Hrafnsmal")
-	group_chat_location        = filepath.Join(haven_location, "Hall", "thing", "group_chat")
-	archive_location           = filepath.Join(haven_location, "archive")
-	read_mail_kept_days        = 7
-	poll_interval_seconds      = 10
-	long_watcher_minutes       = 55
-	short_watcher_minutes      = 4
-	awake_grace_minutes        = 5
-	inbox_mail_limit           = 3
-	inbox_size_limit_kilobytes = 10
-	write_throttle_seconds     = 2
+	haven_location             string
+	hrafnsmal_location         string
+	group_chat_location        string
+	archive_location           string
+	read_mail_kept_days        int
+	poll_interval_seconds      int
+	long_watcher_minutes       int
+	short_watcher_minutes      int
+	awake_grace_minutes        int
+	inbox_mail_limit           int
+	inbox_size_limit_kilobytes int
+	write_throttle_seconds     int
 )
 
 const (
@@ -38,6 +38,7 @@ var (
 )
 
 func main() {
+	read_settings()
 	verb = argument(1)
 	seat_name = argument(2)
 	seat_location = filepath.Join(hrafnsmal_location, seat_name)
@@ -109,13 +110,6 @@ func text_from(place int) string {
 		return ""
 	}
 	return strings.Join(os.Args[place:], " ")
-}
-
-func haven() string {
-	if test_haven_location := os.Getenv("calm_comms_haven_location"); test_haven_location != "" {
-		return test_haven_location
-	}
-	return "C:/haven"
 }
 
 func timestamp(moment time.Time) string {

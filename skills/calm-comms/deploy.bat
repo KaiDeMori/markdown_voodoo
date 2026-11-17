@@ -10,6 +10,7 @@ mkdir "%target%" 2>nul
 call :copy_file SKILL.md
 call :copy_file calm_comms.sh
 call :copy_file calm_comms.exe
+call :copy_file calm_comms_settings.json
 
 rem pause
 exit /b

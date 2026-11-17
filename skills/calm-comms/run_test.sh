@@ -1,17 +1,39 @@
 #!/usr/bin/env bash
 ng_location='c:/Users/devboese/markdown_voodoo/skills/calm-comms'
 test_location='c:/Users/devboese/markdown_voodoo/scratchpad/calm_comms_NG_test'
+install_location="$test_location/install"
+refusal_location="$test_location/refusal_install"
 haven="$test_location/test_haven"
 hrafnsmal="$haven/Hall/thing/Hrafnsmal"
 group_chat="$haven/Hall/thing/group_chat"
-rm -rf "$haven" "$test_location"/*.txt
+rm -rf "$haven" "$install_location" "$refusal_location" "$test_location"/*.txt
 for seat in huginn muninn corvus; do mkdir -p "$hrafnsmal/$seat"; echo "# $seat" > "$hrafnsmal/$seat/README.md"; done
 mkdir -p "$group_chat/ravens/members"
 : > "$group_chat/ravens/members/huginn"
 : > "$group_chat/ravens/members/muninn"
-export calm_comms_haven_location="$haven"
-exe="$ng_location/calm_comms.exe"
-calm_comms() { bash "$ng_location/calm_comms.sh" "$@"; }
+write_settings() {
+  cat <<EOF
+{
+  "haven_location": "$1",
+  "read_mail_kept_days": 7,
+  "poll_interval_seconds": 10,
+  "long_watcher_minutes": 55,
+  "short_watcher_minutes": 4,
+  "awake_grace_minutes": 5,
+  "inbox_mail_limit": 3,
+  "inbox_size_limit_kilobytes": 10,
+  "write_throttle_seconds": 2
+}
+EOF
+}
+install_calm_comms() {
+  mkdir -p "$1"
+  cp "$ng_location/calm_comms.exe" "$ng_location/calm_comms.sh" "$1/"
+}
+install_calm_comms "$install_location"
+write_settings "$haven" > "$install_location/calm_comms_settings.json"
+exe="$install_location/calm_comms.exe"
+calm_comms() { bash "$install_location/calm_comms.sh" "$@"; }
 
 run() {
   echo "\$ calm_comms $*"
@@ -148,3 +170,29 @@ find "$haven/archive" -type f | sort | sed "s|^$haven/|    |"
 echo '  still in the hall:'
 ls "$hrafnsmal/huginn" | sed 's/^/    huginn: /'
 ls "$group_chat/ravens" | sed 's/^/    ravens: /'
+
+echo '--- 16 settings'
+install_calm_comms "$refusal_location"
+settings_file="$refusal_location/calm_comms_settings.json"
+try_settings() {
+  echo "  $1:"
+  bash "$refusal_location/calm_comms.sh" overview 2>&1 | sed "s|$refusal_location/||I; s/^/    /"
+  echo "    exit ${PIPESTATUS[0]}"
+}
+try_settings 'no settings file'
+write_settings "$haven" | sed 's/"read_mail_kept_days": 7,/"read_mail_kept_days": 7/' > "$settings_file"
+try_settings 'a missing comma'
+echo '[]' > "$settings_file"
+try_settings 'an array'
+{ write_settings "$haven"; echo '{}'; } > "$settings_file"
+try_settings 'a second JSON value'
+write_settings "$haven" | sed '/long_watcher_minutes/d; s/"poll_interval_seconds": 10/"poll_interval_seconds": 0/; s/"inbox_mail_limit": 3/"inbox_mail_limit": 2.5/; s/"write_throttle_seconds": 2/"write_throttle_seconds": 2,\n  "colour": "blue",\n  "write_throttle_seconds": 3/' > "$settings_file"
+try_settings 'five issues in one file'
+write_settings "$haven" | sed 's|"haven_location": "[^"]*"|"haven_location": null|' > "$settings_file"
+try_settings 'haven_location null'
+write_settings 'test_haven' > "$settings_file"
+try_settings 'a relative haven_location'
+write_settings "$test_location" > "$settings_file"
+try_settings 'a haven_location without Hall/thing/Hrafnsmal'
+{ printf '\xef\xbb\xbf'; write_settings "$haven"; } > "$settings_file"
+try_settings 'a byte order mark before a valid file'

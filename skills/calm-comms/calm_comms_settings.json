@@ -1,0 +1,11 @@
+{
+  "haven_location": "C:/haven",
+  "read_mail_kept_days": 7,
+  "poll_interval_seconds": 10,
+  "long_watcher_minutes": 55,
+  "short_watcher_minutes": 4,
+  "awake_grace_minutes": 5,
+  "inbox_mail_limit": 3,
+  "inbox_size_limit_kilobytes": 10,
+  "write_throttle_seconds": 2
+}
