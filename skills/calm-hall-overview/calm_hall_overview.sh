@@ -3,6 +3,7 @@
 # open: the room's files, and the rooms inside it.
 # not all at once: only how many files the room holds.
 # not yet, not mine: only the room and its word.
+# A room without a line: only its name.
 # Usage: calm_hall_overview.sh
 
 script_folder=$(dirname "${BASH_SOURCE[0]}")
@@ -40,7 +41,7 @@ read_visibility() {
 }
 
 find_word() {
-  # The last line that matches the room decides; a room without a line takes the word of the room around it.
+  # The last line that matches the room decides.
   local index
   room_word=$2
   for index in "${!room_patterns[@]}"; do
@@ -65,9 +66,10 @@ show_room() {
       done
       for entry_location in "$room_location"/*/; do
         entry_location=${entry_location%/}
-        show_room "${entry_location#"$hall_location"/}" "$entry_location" "${entry_location##*/}/" "$indent  " open
+        show_room "${entry_location#"$hall_location"/}" "$entry_location" "${entry_location##*/}/" "$indent  " unlisted
       done
       ;;
+    unlisted) echo "$indent$room_label" ;;
     'not all at once') echo "$indent$room_label: not all at once, $(count_files "$room_location")" ;;
     'not yet'|'not mine') echo "$indent$room_label: $room_word" ;;
     '') echo "$indent$room_label: no line in hall_overview_visibility.txt" ;;
