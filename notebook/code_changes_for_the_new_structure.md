@@ -21,7 +21,7 @@ The code changes for [proposed_new_structure.md](proposed_new_structure.md): `Ha
 ## calm-hall-overview
 
 - `calm_hall_overview.sh`: the seat check reads `Hall/agora/hall_mail/<seat_name>/README.md` instead of `Hall/thing/Hrafnsmal/<seat_name>/README.md`.
-- `hall_overview_visibility.txt`: `agora: open` and `agora/group_chat: open` replace the lines for `thing`, and `album` gets a line of its own.
+- `hall_overview_visibility.txt`: `agora: open` and `agora/group_chat: open` replace the lines for `thing`, and `album: open` is added.
 - `SKILL.md`: "your own seat's folder name in Hrafnsmal" becomes "in hall_mail".
 - All three change at the switch, right after the move.
 
@@ -64,7 +64,3 @@ The code changes for [proposed_new_structure.md](proposed_new_structure.md): `Ha
 5. calm-hall-overview, calm_email, the fernschreiber, N06BC01's README and the haven's `.gitignore` change, and calm-hall-overview is deployed.
 6. The watchers start again.
 7. `notebook/structure_move/find_references_to_old_paths.sh C:/haven c:/Users/devboese/markdown_voodoo` lists the references that are left.
-
-## Open
-
-- The word for `album` in `hall_overview_visibility.txt`.
