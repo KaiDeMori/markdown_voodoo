@@ -1,10 +1,13 @@
 """Mail in the Hrafnsmal format, and the own seat's history."""
 
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 import settings
+
+mail_name_pattern = re.compile(r"(\d{4}-\d{2}-\d{2}_\d{6})_from_(.+)\.md")
 
 
 @dataclass
@@ -29,9 +32,15 @@ def display_time(moment: datetime) -> str:
 
 
 def read_mail(file_location: Path) -> Mail:
-    """A mail file in the Hrafnsmal format: timestamp, From, To, then the text; anything else shows whole, under its file name."""
+    """A mail file names its moment and its sender, and holds To, then the text.
+    A mail written before holds them all: timestamp, From, To, then the text.
+    Anything else shows whole, under its file name."""
     content = file_location.read_text(encoding="utf-8", errors="replace")
     lines = content.splitlines()
+    name_match = mail_name_pattern.fullmatch(file_location.name)
+    if name_match and lines and lines[0].startswith("To: "):
+        moment = datetime.strptime(name_match.group(1), "%Y-%m-%d_%H%M%S")
+        return Mail(display_time(moment), name_match.group(2), "\n".join(lines[1:]).strip("\n"), lines[0].removeprefix("To: ").strip())
     try:
         moment = datetime.fromisoformat(lines[0].strip())
     except (IndexError, ValueError):

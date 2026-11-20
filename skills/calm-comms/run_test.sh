@@ -125,12 +125,12 @@ echo '--- 12 text beyond ASCII'
 calm_comms inbox corvus > /dev/null
 text=$'Grüße von Ⓦ, mit 📬 und ß.\n/ok: a second line, with a slash first.'
 calm_comms send muninn corvus "$text" > /dev/null
-received=$(tail -n +4 "$hrafnsmal/corvus"/*_from_muninn.md)
+received=$(tail -n +2 "$hrafnsmal/corvus"/*_from_muninn.md)
 if [[ $received == "$text" ]]; then echo '  through calm_comms.sh, the text arrived exactly as sent'; else echo "  through calm_comms.sh, the text changed: $received"; fi
 calm_comms inbox corvus | sed 's/^/  /'
 sleep 1
 "$exe" send muninn corvus '/ok' > /dev/null
-echo "  straight into the exe, /ok arrived as: $(tail -n +4 "$hrafnsmal/corvus"/*_from_muninn.md)"
+echo "  straight into the exe, /ok arrived as: $(tail -n +2 "$hrafnsmal/corvus"/*_from_muninn.md)"
 
 echo '--- 13 inbox beyond its limits'
 calm_comms inbox corvus > /dev/null

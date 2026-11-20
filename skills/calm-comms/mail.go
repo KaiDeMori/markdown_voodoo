@@ -152,7 +152,7 @@ func mail_file_name() string {
 }
 
 func mail_content(target_name string, mail_text string) string {
-	return fmt.Sprintf("%s\nFrom: %s\nTo: %s\n%s\n", timestamp(time.Now()), seat_name, target_name, mail_text)
+	return fmt.Sprintf("To: %s\n%s\n", target_name, mail_text)
 }
 
 func write_mail(location string, content string) {
