@@ -11,6 +11,7 @@ call :copy_file SKILL.md
 call :copy_file calm_hall_overview.sh
 call :copy_file read_haven_location.py
 call :copy_file calm_hall_overview_settings.json
+call :copy_file hall_overview_visibility.txt
 
 rem pause
 exit /b

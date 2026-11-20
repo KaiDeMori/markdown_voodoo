@@ -1,0 +1,17 @@
+# Read by calm-hall-overview.
+# Each line names a room by its path from haven:/Hall/, then, after a colon, its word: open, not all at once, not yet or not mine.
+# . is the hall itself, and * stands for any room name; a room without a line shows only its name.
+# <seat_name> stands for the seat of the raven that runs calm-hall-overview.
+# When several lines match a room, the last one decides.
+
+.:                    open
+thing:                open
+thing/group_chat:     open
+meditation_room:      not all at once
+guest_rooms:          not mine
+virding:              not yet
+Wallys place:         not mine
+chambers:             open
+chambers/*:           not mine
+chambers/<seat_name>: open
+thing/Hrafnsmal/*:    not mine

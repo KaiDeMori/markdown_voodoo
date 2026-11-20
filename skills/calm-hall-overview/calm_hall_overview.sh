@@ -1,15 +1,29 @@
 #!/usr/bin/env bash
-# calm_hall_overview: shows the hall as far as haven:/Hall/hall_overview_visibility.txt lets it.
+# calm_hall_overview: shows the hall as far as hall_overview_visibility.txt, beside this script, lets it.
 # open: the room's files, and the rooms inside it.
 # not all at once: only how many files the room holds.
 # not yet, not mine: only the room and its word.
 # A room without a line: only its name.
-# Usage: calm_hall_overview.sh
+# Usage: calm_hall_overview.sh [seat_name]
 
 script_folder=$(dirname "${BASH_SOURCE[0]}")
 haven_location=$(python "$script_folder/read_haven_location.py" "$script_folder/calm_hall_overview_settings.json") || { echo "$haven_location"; exit 1; }
 hall_location="$haven_location/Hall"
-visibility_file_location="$hall_location/hall_overview_visibility.txt"
+visibility_file_location="$script_folder/hall_overview_visibility.txt"
+
+if (( $# > 1 )); then echo 'calm-hall-overview [seat_name]?'; exit 1; fi
+seat_name=${1:-}
+if [[ -n $seat_name ]]; then
+  case $seat_name in
+    */*|*\\*|*\**|*\?*|*\[*) seat_name_is_valid=false ;;
+    *) seat_name_is_valid=true ;;
+  esac
+  if [[ $seat_name_is_valid == false || ! -f $hall_location/thing/Hrafnsmal/$seat_name/README.md ]]; then
+    echo "Quoth the raven: README in $seat_name? Nevermore."
+    exit 1
+  fi
+fi
+placeholder_pattern='*[<>]*'
 
 set -e
 shopt -s nullglob
@@ -19,7 +33,7 @@ room_words=()
 
 read_visibility() {
   local line line_number=0 room_pattern room_word
-  [[ -f $visibility_file_location ]] || { echo 'No haven:/Hall/hall_overview_visibility.txt, so the hall stays unseen.'; exit 1; }
+  [[ -f $visibility_file_location ]] || { echo "No $visibility_file_location, so the hall stays unseen."; exit 1; }
   while IFS= read -r line || [[ -n $line ]]; do
     line_number=$((line_number + 1))
     line=${line%$'\r'}
@@ -35,6 +49,10 @@ read_visibility() {
       echo "hall_overview_visibility.txt, line $line_number: \"$line\" needs a room, a colon, and open, not all at once, not yet or not mine."
       exit 1
     fi
+    if [[ ${room_pattern//'<seat_name>'/} == $placeholder_pattern ]]; then
+      echo "hall_overview_visibility.txt, line $line_number: \"$line\" uses a placeholder other than <seat_name>."
+      exit 1
+    fi
     room_patterns+=("$room_pattern")
     room_words+=("$room_word")
   done < "$visibility_file_location"
@@ -42,10 +60,15 @@ read_visibility() {
 
 find_word() {
   # The last line that matches the room decides.
-  local index
+  local index room_pattern
   room_word=$2
   for index in "${!room_patterns[@]}"; do
-    if [[ $1 == ${room_patterns[index]} ]]; then room_word=${room_words[index]}; fi
+    room_pattern=${room_patterns[index]}
+    if [[ $room_pattern == *'<seat_name>'* ]]; then
+      [[ -n $seat_name ]] || continue
+      room_pattern=${room_pattern//'<seat_name>'/$seat_name}
+    fi
+    if [[ $1 == $room_pattern ]]; then room_word=${room_words[index]}; fi
   done
 }
 
