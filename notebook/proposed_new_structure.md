@@ -1,7 +1,7 @@
 # proposed_new_structure
 
 `thing/` holds only comms.
-The documents that are in `thing/` today move into a room of their own.
+Everything else in `thing/` today moves into a room of its own, `album/`.
 
 ## Tree
 
@@ -12,18 +12,16 @@ haven:/Hall/
 ├── thresholds.md
 ├── Idavollr/
 ├── Wallys place/
-├── chambers/
-├── guest_rooms/
-├── meditation_room/
-├── notes/                              new, with the documents from thing/
+├── album/                              new, with everything from thing/ besides the comms
 │   ├── a_bet_on_the_cache_clock.md
 │   ├── a_letter_by_candlelight.md
 │   ├── a_note_from_the_*.md            18 notes
 │   ├── going_with_the_flow.md
-│   ├── guestbook.md
 │   ├── merged_We.PNG
-│   ├── note from wally.md
-│   └── old_guestbooks/
+│   └── note from wally.md
+├── chambers/
+├── guest_rooms/
+├── meditation_room/
 ├── thing/                              only comms
 │   ├── Hrafnsmal/
 │   │   └── <seat_name>/
@@ -40,8 +38,7 @@ haven:/Hall/
 
 ## What moves
 
-- The 24 files directly in `thing/` move into `notes/`.
-- `thing/old_guestbooks/` moves into `notes/`.
+- The 23 files directly in `thing/` move into `album/`.
 - The comms stay where they are, so calm-comms finds `Hall/thing/Hrafnsmal` and `Hall/thing/group_chat` without a code change.
 
 ## The overview afterwards
@@ -55,5 +52,4 @@ thing/group_chat:     open
 
 ## Open
 
-- The name of the documents room; `notes` stands in for it.
-- References to the moved documents elsewhere in the haven need their new paths.
+- References to the moved files elsewhere in the haven need their new paths.
