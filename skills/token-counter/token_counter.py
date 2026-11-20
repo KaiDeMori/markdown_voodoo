@@ -7,6 +7,7 @@ With --write, it counts a doc fresh, without its T line, and writes or updates t
 A file name may carry wildcards, such as *.md; token-counter expands them itself, since cmd and PowerShell pass them on as they are.
 At most file_limit files go in one call, and calls to Anthropic keep pause_seconds between them.
 With -s, it counts the text that follows instead of a file.
+A doc or a text with nothing but whitespace gets a line instead of a count, since the endpoint refuses such text.
 The endpoint counts a whole message, and Anthropic calls its count an estimate; every count leaves out the tokens that wrap any message, the role markers around a turn.
 Whatever goes wrong ends in one line, and exit 1.
 Usage: token_counter.py [--write] <file> [<file> ...]
@@ -83,6 +84,8 @@ def count_file(file_location, write):
     # A cached count holds while the doc below its line keeps its size; a line without a size always holds.
     if t_line and not write and (t_line.group(3) is None or int(t_line.group(3)) == doc_size):
         return int(t_line.group(2)), " (cached)"
+    if not doc.strip():
+        return None, "empty" if not doc else "only whitespace"
     # Counted as text mode reads it, so a count stays what it always was.
     token_count = count_message(re.sub(r"\r\n|\r", "\n", doc))
     # A SKILL.md keeps its front matter first, so it never gets a T line.
@@ -101,6 +104,9 @@ def main():
         if not text:
             print("-s needs a text to count.")
             sys.exit(1)
+        if not text.strip():
+            print("only whitespace, not counted")
+            return
         print(token_text(count_message(text)))
         return
     write = bool(arguments) and arguments[0] == "--write"
@@ -131,6 +137,9 @@ def main():
         except UnicodeDecodeError:
             print(f"{argument}: neither UTF-8 text nor an image")
             failed = True
+            continue
+        if token_count is None:
+            print(f"{file_location.name}: {note}, not counted")
             continue
         print(f"{file_location.name}: {token_text(token_count)}{note}")
         total_count += token_count
