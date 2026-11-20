@@ -5,8 +5,9 @@
 # When several lines match a room, the last one decides.
 
 .:                    open
-thing:                not all at once
-thing/group_chat:     open
+agora:                open
+agora/group_chat:     open
+album:                open
 meditation_room:      not all at once
 guest_rooms:          not mine
 Idavollr:             not all at once

@@ -18,7 +18,7 @@ if [[ -n $seat_name ]]; then
     */*|*\\*|*\**|*\?*|*\[*) seat_name_is_valid=false ;;
     *) seat_name_is_valid=true ;;
   esac
-  if [[ $seat_name_is_valid == false || ! -f $hall_location/thing/Hrafnsmal/$seat_name/README.md ]]; then
+  if [[ $seat_name_is_valid == false || ! -f $hall_location/agora/hall_mail/$seat_name/README.md ]]; then
     echo "Quoth the raven: README in $seat_name? Nevermore."
     exit 1
   fi

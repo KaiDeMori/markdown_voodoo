@@ -1,4 +1,4 @@
-"""Mail in the Hrafnsmal format, and the own seat's history."""
+"""Mail in the hall_mail format, and the own seat's history."""
 
 import re
 from dataclasses import dataclass
@@ -75,7 +75,7 @@ def recent_direct_mails(count: int) -> list[Mail]:
 
 def already_read_files() -> list[Path]:
     """The files in the own seat's already_read folder, oldest first."""
-    folder = settings.HRAFNSMAL / settings.OWN_SEAT / "already_read"
+    folder = settings.HALL_MAIL / settings.OWN_SEAT / "already_read"
     if not folder.is_dir():
         return []
     return sorted((file for file in folder.iterdir() if file.is_file()), key=lambda file: file.stat().st_mtime)

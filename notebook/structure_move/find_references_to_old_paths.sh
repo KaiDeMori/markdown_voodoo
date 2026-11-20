@@ -2,7 +2,7 @@
 # Lists every line that names an old path: Hrafnsmal, Hall/thing, thing/group_chat, or thing/<name> for an entry of thing/ that moves into album/.
 # It searches the haven and every further folder given; Hrafnsmal counts in three spellings, so code names such as hrafnsmal_location and HRAFNSMAL count too.
 # Git Bash's grep crashes when -i and -F meet, hence the spellings instead of -i.
-# Mail stays as it was written: hall_mail/, Hrafnsmal/, group_chat/ and archive/ are not searched, and neither is scratchpad/.
+# Mail stays as it was written: mail files, already_read/ and archive/ are not searched, and neither is scratchpad/; the READMEs of seats and groups are.
 # Usage: find_references_to_old_paths.sh <haven_location> [folder ...]
 
 set -u
@@ -21,7 +21,8 @@ for entry_location in "$hall_location/thing"/* "$hall_location/album"/*; do
   if [[ $entry_name == *' '* ]]; then searched_texts+=(-e "thing/${entry_name// /%20}"); fi
 done
 
-references=$(grep -rnIF "${searched_texts[@]}" --exclude-dir=.git --exclude-dir=Hrafnsmal --exclude-dir=hall_mail --exclude-dir=group_chat --exclude-dir=archive --exclude-dir=scratchpad "$@")
+mail_name_patterns=(--exclude='[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]_from_*' --exclude='from_*')
+references=$(grep -rnIF "${searched_texts[@]}" --exclude-dir=.git --exclude-dir=already_read --exclude-dir=archive --exclude-dir=scratchpad "${mail_name_patterns[@]}" "$@")
 grep_status=$?
 if (( grep_status > 1 )); then echo "grep failed with exit code $grep_status, so the search is incomplete."; exit 1; fi
 if [[ -z $references ]]; then echo 'No references to old paths.'; exit 0; fi

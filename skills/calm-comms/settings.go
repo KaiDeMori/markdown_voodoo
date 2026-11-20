@@ -13,10 +13,24 @@ import (
 
 const settings_file_name = "calm_comms_settings.json"
 
+type Location_setting struct {
+	key               string
+	value             *string
+	folder_must_exist bool
+}
+
 type Whole_number_setting struct {
 	key     string
 	value   *int
 	minimum int
+}
+
+func location_settings() []Location_setting {
+	return []Location_setting{
+		{key: "hall_mail_location", value: &hall_mail_location, folder_must_exist: true},
+		{key: "group_chat_location", value: &group_chat_location, folder_must_exist: true},
+		{key: "archive_location", value: &archive_location, folder_must_exist: false},
+	}
 }
 
 func whole_number_settings() []Whole_number_setting {
@@ -35,8 +49,11 @@ func whole_number_settings() []Whole_number_setting {
 func read_settings() {
 	settings_location := settings_file_location()
 	members, member_keys, issues := read_settings_members(settings_location)
-	known_keys := []string{"haven_location"}
-	issues = append(issues, read_haven_location(members)...)
+	known_keys := []string{}
+	for _, setting := range location_settings() {
+		known_keys = append(known_keys, setting.key)
+		issues = append(issues, read_location_setting(members, setting)...)
+	}
 	for _, setting := range whole_number_settings() {
 		known_keys = append(known_keys, setting.key)
 		issues = append(issues, read_whole_number_setting(members, setting)...)
@@ -49,9 +66,6 @@ func read_settings() {
 	if len(issues) > 0 {
 		refuse_settings(settings_location, issues...)
 	}
-	hrafnsmal_location = filepath.Join(haven_location, "Hall", "thing", "Hrafnsmal")
-	group_chat_location = filepath.Join(haven_location, "Hall", "thing", "group_chat")
-	archive_location = filepath.Join(haven_location, "archive")
 }
 
 func settings_file_location() string {
@@ -103,19 +117,19 @@ func read_settings_members(settings_location string) (map[string]json.RawMessage
 	return members, member_keys, issues
 }
 
-func read_haven_location(members map[string]json.RawMessage) []string {
-	raw_value, present := members["haven_location"]
+func read_location_setting(members map[string]json.RawMessage, setting Location_setting) []string {
+	raw_value, present := members[setting.key]
 	if !present {
-		return []string{"key haven_location is missing"}
+		return []string{"key " + setting.key + " is missing"}
 	}
-	if is_JSON_null(raw_value) || json.Unmarshal(raw_value, &haven_location) != nil {
-		return []string{"haven_location must be a string"}
+	if is_JSON_null(raw_value) || json.Unmarshal(raw_value, setting.value) != nil {
+		return []string{setting.key + " must be a string"}
 	}
-	if !filepath.IsAbs(haven_location) {
-		return []string{fmt.Sprintf("haven_location must be an absolute path, not %s", haven_location)}
+	if !filepath.IsAbs(*setting.value) {
+		return []string{fmt.Sprintf("%s must be an absolute path, not %s", setting.key, *setting.value)}
 	}
-	if !is_folder(filepath.Join(haven_location, "Hall", "thing", "Hrafnsmal")) {
-		return []string{fmt.Sprintf("haven_location %s has no folder Hall/thing/Hrafnsmal", haven_location)}
+	if setting.folder_must_exist && !is_folder(*setting.value) {
+		return []string{fmt.Sprintf("%s %s is no folder", setting.key, *setting.value)}
 	}
 	return nil
 }

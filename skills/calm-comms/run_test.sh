@@ -4,17 +4,19 @@ test_location='c:/Users/devboese/markdown_voodoo/scratchpad/calm_comms_NG_test'
 install_location="$test_location/install"
 refusal_location="$test_location/refusal_install"
 haven="$test_location/test_haven"
-hrafnsmal="$haven/Hall/thing/Hrafnsmal"
-group_chat="$haven/Hall/thing/group_chat"
+hall_mail="$haven/Hall/agora/hall_mail"
+group_chat="$haven/Hall/agora/group_chat"
 rm -rf "$haven" "$install_location" "$refusal_location" "$test_location"/*.txt
-for seat in huginn muninn corvus; do mkdir -p "$hrafnsmal/$seat"; echo "# $seat" > "$hrafnsmal/$seat/README.md"; done
+for seat in huginn muninn corvus; do mkdir -p "$hall_mail/$seat"; echo "# $seat" > "$hall_mail/$seat/README.md"; done
 mkdir -p "$group_chat/ravens/members"
 : > "$group_chat/ravens/members/huginn"
 : > "$group_chat/ravens/members/muninn"
 write_settings() {
   cat <<EOF
 {
-  "haven_location": "$1",
+  "hall_mail_location": "$1/Hall/agora/hall_mail",
+  "group_chat_location": "$1/Hall/agora/group_chat",
+  "archive_location": "$1/archive",
   "read_mail_kept_days": 7,
   "poll_interval_seconds": 10,
   "long_watcher_minutes": 55,
@@ -44,11 +46,11 @@ seconds_between() { awk -v start="$1" -v end="$2" 'BEGIN { printf "%.3f", end - 
 
 echo '--- 1 send'
 run send muninn huginn 'Hello, huginn!'
-sed 's/^/    | /' "$hrafnsmal/huginn"/*_from_muninn.md
+sed 's/^/    | /' "$hall_mail/huginn"/*_from_muninn.md
 
 echo '--- 2 inbox'
 run inbox huginn
-ls "$hrafnsmal/huginn/already_read" | sed 's/^/    already_read: /'
+ls "$hall_mail/huginn/already_read" | sed 's/^/    already_read: /'
 
 echo '--- 3 join'
 run join corvus ravens
@@ -125,12 +127,12 @@ echo '--- 12 text beyond ASCII'
 calm_comms inbox corvus > /dev/null
 text=$'Grüße von Ⓦ, mit 📬 und ß.\n/ok: a second line, with a slash first.'
 calm_comms send muninn corvus "$text" > /dev/null
-received=$(tail -n +2 "$hrafnsmal/corvus"/*_from_muninn.md)
+received=$(tail -n +2 "$hall_mail/corvus"/*_from_muninn.md)
 if [[ $received == "$text" ]]; then echo '  through calm_comms.sh, the text arrived exactly as sent'; else echo "  through calm_comms.sh, the text changed: $received"; fi
 calm_comms inbox corvus | sed 's/^/  /'
 sleep 1
 "$exe" send muninn corvus '/ok' > /dev/null
-echo "  straight into the exe, /ok arrived as: $(tail -n +2 "$hrafnsmal/corvus"/*_from_muninn.md)"
+echo "  straight into the exe, /ok arrived as: $(tail -n +2 "$hall_mail/corvus"/*_from_muninn.md)"
 
 echo '--- 13 inbox beyond its limits'
 calm_comms inbox corvus > /dev/null
@@ -138,7 +140,7 @@ calm_comms send huginn corvus 'Small one.' > /dev/null
 calm_comms send muninn corvus 'Small two.' > /dev/null
 calm_comms send huginn corvus 'Small three.' > /dev/null
 calm_comms send muninn corvus 'Small four.' > /dev/null
-{ printf '%s\n' '2026-10-27T02:00+01:00' 'From: huginn' 'To: corvus'; head -c 12000 /dev/zero | tr '\0' 'x'; echo; } > "$hrafnsmal/corvus/from_huginn_big.md"
+{ printf '%s\n' '2026-10-27T02:00+01:00' 'From: huginn' 'To: corvus'; head -c 12000 /dev/zero | tr '\0' 'x'; echo; } > "$hall_mail/corvus/from_huginn_big.md"
 for call in 1 2 3; do
   echo "  inbox, call $call:"
   calm_comms inbox corvus | grep -E '^--- |waiting|^no mail' | sed 's/^/    /'
@@ -152,17 +154,17 @@ run overview ravens
 
 echo '--- 15 archive'
 calm_comms inbox huginn 100 > /dev/null
-mkdir -p "$hrafnsmal/huginn/already_read"
-echo 'Old and unread: stays at the top of huginn.' > "$hrafnsmal/huginn/2026-01-05_100000_from_muninn.md"
-echo 'Old and read: moves into the archive.' > "$hrafnsmal/huginn/already_read/2026-01-04_100000_from_corvus.md"
-echo 'Old and read, without a stamp: moves into the archive by its file time.' > "$hrafnsmal/huginn/already_read/a_note_without_a_stamp.md"
-touch -d '2026-03-01 12:00' "$hrafnsmal/huginn/already_read/a_note_without_a_stamp.md"
+mkdir -p "$hall_mail/huginn/already_read"
+echo 'Old and unread: stays at the top of huginn.' > "$hall_mail/huginn/2026-01-05_100000_from_muninn.md"
+echo 'Old and read: moves into the archive.' > "$hall_mail/huginn/already_read/2026-01-04_100000_from_corvus.md"
+echo 'Old and read, without a stamp: moves into the archive by its file time.' > "$hall_mail/huginn/already_read/a_note_without_a_stamp.md"
+touch -d '2026-03-01 12:00' "$hall_mail/huginn/already_read/a_note_without_a_stamp.md"
 echo 'Old and read by every member: moves into already_read, then into the archive.' > "$group_chat/ravens/2026-02-01_090000_from_huginn.md"
 echo 'Old and unread at muninn: stays at the top of ravens until muninn reads it.' > "$group_chat/ravens/2026-02-02_090000_from_huginn.md"
-cp "$group_chat/ravens/2026-02-02_090000_from_huginn.md" "$hrafnsmal/muninn/"
+cp "$group_chat/ravens/2026-02-02_090000_from_huginn.md" "$hall_mail/muninn/"
 echo 'Read by every member, 2 days old: moves into already_read and stays there.' > "$group_chat/ravens/$(date -d '2 days ago' '+%Y-%m-%d_%H%M%S')_from_huginn.md"
 show_files() {
-  find "$haven/archive" "$hrafnsmal/huginn" "$group_chat/ravens" -type f -not -name README.md -not -name watching.md -not -path '*/members/*' 2>/dev/null | sort | while IFS= read -r file; do
+  find "$haven/archive" "$hall_mail/huginn" "$group_chat/ravens" -type f -not -name README.md -not -name watching.md -not -path '*/members/*' 2>/dev/null | sort | while IFS= read -r file; do
     echo "    ${file#"$haven"/}: $(tail -n 1 "$file")"
   done
 }
@@ -191,11 +193,11 @@ try_settings 'an array'
 try_settings 'a second JSON value'
 write_settings "$haven" | sed '/long_watcher_minutes/d; s/"poll_interval_seconds": 10/"poll_interval_seconds": 0/; s/"inbox_mail_limit": 3/"inbox_mail_limit": 2.5/; s/"write_throttle_seconds": 2/"write_throttle_seconds": 2,\n  "colour": "blue",\n  "write_throttle_seconds": 3/' > "$settings_file"
 try_settings 'five issues in one file'
-write_settings "$haven" | sed 's|"haven_location": "[^"]*"|"haven_location": null|' > "$settings_file"
-try_settings 'haven_location null'
+write_settings "$haven" | sed 's|"hall_mail_location": "[^"]*"|"hall_mail_location": null|' > "$settings_file"
+try_settings 'hall_mail_location null'
 write_settings 'test_haven' > "$settings_file"
-try_settings 'a relative haven_location'
+try_settings 'relative locations'
 write_settings "$test_location" > "$settings_file"
-try_settings 'a haven_location without Hall/thing/Hrafnsmal'
+try_settings 'locations that are no folders'
 { printf '\xef\xbb\xbf'; write_settings "$haven"; } > "$settings_file"
 try_settings 'a byte order mark before a valid file'

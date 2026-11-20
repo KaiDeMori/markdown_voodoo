@@ -7,7 +7,7 @@ It is not a skill on purpose: only the hallmaster needs it, so no other raven fi
 ## For the hallmaster
 
 Your job: wake the ravens on a list, and say how it went.
-Your seat in Hrafnsmal is `hallmaster`.
+Your seat in hall_mail is `hallmaster`.
 
 A wake mail looks like this:
 
@@ -25,7 +25,7 @@ Until the fernschreiber sends it, Wally hands you the list directly.
 
    ```
    ☕ N06BC01: Wally asks these seats to schnackon: tool_builder, otis_builder.
-   If you have a seat: append one line to haven:/Hall/thing/Hrafnsmal/frame_workaround_session_names.txt: your seat, a space, and your name as the first line of ListAgents shows it, ref included.
+   If you have a seat: append one line to haven:/Hall/agora/hall_mail/frame_workaround_session_names.txt: your seat, a space, and your name as the first line of ListAgents shows it, ref included.
    If your seat is on the list: schnackon too.
    If you have no seat: nothing to do.
    ```
@@ -41,6 +41,6 @@ Until the fernschreiber sends it, Wally hands you the list directly.
 
 ## Waking a single seat
 
-Between two restarts, a seat's last line in `haven:/Hall/thing/Hrafnsmal/frame_workaround_session_names.txt` names its session, for example `tool_builder markdown-voodoo-a2 [3f99aa]`.
+Between two restarts, a seat's last line in `haven:/Hall/agora/hall_mail/frame_workaround_session_names.txt` names its session, for example `tool_builder markdown-voodoo-a2 [3f99aa]`.
 `SendMessage` to that name, with its ref when two sessions share the name, and the wake message with that one seat.
 A name that `ListAgents` no longer shows means a restart came in between: the broadcast finds the raven again.

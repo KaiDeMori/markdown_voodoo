@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	haven_location             string
-	hrafnsmal_location         string
+	hall_mail_location         string
 	group_chat_location        string
 	archive_location           string
 	read_mail_kept_days        int
@@ -41,7 +40,7 @@ func main() {
 	read_settings()
 	verb = argument(1)
 	seat_name = argument(2)
-	seat_location = filepath.Join(hrafnsmal_location, seat_name)
+	seat_location = filepath.Join(hall_mail_location, seat_name)
 	watching_marker_file_location = filepath.Join(seat_location, "watching.md")
 	already_read_location = filepath.Join(seat_location, "already_read")
 	switch verb {
@@ -71,7 +70,7 @@ func main() {
 	case "send":
 		target_seat_name := argument(3)
 		check_seat(seat_name)
-		if target_seat_name != "" && !is_file(filepath.Join(hrafnsmal_location, target_seat_name, "README.md")) && is_folder(filepath.Join(group_chat_location, target_seat_name, "members")) {
+		if target_seat_name != "" && !is_file(filepath.Join(hall_mail_location, target_seat_name, "README.md")) && is_folder(filepath.Join(group_chat_location, target_seat_name, "members")) {
 			fmt.Printf("%s is a group: a mail there reaches every member. Use group.\n", target_seat_name)
 			os.Exit(exit_refused)
 		}
@@ -120,7 +119,7 @@ func timestamp(moment time.Time) string {
 }
 
 func check_seat(name string) {
-	if name == "" || !is_file(filepath.Join(hrafnsmal_location, name, "README.md")) {
+	if name == "" || !is_file(filepath.Join(hall_mail_location, name, "README.md")) {
 		fmt.Printf("Quoth the raven: README in %s? Nevermore.\n", name)
 		os.Exit(exit_no_such_seat)
 	}

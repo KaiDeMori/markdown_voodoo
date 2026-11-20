@@ -244,10 +244,10 @@ func leave_awake_marker() {
 }
 
 func show_overview() {
-	entries, _ := os.ReadDir(hrafnsmal_location)
+	entries, _ := os.ReadDir(hall_mail_location)
 	for _, entry := range entries {
 		overview_seat_name := entry.Name()
-		overview_seat_location := filepath.Join(hrafnsmal_location, overview_seat_name)
+		overview_seat_location := filepath.Join(hall_mail_location, overview_seat_name)
 		if strings.HasPrefix(overview_seat_name, ".") || !is_folder(overview_seat_location) {
 			continue
 		}

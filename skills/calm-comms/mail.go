@@ -100,7 +100,7 @@ func size_text(size int64) string {
 }
 
 func send_mail(target_seat_name string, mail_text string) {
-	target_seat_location := filepath.Join(hrafnsmal_location, target_seat_name)
+	target_seat_location := filepath.Join(hall_mail_location, target_seat_name)
 	if mail_text == "" {
 		fmt.Println("Nothing to send.")
 		os.Exit(exit_refused)
@@ -126,11 +126,11 @@ func send_group(group_name string, mail_text string) {
 		if member == seat_name {
 			continue
 		}
-		if !is_file(filepath.Join(hrafnsmal_location, member, "README.md")) {
+		if !is_file(filepath.Join(hall_mail_location, member, "README.md")) {
 			fmt.Printf("%s names %s, who has no seat, so nothing goes out.\n", group_name, member)
 			os.Exit(exit_refused)
 		}
-		locations = append(locations, filepath.Join(hrafnsmal_location, member, file_name))
+		locations = append(locations, filepath.Join(hall_mail_location, member, file_name))
 	}
 	locations = append(locations, filepath.Join(group_chat_location, group_name, file_name))
 	for _, location := range locations {
@@ -203,7 +203,7 @@ func move_thread_messages_read_by_all() {
 
 func read_by_every_member(members []string, message_name string) bool {
 	for _, member := range members {
-		if exists(filepath.Join(hrafnsmal_location, member, message_name)) {
+		if exists(filepath.Join(hall_mail_location, member, message_name)) {
 			return false
 		}
 	}
@@ -229,7 +229,7 @@ func show_groups(group_name string) {
 	}
 	check_group(group_name)
 	for _, member := range read_members(group_name) {
-		fmt.Printf("%s %s\n", member, mailbox(filepath.Join(hrafnsmal_location, member)))
+		fmt.Printf("%s %s\n", member, mailbox(filepath.Join(hall_mail_location, member)))
 	}
 }
 

@@ -19,7 +19,7 @@ It shows the hall as far as `hall_overview_visibility.txt`, beside this skill, l
 - `not yet` and `not mine`: only the room and its word.
 - A room with only its name: not opened.
 
-`seat_name` is your own seat's folder name in Hrafnsmal, such as `tool_builder`.
+`seat_name` is your own seat's folder name in hall_mail, such as `tool_builder`.
 With it, the overview also opens the rooms that are open to your seat, such as your chamber.
 
 'nough said.

@@ -42,7 +42,7 @@ go build -o calm_comms.exe .
 
 - `gofmt -l` names no file.
 - The lock is the only code that differs by system, and `GOOS=linux go vet` checks `lock_unix.go`.
-- An exe started in this folder reads this folder's `calm_comms_settings.json`, which names the live haven.
+- An exe started in this folder reads this folder's `calm_comms_settings.json`, which names the live folders.
 
 ## Deploy
 

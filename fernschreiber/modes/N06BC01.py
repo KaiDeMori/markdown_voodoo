@@ -67,7 +67,7 @@ class N06BC01_screen(Screen):
         recipient = {
             "watching": f"to {settings.HALLMASTER_SEAT}, watching",
             "not watching": f"to {settings.HALLMASTER_SEAT}, not watching: the mail waits for them",
-            "missing": f"to {settings.HALLMASTER_SEAT}, a seat not found in Hrafnsmal",
+            "missing": f"to {settings.HALLMASTER_SEAT}, a seat not found in hall_mail",
         }[self.hallmaster_state]
         self.recipient_label.update(recipient)
         marked = self.picker.marked

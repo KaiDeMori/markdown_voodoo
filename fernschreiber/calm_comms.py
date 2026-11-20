@@ -114,7 +114,7 @@ def new_group_problem(group_name: str, purpose: str) -> str | None:
         return f"{group_name}: a group's name takes only letters, digits, _ and -"
     if (settings.GROUP_CHAT / group_name).exists():
         return f"#{group_name} exists already"
-    if (settings.HRAFNSMAL / group_name).exists():
+    if (settings.HALL_MAIL / group_name).exists():
         return f"{group_name} is a seat's name"
     if not purpose:
         return "the second line says what the group is for; it goes into the README"

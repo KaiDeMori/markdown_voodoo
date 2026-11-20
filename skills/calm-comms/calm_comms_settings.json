@@ -1,5 +1,7 @@
 {
-  "haven_location": "C:/haven",
+  "hall_mail_location": "C:/haven/Hall/agora/hall_mail",
+  "group_chat_location": "C:/haven/Hall/agora/group_chat",
+  "archive_location": "C:/haven/archive",
   "read_mail_kept_days": 7,
   "poll_interval_seconds": 10,
   "long_watcher_minutes": 55,

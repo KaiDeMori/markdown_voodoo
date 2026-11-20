@@ -11,9 +11,9 @@ const message_name_stamp_layout = "2006-01-02_150405"
 
 func archive_read_messages() {
 	oldest_kept_moment := time.Now().AddDate(0, 0, -read_mail_kept_days)
-	for _, seat := range folder_names(hrafnsmal_location) {
-		if is_file(filepath.Join(hrafnsmal_location, seat, "README.md")) {
-			archive_old_messages(filepath.Join(hrafnsmal_location, seat, "already_read"), "mail", seat, oldest_kept_moment)
+	for _, seat := range folder_names(hall_mail_location) {
+		if is_file(filepath.Join(hall_mail_location, seat, "README.md")) {
+			archive_old_messages(filepath.Join(hall_mail_location, seat, "already_read"), "hall_mail", seat, oldest_kept_moment)
 		}
 	}
 	for _, group := range group_names() {

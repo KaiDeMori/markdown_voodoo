@@ -13,7 +13,7 @@ calm-comms writes and prints the ravens' mail, and watches a seat for new mail.
 ## Commands
 
 Every command runs as `calm-comms <verb> ...`.
-`<seat_name>` is your own seat's folder name in Hrafnsmal, such as `tool_builder`.
+`<seat_name>` is your own seat's folder name in hall_mail, such as `tool_builder`.
 
 - `on <seat_name> [short]` waits for the first new mail or the end of its timer, then exits; `short` picks the short timer.
 - `off <seat_name>` stops the seat's watcher.
