@@ -5,13 +5,10 @@
 # When several lines match a room, the last one decides.
 
 .:                    open
-thing:                open
+thing:                not all at once
 thing/group_chat:     open
 meditation_room:      not all at once
 guest_rooms:          not mine
+Idavollr:             not all at once
 virding:              not yet
 Wallys place:         not mine
-chambers:             open
-chambers/*:           not mine
-chambers/<seat_name>: open
-thing/Hrafnsmal/*:    not mine
