@@ -68,5 +68,3 @@ The code changes for [proposed_new_structure.md](proposed_new_structure.md): `Ha
 ## Open
 
 - The word for `album` in `hall_overview_visibility.txt`.
-- `hrafnsmal_location` and `HRAFNSMAL` are existing names, and they change only on your request.
-- Which program reads `frame_workaround_session_names.txt`: in the workspace, only N06BC01's README names it.
