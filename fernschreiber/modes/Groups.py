@@ -65,7 +65,7 @@ class Groups_screen(Screen):
         self.prompt_label = self.query_one("#group_prompt", Static)
         self.message_area = self.query_one("#group_message", TextArea)
         self.status_label = self.query_one("#group_status", Static)
-        self.thread.anchor()
+        self.thread.anchor(self.app.autoscroll)
         self.group_list.focus()
         self.app.groups = self
         self.reload()
@@ -112,9 +112,12 @@ class Groups_screen(Screen):
             self.say("no group in group_chat yet")
         self.show_thread()
 
-    def show_thread(self) -> None:
+    def show_thread(self, to_end: bool = False) -> None:
         """Shows the selected group's last mails, if Wally is a member; otherwise who is in it, and how to join."""
         group = self.selected
+        # With autoscroll off, a thread that is only rebuilt opens again where Wally was reading.
+        keep_position = not (self.app.autoscroll or to_end) and group is not None and group.name == self.shown_group
+        reading_position = self.thread.scroll_y
         self.thread.remove_children(".thread_entry")
         self.show_members()
         self.update_prompt()
@@ -137,7 +140,15 @@ class Groups_screen(Screen):
             widgets.append(Static("No mail in this group yet.", markup=False, classes="thread_entry mail_head"))
         self.thread.mount_all(widgets)
         self.shown_group = group.name
-        self.thread.scroll_end(animate=False)
+        if keep_position:
+            self.call_after_refresh(self.thread.scroll_to, y=reading_position, animate=False)
+        else:
+            self.thread.scroll_end(animate=False)
+
+    def apply_autoscroll(self) -> None:
+        self.thread.anchor(self.app.autoscroll)
+        if self.app.autoscroll:
+            self.thread.scroll_end(animate=False)
 
     def show_members(self) -> None:
         """The selected group's members, each with the mailbox from the last overview: who would hear a group mail soon."""
@@ -267,4 +278,4 @@ class Groups_screen(Screen):
         self.say(f"{clock_text()}  {output or ('posted' if posted else 'calm-comms gave no reason')}")
         if posted:
             self.message_area.clear()
-            self.show_thread()
+            self.show_thread(to_end=True)

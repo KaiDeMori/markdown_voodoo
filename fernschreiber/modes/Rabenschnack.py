@@ -50,8 +50,8 @@ class Rabenschnack_screen(Screen):
         self.message_area = self.query_one("#message", TextArea)
         self.update_prompt()
         self.message_area.focus()
-        # Anchored, the inbox stays at the bottom as mail comes in, until Wally scrolls up.
-        self.inbox.anchor()
+        # With autoscroll on, the anchored inbox stays at the bottom as mail comes in, until Wally scrolls up.
+        self.inbox.anchor(self.app.autoscroll)
         self.app.start_rabenschnack(self)
 
     def on_screen_resume(self) -> None:
@@ -117,7 +117,7 @@ class Rabenschnack_screen(Screen):
         if widgets:
             self.inbox.mount_all(widgets)
         if ring:
-            if widgets:
+            if widgets and self.app.autoscroll:
                 # New mail brings the view back down, even when Wally was reading further up.
                 self.inbox.scroll_end(animate=False)
             self.app.bell()
@@ -125,6 +125,11 @@ class Rabenschnack_screen(Screen):
     def add_note(self, head: str, body: str, sent: bool = False) -> None:
         self.inbox.mount_all(self.entry_widgets(head, body, sent))
         self.inbox.scroll_end(animate=False)
+
+    def apply_autoscroll(self) -> None:
+        self.inbox.anchor(self.app.autoscroll)
+        if self.app.autoscroll:
+            self.inbox.scroll_end(animate=False)
 
     # Sending
 

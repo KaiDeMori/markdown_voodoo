@@ -15,6 +15,7 @@ CATALOG_META_VARIABLE = "calm_email_catalog_meta"
 GROUPS_KEY_HINTS = "[J/L] join/leave  [N] new  [^Enter] post  [F6] help"
 GROUP_THREAD_COUNT = 50
 GROUP_REFRESH_SECONDS = 10
+AUTOSCROLL_AT_START = True
 HELP_TEXT = """\
 fernschreiber keys
 
@@ -24,6 +25,7 @@ F3           NOTAR, a notice to all ravens; Esc goes back
 F4           N06BC01, waking ravens; Esc goes back
 F5           the catalog: letters and addresses; Esc goes back
 F6           this help; Esc goes back
+F7           autoscroll on or off, for the mailbox and the threads
 Ctrl+Q       quit
 
 In Rabenschnack

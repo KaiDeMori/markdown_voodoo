@@ -140,6 +140,7 @@ class Fernschreiber(App):
         Binding("f4", "switch_mode('n06bc01')", show=False, priority=True),
         Binding("f5", "switch_mode('catalog')", show=False, priority=True),
         Binding("f6", "switch_mode('help')", show=False, priority=True),
+        Binding("f7", "toggle_autoscroll", show=False, priority=True),
     ]
 
     def __init__(self, color_theme: Color_theme | None = None) -> None:
@@ -152,6 +153,7 @@ class Fernschreiber(App):
         # Read before the window opens, so a broken file stops fernschreiber right away.
         self.NOTAR_messages = load_NOTAR_messages(settings.NOTAR_MESSAGES_FILE)
         self.NOTAR_issue: str | None = None
+        self.autoscroll = settings.AUTOSCROLL_AT_START
         self.seats: list[tuple[str, bool]] = []
         self.rabenschnack: Rabenschnack_screen | None = None
         self.notar: NOTAR_screen | None = None
@@ -183,12 +185,21 @@ class Fernschreiber(App):
         self.exit()
 
     def tick(self) -> None:
-        """Keeps the clock in the current mode's top line."""
+        """Keeps the clock in the current mode's top line, after a note while autoscroll is off."""
         top_rule = getattr(self.screen, "top_rule", None)
-        clock = clock_text()
-        if top_rule is not None and top_rule.right != clock:
-            top_rule.right = clock
+        label = clock_text() if self.autoscroll else f"scroll off  {clock_text()}"
+        if top_rule is not None and top_rule.right != label:
+            top_rule.right = label
             top_rule.redraw()
+
+    def action_toggle_autoscroll(self) -> None:
+        """F7: the mailbox and the threads follow new mail, or stay where Wally reads."""
+        self.autoscroll = not self.autoscroll
+        if self.rabenschnack is not None:
+            self.rabenschnack.apply_autoscroll()
+        if self.groups is not None:
+            self.groups.apply_autoscroll()
+        self.tick()
 
     # The seats
 
